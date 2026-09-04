@@ -31,6 +31,7 @@ import {
 } from '@retro-flyer/physics'
 import { AssistLayer, BALANCED, type AssistPreset, type RawInput } from '@retro-flyer/control'
 import { lerpRenderState, toRenderState, type RenderState } from './seam.js'
+import { AX_REFERENCE_ACCEL } from './camera/accel.js'
 
 export interface SpawnCondition {
   alt: number
@@ -42,8 +43,36 @@ export interface SpawnCondition {
   z: number
 }
 
-/** Smoothing time constant for the along-path acceleration cue, seconds. */
-const AX_TAU = 0.25
+/**
+ * Attack and release time constants for the along-path acceleration cue, seconds.
+ *
+ * Deliberately asymmetric, which one symmetric constant cannot be. A flight test
+ * asked for the ramp to "start sooner and extend out longer", and those are two
+ * different edges of the same envelope: how fast the cue arrives when acceleration
+ * begins, and how slowly it lets go when acceleration stops.
+ *
+ * At a shared 0.25 s the cue arrived late — a second into a slam the smoothed value
+ * was still only two thirds of the real acceleration, during exactly the moment the
+ * engine is doing its most obvious work — and then dropped away as briskly as it
+ * came, so easing the throttle back snapped the frame shut.
+ *
+ * A fast attack and a slow release is the same envelope a compressor uses, and for
+ * the same reason: the onset is the information, and the tail is what makes it feel
+ * like something rather than a flicker.
+ */
+const AX_ATTACK_TAU = 0.12
+const AX_RELEASE_TAU = 1.3
+
+/**
+ * Time constant for the sustained-acceleration envelope, seconds.
+ *
+ * Long on purpose. This is the part of the cue that keeps building while the
+ * afterburner is held, and it is what makes the ramp last as long as the
+ * acceleration does rather than saturating three seconds in — see `SUSTAIN_SHARE`.
+ * It fills and empties at the same rate, so easing off unwinds it over a few seconds
+ * instead of dropping it.
+ */
+const SUSTAIN_TAU = 4.5
 
 export class Simulation {
   readonly layer: AssistLayer
@@ -66,6 +95,16 @@ export class Simulation {
    * number increasing and my waiting." The camera and the FOV read this instead.
    */
   ax = 0
+
+  /**
+   * How long acceleration has been sustained, 0 to 1.
+   *
+   * `ax` alone is flat through an afterburner run — it reaches its maximum in about
+   * three seconds and stays there — so a cue driven by it alone saturates and then
+   * says nothing for the rest of the acceleration. This fills slowly while `ax` is
+   * high and gives the cue somewhere to keep going. See `sustainedResponse`.
+   */
+  sustain = 0
 
   private readonly mass: MassProperties = computeMassProperties()
   private state: number[]
@@ -146,11 +185,18 @@ export class Simulation {
         })
         this.nz = accel.nz + 1
 
-        // Along-path acceleration, lightly smoothed. Raw d(vt)/dt is clean enough at
-        // 120 Hz, but it steps when the afterburner lights and the cue should swell
-        // rather than snap.
-        const blend = Math.min(1, PHYSICS_DT / AX_TAU)
-        this.ax += ((vd[Q.VT] as number) - this.ax) * blend
+        // Along-path acceleration, with a fast attack and a slow release. Raw
+        // d(vt)/dt is clean enough at 120 Hz, but it steps when the afterburner
+        // lights, and the cue should swell rather than snap — and having swelled,
+        // should not vanish the instant the throttle moves.
+        const raw = vd[Q.VT] as number
+        const tau = Math.abs(raw) > Math.abs(this.ax) ? AX_ATTACK_TAU : AX_RELEASE_TAU
+        this.ax += (raw - this.ax) * Math.min(1, PHYSICS_DT / tau)
+
+        // And the slow envelope underneath it, which is what keeps the cue building
+        // for as long as the acceleration is held.
+        const saturation = Math.min(1, Math.abs(this.ax) / AX_REFERENCE_ACCEL)
+        this.sustain += (saturation - this.sustain) * Math.min(1, PHYSICS_DT / SUSTAIN_TAU)
 
         return this.controls
       },
@@ -172,6 +218,7 @@ export class Simulation {
 
   reset(): void {
     this.ax = 0
+    this.sustain = 0
     const { state, controls } = this.trimAt(this.spawn)
     this.state = state
     this.previous = [...state]

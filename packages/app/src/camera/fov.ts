@@ -39,7 +39,19 @@ export const FOV_HIGH_KT = 640
 const FOV_RATE = 22
 
 /**
- * Extra FOV per ft/s^2 of along-path acceleration, degrees.
+ * Hard ceiling on the combined FOV, degrees.
+ *
+ * The acceleration term adds ON TOP of the speed band rather than inside it, which
+ * is deliberate — the two say different things — but it means they can sum past
+ * `FOV_MAX`. Measured, a full afterburner run to Mach 0.9 reached 98 degrees against
+ * a band that stops at 94. A few degrees of overshoot is the point of the cue, so
+ * the ceiling sits above `FOV_MAX` rather than at it; what it prevents is the
+ * unbounded case where both terms saturate together.
+ */
+const FOV_HARD_MAX = 99
+
+/**
+ * Full travel of the acceleration term, degrees.
  *
  * The FOV band above is a function of SPEED, and a function of speed cannot convey
  * acceleration — it reports the result after the fact. That is the whole of why a
@@ -49,32 +61,28 @@ const FOV_RATE = 22
  * it was changing.
  *
  * So the FOV punches out while accelerating and draws in while decelerating, on top
- * of whatever the speed band is asking for. Under full afterburner this aircraft
- * makes about 32 ft/s^2, so the gain puts the boost near 8 degrees at full
- * acceleration — enough to be felt as a shove, well short of a fisheye.
+ * of whatever the speed band is asking for. Deceleration gets less travel because
+ * pulling the frame IN is the more noticeable direction, and an aircraft that is
+ * merely coasting should not feel like it is braking.
  *
- * Deceleration gets a smaller total allowance but a LARGER gain, which is not a
- * contradiction. Measured, this aircraft accelerates far harder than it slows down
- * in clean configuration: full afterburner reaches 28.5 ft/s^2 at 5,000 ft, while
- * flight idle from a fast cruise only reaches -8.5. One gain across both would have
- * spent the entire negative range on nothing — the -4 clamp was unreachable, and
- * decelerating produced barely two degrees. Separate gains put both ends of the cue
- * within reach of inputs the pilot can actually make.
+ * Reaching full travel means "as hard as this aeroplane accelerates", not an
+ * arbitrary threshold — `accelResponse` normalises against measured values.
  */
-const FOV_ACCEL_GAIN = 0.25
-const FOV_DECEL_GAIN = 0.45
-const FOV_ACCEL_MAX = 8
-const FOV_ACCEL_MIN = -4
+const FOV_ACCEL_TRAVEL = 8
+const FOV_DECEL_TRAVEL = 4
 
 /**
  * FOV added by acceleration, degrees.
  *
- * @param axFps2 Along-path acceleration, ft/s^2. Positive is speeding up.
+ * @param axFps2  Along-path acceleration, ft/s^2. Positive is speeding up.
+ * @param sustain How long it has been held, 0 to 1 — see `sustainedResponse`
  */
-export function accelFovBoost(axFps2: number): number {
-  const gain = axFps2 >= 0 ? FOV_ACCEL_GAIN : FOV_DECEL_GAIN
-  return Math.max(FOV_ACCEL_MIN, Math.min(FOV_ACCEL_MAX, axFps2 * gain))
+export function accelFovBoost(axFps2: number, sustain = 1): number {
+  const response = sustainedResponse(axFps2, sustain)
+  return response * (response >= 0 ? FOV_ACCEL_TRAVEL : FOV_DECEL_TRAVEL)
 }
+
+import { sustainedResponse } from './accel.js'
 
 const smoothstep = (x: number): number => x * x * (3 - 2 * x)
 
@@ -88,10 +96,11 @@ export class FovController {
   current = FOV_BASE
 
   /**
-   * @param axFps2 Along-path acceleration, ft/s^2 — see `accelFovBoost`
+   * @param axFps2  Along-path acceleration, ft/s^2 — see `accelFovBoost`
+   * @param sustain How long it has been held, 0 to 1 — see `sustainedResponse`
    */
-  update(kt: number, axFps2: number, dt: number): number {
-    const target = targetFov(kt) + accelFovBoost(axFps2)
+  update(kt: number, axFps2: number, sustain: number, dt: number): number {
+    const target = Math.min(FOV_HARD_MAX, targetFov(kt) + accelFovBoost(axFps2, sustain))
     const limit = FOV_RATE * Math.min(dt, 0.1)
     const delta = target - this.current
 

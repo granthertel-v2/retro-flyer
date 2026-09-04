@@ -98,12 +98,12 @@ describe('the near field is dense enough to read as motion', () => {
 /**
  * Measured range of along-path acceleration for this aircraft, ft/s^2.
  *
- * Full afterburner at 5,000 ft, and flight idle from a fast cruise. The asymmetry is
- * real — a clean fighter accelerates far harder than it slows down — and it is why
- * the two cues below have separate gains for the two directions.
+ * Full afterburner at 5,000 ft, and chopping to idle from Mach 0.9. The asymmetry is
+ * real — a clean fighter accelerates harder than it slows down — and it is why the
+ * two directions are normalised separately.
  */
 const AX_FULL_AB = 28.5
-const AX_IDLE_DECEL = -8.5
+const AX_IDLE_DECEL = -14
 
 describe('acceleration has its own cues, because speed cues cannot carry it', () => {
   // The gap a flight test found: "I don't feel like I've accelerated quickly, I have
@@ -123,9 +123,9 @@ describe('acceleration has its own cues, because speed cues cannot carry it', ()
   })
 
   it('is clearly felt decelerating, which needs its own gain to be reachable at all', () => {
-    // This is the assertion that matters most of the pair. The aircraft only reaches
-    // -8.5 ft/s^2 at idle, so a single shared gain spent the whole negative range on
-    // nothing: the clamps were unreachable and a deceleration produced under two
+    // This is the assertion that matters most of the pair. Deceleration tops out far
+    // lower than acceleration, so a single shared gain spent the whole negative range
+    // on nothing: the clamps were unreachable and a deceleration produced under two
     // degrees of FOV. Both directions have to be reachable by inputs a pilot can
     // actually make.
     expect(accelFovBoost(AX_IDLE_DECEL)).toBeLessThan(-3)
@@ -156,5 +156,52 @@ describe('acceleration has its own cues, because speed cues cannot carry it', ()
     expect(accelFovBoost(AX_IDLE_DECEL)).toBeLessThan(0)
     expect(accelStretch(AX_FULL_AB)).toBeGreaterThan(0)
     expect(accelStretch(AX_IDLE_DECEL)).toBeLessThan(0)
+  })
+})
+
+describe('the ramp lasts as long as the acceleration does', () => {
+  // `ax` is FLAT through an afterburner run — it reaches its maximum about three
+  // seconds in and is still within 8% of it fourteen seconds later, while the
+  // aircraft goes from Mach 0.46 to 0.90. A cue driven by `ax` alone therefore
+  // saturated at t=3 and then sat perfectly still, and a constant offset is not
+  // perceived. Reported as the ramp being "a bit too short", which it was: not too
+  // fast, just over.
+
+  it('keeps building while acceleration is held', () => {
+    const early = accelFovBoost(AX_FULL_AB, 0)
+    const late = accelFovBoost(AX_FULL_AB, 1)
+
+    expect(late).toBeGreaterThan(early * 1.3)
+  })
+
+  it('still arrives immediately, so the onset is not softened', () => {
+    // The sustain envelope must not be bought by making the cue slow to start. Even
+    // with the envelope empty, a hard acceleration is plainly visible at once.
+    expect(accelFovBoost(AX_FULL_AB, 0)).toBeGreaterThan(4)
+    expect(accelStretch(AX_FULL_AB, 0)).toBeGreaterThan(3)
+  })
+
+  it('is still nothing at all in steady flight, however long it is held', () => {
+    expect(accelFovBoost(0, 1)).toBe(0)
+    expect(accelStretch(0, 1)).toBe(0)
+  })
+
+  it('gives disproportionate cue early, so it starts while the engine is spooling', () => {
+    // The other half of "start sooner", and the half that is not about time
+    // constants. A linear response spends the first seconds of a slam showing almost
+    // nothing, because the acceleration genuinely IS small while the engine spools —
+    // which is exactly the moment the pilot is looking for confirmation.
+    //
+    // The curve is sub-linear, so a third of full acceleration gives appreciably
+    // more than a third of the cue.
+    const third = accelFovBoost(AX_FULL_AB / 3, 1)
+    const full = accelFovBoost(AX_FULL_AB, 1)
+
+    expect(third).toBeGreaterThan(full * 0.4)
+  })
+
+  it('reaches full travel only with both a hard and a held acceleration', () => {
+    expect(accelFovBoost(AX_FULL_AB, 1)).toBeCloseTo(8, 6)
+    expect(accelStretch(AX_FULL_AB, 1)).toBeCloseTo(6, 6)
   })
 })

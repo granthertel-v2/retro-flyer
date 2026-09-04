@@ -22,6 +22,7 @@
 
 import { Camera, Quaternion, Vector3 } from 'three'
 import type { RenderState } from '../seam.js'
+import { sustainedResponse } from './accel.js'
 
 export type CameraMode = 'chase' | 'cockpit' | 'orbit'
 
@@ -40,33 +41,29 @@ const CHASE_UP = 7.6
 const CHASE_G_STRETCH = 1.1
 
 /**
- * Extra trail per ft/s^2 of along-path acceleration, metres.
+ * Full travel of the acceleration term, metres.
  *
  * The oldest trick in arcade flight and the most direct statement of acceleration
- * available: when the aircraft accelerates, the camera is left behind, and when it
- * decelerates the camera closes up. Unlike everything else in the renderer this is a
- * function of the RATE OF CHANGE of speed rather than of speed, so it says something
+ * available: when the aircraft accelerates the camera is left behind, and when it
+ * decelerates the camera closes up. Unlike everything else in the renderer this is
+ * driven by the RATE OF CHANGE of speed rather than by speed, so it says something
  * none of the other cues can.
  *
- * It is not merely cosmetic here. The spring-damper below means the camera does not
- * jump to the new trail, it is dragged out to it over a few tenths of a second and
- * eases back — which is what makes it read as being shoved rather than as the camera
+ * It is not merely cosmetic. The spring-damper below means the camera does not jump
+ * to the new trail, it is dragged out to it over a few tenths of a second and eases
+ * back — which is what makes it read as being shoved rather than as the camera
  * teleporting.
  *
- * Measured, full afterburner at 5,000 ft reaches 28.5 ft/s^2 and flight idle from a
- * fast cruise only -8.5, so deceleration gets a larger gain over a smaller range —
- * otherwise the negative half of the cue is never reached by anything the pilot can
- * actually do. Same reasoning as `accelFovBoost`, same measurements.
+ * Deceleration gets less travel for the same reason the FOV does. Both ends
+ * normalise against measured accelerations in `accelResponse`.
  */
-const CHASE_ACCEL_STRETCH = 0.19
-const CHASE_DECEL_STRETCH = 0.3
-const CHASE_ACCEL_MAX = 6
-const CHASE_ACCEL_MIN = -2.5
+const CHASE_ACCEL_TRAVEL = 6
+const CHASE_DECEL_TRAVEL = 2.5
 
 /** Trail added by acceleration, metres. */
-export function accelStretch(axFps2: number): number {
-  const gain = axFps2 >= 0 ? CHASE_ACCEL_STRETCH : CHASE_DECEL_STRETCH
-  return Math.max(CHASE_ACCEL_MIN, Math.min(CHASE_ACCEL_MAX, axFps2 * gain))
+export function accelStretch(axFps2: number, sustain = 1): number {
+  const response = sustainedResponse(axFps2, sustain)
+  return response * (response >= 0 ? CHASE_ACCEL_TRAVEL : CHASE_DECEL_TRAVEL)
 }
 
 /**
@@ -130,6 +127,7 @@ export class ChaseCamera {
     mode: CameraMode,
     nz: number,
     axFps2: number,
+    sustain: number,
     dt: number,
   ): void {
     this.quaternion.set(
@@ -165,7 +163,7 @@ export class ChaseCamera {
 
     // Chase.
     const trail =
-      CHASE_BACK + Math.max(0, nz - 1) * CHASE_G_STRETCH + accelStretch(axFps2)
+      CHASE_BACK + Math.max(0, nz - 1) * CHASE_G_STRETCH + accelStretch(axFps2, sustain)
     this.desired
       .set(0, CHASE_UP, trail)
       .applyQuaternion(this.quaternion)
