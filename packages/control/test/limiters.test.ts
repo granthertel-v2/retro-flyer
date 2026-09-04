@@ -258,6 +258,60 @@ describe('with the limiters off', () => {
   })
 })
 
+describe('a steady pull is steady', () => {
+  it('never reverses pitch rate while the stick is held fully aft', () => {
+    // Reported from a flight test as "it pulls, then stops pulling, then starts
+    // again", and it was a limit cycle. The AoA limiter's allowance was
+    // `margin * gain` with nothing stopping it going negative, and because the
+    // margin is computed from PREDICTED alpha it went negative while actual alpha
+    // was still well inside the envelope. So full aft stick was answered with a
+    // commanded pushover, which overshot, which restarted the pull.
+    //
+    // Measured at 15,000 ft and 550 ft/s, the commanded rate ran +34, -42, +38, -30
+    // deg/s inside two seconds with the elevator slamming between -21 and its +25
+    // stop. It arrived with the rate command and neither the g command before it nor
+    // any test after it noticed.
+    //
+    // The real F-16's FLCS fades the permitted g command down with alpha — roughly
+    // 8-9 g below 15 degrees, 6.3-7.3 at 20, zero at the 25 degree limiter — rather
+    // than reversing it. Approaching a limit takes your pull away; it does not fly
+    // the aeroplane for you.
+    for (const [alt, vt] of [
+      [5_000, 800],
+      [10_000, 700],
+      [11_000, 640],
+      [15_000, 550],
+      [20_000, 600],
+    ] as const) {
+      const flight = fly({
+        alt,
+        vt,
+        seconds: 14,
+        input: (t) => ({ pitch: t > 1 ? 1 : 0, roll: 0, yaw: 0, throttle: 1 }),
+      })
+
+      const rates = flight.samples.filter((s) => s.t > 1.5).map((s) => s.state.qRate)
+      const reversals = rates.filter((r, i) => i > 0 && r * rates[i - 1]! < 0).length
+
+      expect(reversals, `pitch rate reversed at ${alt} ft / ${vt} ft/s`).toBe(0)
+    }
+  })
+
+  it('still stops the pull — a limiter that never engages is not one', () => {
+    // The control case for the test above. Zero reversals would also be what a
+    // completely disabled AoA limiter produced.
+    const flight = fly({
+      alt: 15_000,
+      vt: 550,
+      seconds: 14,
+      input: (t) => ({ pitch: t > 1 ? 1 : 0, roll: 0, yaw: 0, throttle: 1 }),
+    })
+
+    expect(Math.max(...flight.samples.map((s) => s.alphaDeg))).toBeLessThan(ALPHA_DATA_MAX)
+    expect(flight.departed).toBe(false)
+  })
+})
+
 describe('the limiter leads on alpha, not on pitch rate', () => {
   it('never commands nose-up while the stick is held fully forward', () => {
     // The bug this asserts against was felt before it was measured: the pushover

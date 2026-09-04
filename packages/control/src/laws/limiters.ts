@@ -172,11 +172,34 @@ const AOA_GAIN_DOWN_PER_DEG = 0.45
  * aircraft decelerates in the pull. Limiting on where alpha will be a fraction of a
  * second from now gives the aircraft time to stop.
  *
- * Short, because the ceiling can afford it: 13 degrees of margin to the data edge,
- * and a longer lead here just makes the aircraft feel like it is backing out of
- * pulls it could have completed.
+ * Raised from 0.12, which limit-cycled. Reported from a flight test as "it pulls,
+ * then stops pulling, then starts again": at 15,000 ft and 550 ft/s the commanded
+ * rate ran +34, -42, +38, -30 deg/s inside two seconds, with the elevator slamming
+ * between -21 and its +25 stop. The cause is that a rate command asks for far more
+ * than the limits allow at low speed, so the limiter has to claw back a great deal,
+ * and at a short lead it was always doing so too late and therefore too hard. The
+ * cycle arrived with the rate command in dd34d84 — the g command before it never
+ * reversed pitch rate under a steady pull at any condition tested.
+ *
+ * 0.40 removes it completely across the normal envelope. 0.55 is marginally tighter
+ * and costs more of the pull; 0.25 still cycles.
+ *
+ * Recorded because it cost an hour and the reasoning was seductive: the obvious fix
+ * looked like rebuilding this end in the shape of the real F-16's FLCS, whose
+ * published schedule fades the permitted g command DOWN with alpha — roughly 8-9 g
+ * below 15 degrees, 6.3-7.3 at 20, zero at the 25 degree limiter — and only reverses
+ * once past the limit. Implemented here, that was WORSE. Fading to zero on predicted
+ * alpha and reversing only on actual alpha puts a discontinuity at the boundary
+ * between the two regimes, and in the low-energy corner, where alpha sits on the
+ * ceiling and crosses it repeatedly, the aircraft bangs across that seam: 18 pitch
+ * rate reversals at 20,000 ft and 450 ft/s against 0 for the plain proportional law.
+ *
+ * Which is this file's own opening argument, arrived at the expensive way. A limiter
+ * built out of cases has a discontinuity at every case boundary and the pilot feels
+ * each one. The law stays one branchless expression; the lead is what fixes the
+ * cycle.
  */
-const AOA_LEAD_UP_SECONDS = 0.12
+const AOA_LEAD_UP_SECONDS = 0.40
 
 /**
  * How far ahead the limiter looks approaching the FLOOR, seconds.
@@ -332,6 +355,15 @@ export function limitAoA(
   const predictedUp = alphaDeg + rateDeg * AOA_LEAD_UP_SECONDS
   const predictedDown = alphaDeg + rateDeg * AOA_LEAD_DOWN_SECONDS
 
+  // Approach and recovery are two different jobs and are kept apart.
+  //
+  // APPROACH fades the permitted rate to zero and no further, on PREDICTED alpha.
+  // Inside the envelope the limiter may only take your pull away, never reverse it.
+  //
+  // RECOVERY is the only thing allowed to command the opposite direction, and it is
+  // driven by ACTUAL alpha and bounded. You have to be genuinely outside the
+  // envelope before the aircraft takes the stick off you, and even then it pushes at
+  // a fixed modest rate rather than however hard the arithmetic happened to want.
   const upper = (ceiling - predictedUp) * AOA_GAIN_PER_DEG
   const lower = (floor - predictedDown) * AOA_GAIN_DOWN_PER_DEG
 
