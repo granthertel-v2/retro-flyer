@@ -199,6 +199,22 @@ const AOA_LEAD_DOWN_SECONDS = 0.32
 const NZ_FEEDBACK = 0.035
 
 /**
+ * The same on the negative side, rad/s per g.
+ *
+ * Stronger, because a pushover overshoots its limit where a pull undershoots its
+ * own: measured, full aft reaches 10.5 g against a limit of 11, while full forward
+ * reached -4.84 against -4. The asymmetry is the aircraft's, not a preference. A
+ * pull is opposed by an airframe that becomes more stable and more draggy the harder
+ * it is pulled; a push is not, and the load factor keeps building after the pitch
+ * rate has stopped.
+ *
+ * This only became visible once the AoA limiter stopped spuriously throttling every
+ * pushover — it had been hiding the g limiter's undershoot by taking the authority
+ * away for the wrong reason.
+ */
+const NZ_FEEDBACK_NEGATIVE = 0.09
+
+/**
  * Pitch rate the stick is asking for, in rad/s.
  *
  * Two terms, and they do different jobs:
@@ -248,10 +264,19 @@ export function pitchRateCommand(
  *
  * Full forward is not the mirror of full aft, and it should not be: the load factor
  * limits are +11 and -4, so the aircraft has less than half as much room to push as
- * to pull. Commanding the same rate in both directions just means the AoA floor
- * catches the pushover instead of the g limiter — and it catches it *late*, outside
- * the aerodynamic data, because the floor is only two degrees from the edge where
- * the ceiling has thirteen.
+ * to pull.
+ *
+ * With the g limiter on this now does nothing measurable, and the honest reading is
+ * that it is a backstop rather than a limit. The g limiter's own cap binds first at
+ * every speed — full forward at 700 ft/s asks for 27.5 deg/s and is capped to 13.2
+ * long before this fraction matters — and removing it entirely changes the sustained
+ * pushover rate by less than a tenth of a degree per second, and the adversarial
+ * family by 0.02 degrees of alpha.
+ *
+ * It earns its place only with the g limiter switched off, which §5 allows: there it
+ * holds the pushover to -5.69 g rather than -5.83, and keeps alpha a fifth of a
+ * degree further from the floor. Small, but it is the only thing left bounding the
+ * nose-down command in that configuration.
  */
 export function downRateFraction(positiveG: number, negativeG: number): number {
   return Math.min(1, (1 - negativeG) / Math.max(1e-6, positiveG - 1))
@@ -281,14 +306,16 @@ export function commandedLoadFactor(
  * each one. Nose-down commands pass through untouched wherever alpha is low, because
  * the allowance is then far larger than anything the stick produces.
  *
- * @param qCmd     Commanded pitch rate, rad/s
- * @param alphaRad Current angle of attack, radians
- * @param q        Current pitch rate, rad/s — the lead term
+ * @param qCmd      Commanded pitch rate, rad/s
+ * @param alphaRad  Current angle of attack, radians
+ * @param alphaRate Rate of change of alpha, rad/s — the lead term. NOT pitch rate:
+ *   in steady curving flight q is large while alpha is constant, and leading on q
+ *   there limits a command that needed no limiting. See `AssistLayer.previousAlpha`.
  */
 export function limitAoA(
   qCmd: number,
   alphaRad: number,
-  q: number,
+  alphaRate: number,
   vt: number,
   ceilingDeg = AOA_CEILING_DEG,
   floorDeg = AOA_FLOOR_DEG,
@@ -296,7 +323,7 @@ export function limitAoA(
   const ceiling = effectiveCeiling(ceilingDeg, vt)
   const floor = effectiveFloor(floorDeg, vt)
   const alphaDeg = radToDeg(alphaRad)
-  const rateDeg = radToDeg(q)
+  const rateDeg = radToDeg(alphaRate)
 
   // Each end looks ahead by its own lead. Not symmetric, because the margins are
   // not: see AOA_LEAD_DOWN_SECONDS. The ceiling caps how much nose-up may be
@@ -332,7 +359,7 @@ export function limitG(
   // but only ever downward — the feedforward is what sets the target, and this
   // only takes authority away when the aircraft is already past the limit.
   const qMax = Math.min(qMaxSteady, qMaxSteady + (positive - nz) * NZ_FEEDBACK)
-  const qMin = Math.max(qMinSteady, qMinSteady + (negative - nz) * NZ_FEEDBACK)
+  const qMin = Math.max(qMinSteady, qMinSteady + (negative - nz) * NZ_FEEDBACK_NEGATIVE)
 
   return Math.min(qMax, Math.max(qMin, qCmd))
 }

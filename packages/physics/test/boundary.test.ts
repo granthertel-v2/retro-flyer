@@ -348,6 +348,24 @@ describe('departure does not become divergence', () => {
     expect(Math.abs(v[Q.R] as number)).toBeLessThan(50)
   })
 
+  it('keeps alpha inside one turn, however long the tumble runs', () => {
+    // Alpha is an integrated state, not a value recovered from the body velocity
+    // each step, so nothing in the formulation stops it accumulating. A tumble makes
+    // it: held at full aft stick with the AoA limiter off, alpha reached 1,477
+    // degrees in 25 seconds and was still climbing, when the aircraft's actual
+    // incidence was 37.
+    //
+    // Which is not a cosmetic complaint. The tables clamp alpha to their +45 edge,
+    // and once alpha is four turns past that the clamp never releases, so the model
+    // computes forces for an aeroplane at 45 degrees that is really at 37 — forever.
+    // The aircraft stops being able to recover from a departure it should only have
+    // found difficult.
+    const { v } = departed({ throttle: 1, elevator: -25, aileron: 0, rudder: 0 })
+    const alphaDeg = (v[Q.ALPHA] as number) / RAD_PER_DEG
+
+    expect(Math.abs(alphaDeg), 'alpha left (-180, 180]').toBeLessThanOrEqual(180.000001)
+  })
+
   it('still departs — the guard bounds the model, it does not stabilize it', () => {
     // Important negative check. If clamping had accidentally made the aircraft
     // docile, assists-off flight would stop being difficult and REQUIREMENTS §5

@@ -15,6 +15,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
+import { radToDeg } from '@retro-flyer/physics'
 import { ALL_ASSISTS_OFF } from '../src/index.js'
 import { ALPHA_DATA_MAX, fly, hold, peak } from './helpers.js'
 
@@ -71,6 +72,39 @@ describe('assists off', () => {
     const excursion = peak(late.map((s) => s.state.qRate))
 
     expect(excursion).toBeGreaterThan(0.15)
+  })
+})
+
+describe('a departure has to be survivable, or it is not a departure', () => {
+  it('flies out of a limiter-off departure once the stick is centred', () => {
+    // §5 asks for assists-off flight to be "genuinely difficult and departure-prone".
+    // Difficult, not arithmetically unrecoverable — and it was the latter, for a
+    // reason that had nothing to do with aerodynamics. Alpha is an integrated state
+    // and did not wrap, so a tumble ran it to several hundred degrees, pinned the
+    // table clamp at +45 permanently, and left the model computing forces for an
+    // attitude the aircraft was not in. Centring the stick did nothing, forever.
+    //
+    // Measured without the wrap: settled alpha 530 degrees, still tumbling at 276
+    // ft/s after 30 seconds. With it: 7.5 degrees and flying.
+    const flight = fly({
+      alt: 20_000,
+      vt: 700,
+      seconds: 30,
+      // Depart it deliberately, then let go and see whether it comes back.
+      input: (t) => ({ pitch: t < 6 ? 1 : 0, roll: 0, yaw: 0, throttle: 1 }),
+      toggles: { aoaLimiter: false },
+    })
+
+    const settled = flight.samples.filter((s) => s.t > 22)
+    const worstAlpha = Math.max(...settled.map((s) => Math.abs(s.alphaDeg)))
+    const meanRate = settled.reduce((sum, s) => sum + Math.abs(s.state.qRate), 0) / settled.length
+
+    expect(flight.diverged).toBe(false)
+    // Back inside the data envelope and no longer tumbling.
+    expect(worstAlpha).toBeLessThan(ALPHA_DATA_MAX)
+    expect(radToDeg(meanRate)).toBeLessThan(15)
+    // And still flying, rather than descending as a brick.
+    expect(settled[settled.length - 1]!.state.vt).toBeGreaterThan(400)
   })
 })
 

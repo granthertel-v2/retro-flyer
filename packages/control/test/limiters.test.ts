@@ -258,6 +258,60 @@ describe('with the limiters off', () => {
   })
 })
 
+describe('the limiter leads on alpha, not on pitch rate', () => {
+  it('never commands nose-up while the stick is held fully forward', () => {
+    // The bug this asserts against was felt before it was measured: the pushover
+    // went mushy. The AoA limiter was predicting alpha from PITCH RATE, and in
+    // steady curving flight that is simply the wrong quantity — the aircraft rotates
+    // at a constant q while alpha sits still, because the flight path is rotating
+    // with it. So the limiter kept forecasting an excursion that was not coming.
+    //
+    // Measured, holding full forward at 10,000 ft and 700 ft/s: alpha steady at -5.2
+    // against a -8 floor, the limiter chattering on and off every few ticks, and the
+    // commanded rate swinging between -13.1 and +5.1 deg/s. Commanding +5 deg/s of
+    // NOSE UP while the pilot holds full forward stick is indefensible on any
+    // account of what a limiter is for.
+    const flight = fly({
+      alt: 10_000,
+      vt: 700,
+      seconds: 8,
+      input: hold({ pitch: -1, throttle: 0.5 }),
+    })
+
+    // Asserted on the flown result rather than the command, because that is what the
+    // pilot actually feels — and because a command trace would let a limiter that
+    // chatters below the aircraft's response bandwidth pass unnoticed.
+    const rates = flight.samples.filter((s) => s.t > 2).map((s) => radToDeg(s.state.qRate))
+
+    // Every sample is nose-down. Any positive pitch rate here is the limiter winning
+    // an argument it should not have been having.
+    expect(Math.max(...rates)).toBeLessThan(0)
+    // And it is a sustained push, not a stalled one — before the fix this settled
+    // near -7.8 deg/s.
+    const mean = rates.reduce((a, b) => a + b, 0) / rates.length
+    expect(mean).toBeLessThan(-9)
+  })
+
+  it('reaches its negative load factor limit without blowing through it', () => {
+    // Once the AoA limiter stopped throttling every pushover for the wrong reason,
+    // the g limiter had to hold the negative limit on its own and turned out to
+    // overshoot it: -4.84 g against -4. A push is not opposed by the airframe the
+    // way a pull is, so the negative side needs stronger feedback than the positive.
+    const flight = fly({
+      alt: 10_000,
+      vt: 700,
+      seconds: 12,
+      input: hold({ pitch: -1, throttle: 0.5 }),
+    })
+
+    const worst = Math.min(...flight.samples.map((s) => s.nz))
+
+    expect(worst).toBeGreaterThan(BALANCED.gLimitNegative - 0.6)
+    // And it must actually get there, or the limiter is untested.
+    expect(worst).toBeLessThan(BALANCED.gLimitNegative + 1.5)
+  })
+})
+
 describe('the angle-of-attack floor', () => {
   it('caps a nose-down command approaching the floor', () => {
     // The data envelope has two ends. The first version of this limiter guarded

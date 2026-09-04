@@ -86,8 +86,48 @@ export function step(
   }
 
   renormalizeQuat(out)
+  wrapAlpha(out, opts)
   return out
 }
+
+/**
+ * Bring the integrated angle of attack back into (-180, 180].
+ *
+ * Alpha is a *state* here, integrated from `alphaDot`, rather than recovered from
+ * the body velocity each step. That is the standard wind-axis formulation and it is
+ * correct — but only modulo a full turn, because the quantity it is integrating
+ * toward is `atan2(w, u)`, and that angle has no business leaving (-180, 180].
+ *
+ * Nothing in normal flight notices. A tumble does. Flown with the AoA limiter
+ * switched off, full aft stick pitches the aircraft end over end and alpha simply
+ * accumulates: measured, 1,477 degrees after 25 seconds, still climbing, when the
+ * aircraft's actual incidence was 37. Everything downstream then reads a number
+ * that is wrong by four full turns. The aero tables clamp it to their +45 edge and
+ * compute forces for an aeroplane at 45 degrees alpha that is really at 37; the
+ * clamp never releases, because alpha never comes back down; and the aircraft can
+ * no longer recover from a departure it should merely have found difficult. §5 asks
+ * for departure-prone with the assists off, not unrecoverable by arithmetic.
+ *
+ * Wrapping is exact rather than a guard: it restores the value the formulation was
+ * always integrating toward. It runs only on the clamped path, so the unguarded one
+ * stays bit-exact against the reference implementation for the §4.2.1 Tier A
+ * fidelity vectors.
+ *
+ * Beta is deliberately left alone. It is an `asin`, bounded to +/-90 by
+ * construction, and it does not run away — the same tumble kept it inside 25
+ * degrees. Wrapping it at 180 would be wrong for the quantity it represents.
+ */
+function wrapAlpha(out: number[], opts: DerivativeOptions): void {
+  if (!opts.clampAeroAngles) return
+
+  const alpha = out[Q.ALPHA] as number
+  if (alpha > -Math.PI && alpha <= Math.PI) return
+  if (!Number.isFinite(alpha)) return
+
+  out[Q.ALPHA] = alpha - TWO_PI * Math.ceil((alpha - Math.PI) / TWO_PI)
+}
+
+const TWO_PI = 2 * Math.PI
 
 /**
  * Integration clock. Converts variable wall-clock time into whole fixed ticks.

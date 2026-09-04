@@ -130,6 +130,14 @@ export interface AssistPreset {
  * aft stick means "give me everything" at every speed rather than meaning different
  * things at each one.
  */
+/**
+ * Smoothing time constant for the differenced alpha rate, seconds.
+ *
+ * 40 ms: about five ticks at 120 Hz. Long enough to stop a single noisy difference
+ * moving the limit, short enough that the floor's 0.32 s lead still leads.
+ */
+const ALPHA_RATE_TAU = 0.04
+
 export const BALANCED: AssistPreset = {
   name: 'Balanced',
   gLimit: 11,
@@ -200,6 +208,31 @@ export class AssistLayer {
 
   private telemetry: AssistTelemetry | null = null
 
+  /**
+   * Angle of attack on the previous tick, radians, and its smoothed rate.
+   *
+   * The AoA limiter needs to know where alpha is *going*, and the obvious stand-in
+   * for that is pitch rate. It is wrong, and wrong in exactly the case that matters
+   * most. In steady curving flight — a bunt, a loop, any sustained pull or push —
+   * the aircraft rotates at a constant q and alpha does not move at all, because the
+   * flight path is rotating with it. Leading on q there predicts an alpha excursion
+   * that is never going to happen, and the limiter throttles a command it had no
+   * business touching.
+   *
+   * Measured, holding full forward stick in a steady pushover: alpha sat at -5.2
+   * degrees against a -8 floor, and the limiter engaged anyway, chattering on and off
+   * every few ticks and intermittently commanding nose UP against full forward stick.
+   * That is the pushover feeling unresponsive, and it is not the aircraft — it is the
+   * limiter arguing with the pitch law over a prediction neither of them needed.
+   *
+   * So the lead runs on alpha's own rate, differenced across the tick. Differencing
+   * is noisy at 120 Hz, hence the filter; the time constant is short enough to keep
+   * the anticipation the floor depends on and long enough that a single tick of
+   * numerical grit does not move the limit.
+   */
+  private previousAlpha: number | null = null
+  private alphaRate = 0
+
   constructor(preset: AssistPreset = BALANCED, initialThrottle = 0) {
     this.preset = preset
     this.toggles = { ...ALL_ASSISTS_ON }
@@ -215,6 +248,8 @@ export class AssistLayer {
    */
   seed(state: AircraftState, controls: Controls): void {
     this.throttleAxis.reset(controls.throttle)
+    this.previousAlpha = state.alpha
+    this.alphaRate = 0
     this.pitch.seed(
       controls.elevator,
       state.alpha,
@@ -234,6 +269,14 @@ export class AssistLayer {
   update(state: AircraftState, input: RawInput, dt: number, nz = 1): Controls {
     const gains = scheduledGains(state.vt, state.alt)
     const { phi, theta } = eulerFromQuaternion(state.q)
+
+    // Alpha's rate, for the AoA limiter's lead. See `previousAlpha`.
+    if (this.previousAlpha !== null && dt > 0) {
+      const raw = (state.alpha - this.previousAlpha) / dt
+      const blend = Math.min(1, dt / ALPHA_RATE_TAU)
+      this.alphaRate += (raw - this.alphaRate) * blend
+    }
+    this.previousAlpha = state.alpha
 
     const pitchStick = this.pitchAxis.update(input.pitch, dt)
     const rollStick = this.rollAxis.update(input.roll, dt)
@@ -305,7 +348,7 @@ export class AssistLayer {
         const limited = limitAoA(
           qCmd,
           state.alpha,
-          state.qRate,
+          this.alphaRate,
           state.vt,
           this.preset.aoaCeilingDeg,
         )
