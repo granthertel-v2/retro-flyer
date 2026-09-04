@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+
+# Personal, per-project context — not for the public repo
+CLAUDE.local.md
+handoffs/
+
+# Reference implementation vendored for fixture generation only
+packages/physics/tools/vendor/
+
+.DS_Store
+__pycache__/
