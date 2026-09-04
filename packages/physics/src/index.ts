@@ -90,6 +90,8 @@ export {
   quaternionDerivative,
   quaternionFromEuler,
   renormalizeQuat,
+  rotateBodyToNed,
+  rotateNedToBody,
   toQuatVector,
   toStateVector,
   type AeroAngles,
@@ -109,6 +111,30 @@ export {
   step,
   type LoadsFn,
 } from './integrator.js'
+
+export {
+  DEFAULT_GEAR,
+  GEAR_DOWN,
+  GEAR_UP,
+  LEFT_MAIN,
+  NOSE_GEAR,
+  RIGHT_MAIN,
+  gearLoads,
+  staticCompression,
+  type GearInput,
+  type GearState,
+  type Strut,
+} from './gear.js'
+
+export {
+  FlatGround,
+  NoGround,
+  PAVED,
+  SOFT,
+  WATER,
+  type GroundSample,
+  type GroundSource,
+} from './ground.js'
 
 export { trim, trimControls, type TrimCondition, type TrimResult } from './trim.js'
 

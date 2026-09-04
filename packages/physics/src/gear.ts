@@ -1,0 +1,377 @@
+/**
+ * Landing gear: spring-damper struts, tyre friction, brakes and nosewheel steering.
+ *
+ * REQUIREMENTS §3 asks for exactly this and labels the whole of it `[A]`. Nothing
+ * here is traceable to the F-16 dataset — that dataset is aerodynamic coefficients,
+ * and a gear model is not in it. So every constant below is a design choice with its
+ * reasoning written next to it, and the tests assert the *consequences* (static
+ * compression, weight split, stopping distance) rather than the constants, because
+ * the consequences are the part anyone can argue with.
+ *
+ * ## How this reaches the flight model
+ *
+ * Not by modifying it. `dynamics.ts` exposes `ExternalLoads` — a body-axis force and
+ * moment that defaults to zero and is exactly inert when it is zero. This file
+ * computes that struct and the integrator applies it, once per RK4 stage, because a
+ * strut's compression is a function of where the aircraft is and holding it constant
+ * across a tick would reintroduce the first-order error RK4 exists to remove.
+ *
+ * The flight model does not know landing gear exists.
+ *
+ * ## Why this needs body-axis velocity
+ *
+ * See the note in `state.ts`. Every force here is a body-normal acceleration applied
+ * at low airspeed, which is precisely the product the wind-axis formulation
+ * multiplied by 1/vt.
+ */
+
+import { NO_EXTERNAL_LOADS, type ExternalLoads } from './dynamics.js'
+import { Q, rotateBodyToNed, rotateNedToBody, type Quaternion } from './state.js'
+import { REFERENCE_WEIGHT_LB } from './massProperties.js'
+import { clamp } from './envelope.js'
+import type { GroundSource } from './ground.js'
+
+/**
+ * One strut.
+ *
+ * Contact point is given at full extension, in body axes from the CG: x forward,
+ * y right, z down. So `z` is positive and is how far the wheel hangs below the CG.
+ */
+export interface Strut {
+  name: string
+  x: number
+  y: number
+  z: number
+  /** Spring rate, lb/ft. */
+  k: number
+  /** Damping, lb-s/ft. */
+  c: number
+  /** Usable stroke before the strut bottoms out, ft. */
+  stroke: number
+  /** Whether this wheel has a brake. Mains do; the nosewheel does not. */
+  braked: boolean
+  /** Full steering deflection, radians. Zero for the mains. */
+  steerMax: number
+}
+
+/**
+ * Gear geometry. `[A]` throughout.
+ *
+ * The longitudinal split is the load-bearing choice: the mains sit 2 ft behind the
+ * CG and the nose 14 ft ahead of it, so the mains carry 14/16 of the weight and the
+ * nose 1/8. A nosewheel aircraft has to be arranged that way round — mains behind
+ * the CG or it sits on its tail — and 12.5% on the nose is the usual sort of
+ * fraction. Track is +/-4 ft and the wheels hang 7 ft below the CG, both scaled off
+ * the 30 ft span and a fuselage of about 49 ft rather than measured from anything.
+ *
+ * Rates are chosen from the static condition rather than picked. At 20,500 lb the
+ * mains carry 8,969 lb each, so 26,000 lb/ft compresses them 0.35 ft — 29% of a
+ * 1.2 ft stroke, which leaves most of the travel for the landing rather than the
+ * parking. Damping is 0.6 of critical for the sprung mass each strut carries
+ * (278.7 slug on a main gives 5,385 lb-s/ft critical, so 3,200), which settles a
+ * touchdown in about one oscillation without making the strut feel like a rod.
+ *
+ * The resulting undamped natural frequency is 1.54 Hz, which at a 120 Hz tick is
+ * 78 samples per cycle. Nothing here is numerically stiff.
+ */
+export const NOSE_GEAR: Strut = {
+  name: 'nose',
+  x: 14,
+  y: 0,
+  z: 7,
+  k: 8_500,
+  c: 1_000,
+  stroke: 1.0,
+  braked: false,
+  // 30 degrees. Enough to turn off a runway without being able to spin the aircraft
+  // on the spot, which is what larger authority does at low speed.
+  steerMax: (30 * Math.PI) / 180,
+}
+
+export const LEFT_MAIN: Strut = {
+  name: 'left main',
+  x: -2,
+  y: -4,
+  z: 7,
+  k: 26_000,
+  c: 3_200,
+  stroke: 1.2,
+  braked: true,
+  steerMax: 0,
+}
+
+export const RIGHT_MAIN: Strut = { ...LEFT_MAIN, name: 'right main', y: 4 }
+
+export const DEFAULT_GEAR: readonly Strut[] = [NOSE_GEAR, LEFT_MAIN, RIGHT_MAIN]
+
+/**
+ * Stiffness once a strut is out of stroke, as a multiple of its spring rate. `[A]`
+ *
+ * A bottomed strut is metal on metal. Ten times is firm enough that the aircraft
+ * stops rather than sinking through the runway, and soft enough that a hard arrival
+ * does not fire a force so large the integrator cannot follow it. It is a
+ * deliberately blunt model of a genuinely violent event.
+ */
+const BOTTOMING_RATIO = 10
+
+/**
+ * Slip speed at which tyre friction reaches its full value, ft/s. `[A]`
+ *
+ * Below this, friction is proportional to slip velocity instead of jumping to full
+ * Coulomb force. That ramp is not a fudge: `sign(v)` at v = 0 is a discontinuity a
+ * fixed-step integrator answers by chattering between +mu and -mu every tick, which
+ * shows up as a parked aircraft buzzing. Making friction linear through zero is the
+ * standard fix and it also gives the aircraft something to stand still against.
+ *
+ * One ft/s is slow enough to be invisible — a rolling aircraft is always well past
+ * it — and fast enough that the ramp is many ticks wide at 120 Hz.
+ */
+const SLIP_REFERENCE_FPS = 1.0
+
+/**
+ * Slip speed over which static friction decays to dynamic, ft/s. `[A]`
+ *
+ * REQUIREMENTS §3 asks for static and dynamic friction as separate things. They are
+ * separated here by a Stribeck exponential rather than a mode switch: a wheel that
+ * is barely moving grips harder than one that is sliding, and the transition is
+ * continuous. A mode switch on `|v| < epsilon` is the other way to write this and it
+ * puts a discontinuity exactly where the aircraft spends its whole parked life.
+ */
+const STRIBECK_FPS = 2.0
+
+/**
+ * How much more grip a stationary tyre has than a sliding one. `[A]`
+ *
+ * Rubber on dry concrete is usually quoted a little higher static than dynamic. 15%
+ * is at the modest end, and it is enough to produce the one behaviour that matters:
+ * breaking away takes more force than staying broken away.
+ */
+const STATIC_FRICTION_BONUS = 1.15
+
+/** Brake and steering commands. The assist layer decides what fills these. */
+export interface GearInput {
+  /** Wheel brakes, 0 to 1. Mains only. */
+  brake: number
+  /** Nosewheel steering, -1 full left to +1 full right. */
+  steer: number
+  /** Gear down and locked. Retracted gear touches nothing. */
+  down: boolean
+}
+
+export const GEAR_UP: GearInput = { brake: 0, steer: 0, down: false }
+export const GEAR_DOWN: GearInput = { brake: 0, steer: 0, down: true }
+
+export interface GearState {
+  /** Body-axis force and moment for `ExternalLoads`. */
+  loads: ExternalLoads
+  /** Any strut touching solid ground. */
+  onGround: boolean
+  /** Compression of each strut, ft, in `struts` order. Zero when not in contact. */
+  compression: number[]
+  /** Normal force on each strut, lb. */
+  normal: number[]
+  /** True if any strut is past the end of its stroke. */
+  bottomed: boolean
+  /** Total vertical force the gear is carrying, lb. */
+  totalNormal: number
+}
+
+const AIRBORNE: GearState = {
+  loads: NO_EXTERNAL_LOADS,
+  onGround: false,
+  compression: [0, 0, 0],
+  normal: [0, 0, 0],
+  bottomed: false,
+  totalNormal: 0,
+}
+
+/**
+ * Ground reaction for the current state.
+ *
+ * Pure: it reads the state and the world and returns a force. It holds nothing
+ * between calls, which is what lets the integrator call it four times per tick at
+ * four different states without any of them contaminating the others.
+ */
+export function gearLoads(
+  v: readonly number[],
+  ground: GroundSource,
+  input: GearInput = GEAR_DOWN,
+  struts: readonly Strut[] = DEFAULT_GEAR,
+): GearState {
+  if (!input.down) return AIRBORNE
+
+  const q: Quaternion = [
+    v[Q.QW] as number,
+    v[Q.QX] as number,
+    v[Q.QY] as number,
+    v[Q.QZ] as number,
+  ]
+  const vb: [number, number, number] = [v[Q.U] as number, v[Q.V] as number, v[Q.W] as number]
+  const p = v[Q.P] as number
+  const qRate = v[Q.Q_RATE] as number
+  const r = v[Q.R] as number
+  const alt = v[Q.ALT] as number
+  const pn = v[Q.PN] as number
+  const pe = v[Q.PE] as number
+
+  // Where the nose is pointing, flattened into the horizontal plane. Wheels roll
+  // along the ground, not along the longitudinal axis — at 12 degrees nose-up on
+  // rotation those are noticeably different directions.
+  const fwd = rotateBodyToNed(q, [1, 0, 0])
+  const heading = Math.atan2(fwd[1], fwd[0])
+
+  let fx = 0
+  let fy = 0
+  let fz = 0
+  let l = 0
+  let m = 0
+  let n = 0
+  let onGround = false
+  let bottomed = false
+  let totalNormal = 0
+
+  const compression: number[] = []
+  const normal: number[] = []
+
+  for (const s of struts) {
+    const rBody: [number, number, number] = [s.x, s.y, s.z]
+    const rNed = rotateBodyToNed(q, rBody)
+
+    // rNed[2] is the DOWN component, so the contact point sits that far below the CG.
+    const contactAlt = alt - rNed[2]
+    const g = ground.sample(pn + rNed[0], pe + rNed[1])
+
+    if (!g.solid) {
+      compression.push(0)
+      normal.push(0)
+      continue
+    }
+
+    const squash = g.elevation - contactAlt
+    if (squash <= 0) {
+      compression.push(0)
+      normal.push(0)
+      continue
+    }
+
+    // Velocity of this contact point: the CG's velocity plus the rotation about it.
+    // The cross-product term is what makes a wing-down landing put the load on one
+    // main, and what lets the mains resist a yaw rate.
+    const vcBody: [number, number, number] = [
+      vb[0] + (qRate * s.z - r * s.y),
+      vb[1] + (r * s.x - p * s.z),
+      vb[2] + (p * s.y - qRate * s.x),
+    ]
+    const vcNed = rotateBodyToNed(q, vcBody)
+
+    // Closing speed on the ground. Down is positive, so descending compresses.
+    const squashRate = vcNed[2]
+
+    // Spring: linear through the stroke, then very stiff.
+    const withinStroke = Math.min(squash, s.stroke)
+    const overStroke = Math.max(0, squash - s.stroke)
+    if (overStroke > 0) bottomed = true
+
+    const spring = s.k * withinStroke + s.k * BOTTOMING_RATIO * overStroke
+    const N = spring + s.c * squashRate
+
+    // A strut pushes; it never pulls. On the rebound the damper term goes strongly
+    // negative — a main leaving the ground at 50 ft/s computes -151,000 lb — and
+    // left alone that would suck the aircraft back onto a runway it is trying to
+    // leave. This is the only guard: do not add a second `max(0, ...)` above, which
+    // would make this branch unreachable and untestable.
+    if (N <= 0) {
+      compression.push(squash)
+      normal.push(0)
+      continue
+    }
+
+    onGround = true
+    totalNormal += N
+
+    // --- Friction ---------------------------------------------------------
+    // The wheel rolls along its own heading, which for the nosewheel is steered.
+    const steer = s.steerMax * clamp(input.steer, -1, 1)
+    const wheel = heading + steer
+    const cw = Math.cos(wheel)
+    const sw = Math.sin(wheel)
+
+    // Ground-relative velocity of the contact patch, split into roll and side.
+    const vRoll = vcNed[0] * cw + vcNed[1] * sw
+    const vSide = -vcNed[0] * sw + vcNed[1] * cw
+
+    const mu = (slip: number, peak: number): number => {
+      const speed = Math.abs(slip)
+      // Static grip decays to dynamic as the tyre starts to slide.
+      const stribeck = 1 + (STATIC_FRICTION_BONUS - 1) * Math.exp(-speed / STRIBECK_FPS)
+      // ...and the whole thing ramps linearly through zero so a parked aircraft has
+      // something to stand against rather than a sign flip to chatter on.
+      return peak * stribeck * clamp(slip / SLIP_REFERENCE_FPS, -1, 1)
+    }
+
+    const brakeMu = s.braked ? clamp(input.brake, 0, 1) * g.friction : 0
+    const rollForce = -N * mu(vRoll, g.rollingResistance + brakeMu)
+    const sideForce = -N * mu(vSide, g.friction)
+
+    // Assemble in NED: normal is up (negative down), friction is horizontal.
+    const fNed: [number, number, number] = [
+      rollForce * cw - sideForce * sw,
+      rollForce * sw + sideForce * cw,
+      -N,
+    ]
+
+    const fBody = rotateNedToBody(q, fNed)
+
+    fx += fBody[0]
+    fy += fBody[1]
+    fz += fBody[2]
+
+    // Moment about the CG, r x F.
+    l += s.y * fBody[2] - s.z * fBody[1]
+    m += s.z * fBody[0] - s.x * fBody[2]
+    n += s.x * fBody[1] - s.y * fBody[0]
+
+    compression.push(squash)
+    normal.push(N)
+  }
+
+  return {
+    loads: { fx, fy, fz, l, m, n },
+    onGround,
+    compression,
+    normal,
+    bottomed,
+    totalNormal,
+  }
+}
+
+/**
+ * Static compression of each strut at rest, ft.
+ *
+ * Not used by the simulation — it is what a test asserts against and what a runway
+ * spawn uses to place the aircraft on its gear rather than dropping it there.
+ */
+export function staticCompression(
+  struts: readonly Strut[] = DEFAULT_GEAR,
+  weight = REFERENCE_WEIGHT_LB,
+): number[] {
+  // Longitudinal balance about the CG: each strut's share is proportional to the
+  // opposite arm. With the nose 14 ft ahead and the mains 2 ft behind, the mains
+  // take 14/16 and the nose 2/16.
+  const nose = struts.filter((s) => s.x > 0)
+  const main = struts.filter((s) => s.x <= 0)
+
+  const noseArm = nose.length > 0 ? Math.abs(nose[0]!.x) : 0
+  const mainArm = main.length > 0 ? Math.abs(main[0]!.x) : 0
+  const base = noseArm + mainArm
+
+  return struts.map((s) => {
+    const share =
+      base === 0
+        ? 1 / struts.length
+        : s.x > 0
+          ? mainArm / base / Math.max(1, nose.length)
+          : noseArm / base / Math.max(1, main.length)
+    return (share * weight) / s.k
+  })
+}

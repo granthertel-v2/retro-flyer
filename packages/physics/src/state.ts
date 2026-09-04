@@ -147,6 +147,40 @@ export function eulerFromQuaternion(q: Quaternion): EulerAngles {
 }
 
 /**
+ * Rotate a vector from body axes into NED.
+ *
+ * `v_ned = q * v_body * q^-1`, in the standard three-cross-product form rather than
+ * by building a matrix — one vector at a time is all the gear model ever needs, and
+ * this avoids nine multiplications and a temporary.
+ */
+export function rotateBodyToNed(
+  q: Quaternion,
+  v: readonly [number, number, number],
+): [number, number, number] {
+  const [w, x, y, z] = q
+  const [a, b, c] = v
+
+  // t = 2 * (qv x v)
+  const tx = 2 * (y * c - z * b)
+  const ty = 2 * (z * a - x * c)
+  const tz = 2 * (x * b - y * a)
+
+  return [
+    a + w * tx + (y * tz - z * ty),
+    b + w * ty + (z * tx - x * tz),
+    c + w * tz + (x * ty - y * tx),
+  ]
+}
+
+/** Rotate a vector from NED into body axes — the conjugate rotation. */
+export function rotateNedToBody(
+  q: Quaternion,
+  v: readonly [number, number, number],
+): [number, number, number] {
+  return rotateBodyToNed([q[0], -q[1], -q[2], -q[3]], v)
+}
+
+/**
  * Quaternion rate from body angular rates.
  *
  * `q_dot = 0.5 * q * omega`, with omega the pure quaternion `[0, p, q, r]`. No
