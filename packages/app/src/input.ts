@@ -33,6 +33,8 @@ export interface InputCommands {
   saveSituation: boolean
   loadSituation: boolean
   resetCourse: boolean
+  /** Parking brake on/off. */
+  toggleParkingBrake: boolean
 }
 
 const NO_COMMANDS: InputCommands = {
@@ -50,6 +52,7 @@ const NO_COMMANDS: InputCommands = {
   saveSituation: false,
   loadSituation: false,
   resetCourse: false,
+  toggleParkingBrake: false,
 }
 
 /** Keys that mean something, so the browser's own bindings can be suppressed. */
@@ -59,7 +62,7 @@ const CLAIMED = new Set([
   'KeyQ', 'KeyE',
   'ShiftLeft', 'ShiftRight', 'ControlLeft', 'ControlRight',
   'KeyC', 'KeyI', 'KeyP', 'KeyR', 'KeyB', 'KeyZ', 'KeyX',
-  'KeyG', 'KeyV', 'KeyT', 'KeyN', 'Space', 'F5', 'F9',
+  'KeyG', 'KeyV', 'KeyT', 'KeyN', 'KeyK', 'Space', 'F5', 'F9',
   'Digit0', 'Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit9',
 ])
 
@@ -100,6 +103,7 @@ export class InputReader {
       case 'KeyV': this.pending.toggleSlew = true; break
       case 'KeyT': this.pending.nextField = true; break
       case 'KeyN': this.pending.resetCourse = true; break
+      case 'KeyK': this.pending.toggleParkingBrake = true; break
       case 'F5': this.pending.saveSituation = true; break
       case 'F9': this.pending.loadSituation = true; break
       case 'Digit0': this.pending.allAssistsOff = true; break

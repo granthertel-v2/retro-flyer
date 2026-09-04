@@ -35,10 +35,33 @@ import { SPAWN, runwayStart } from './spawn.js'
 import { buildCourse } from './course.js'
 import { buildGates } from './terrain/gates.js'
 import { captureSituation, parseSituation, applySlew, speedOf } from './situation.js'
-import { mToFt } from '@retro-flyer/physics'
+import { fpsToKt, mToFt, referenceSpeed } from '@retro-flyer/physics'
 import { buildCity, buildRunways } from './terrain/city.js'
 import { TerrainMesh } from './terrain/mesh.js'
 import { Scatter } from './terrain/scatter.js'
+
+/**
+ * Field elevation for the speed cue, ft.
+ *
+ * The nearest airfield's, not the terrain directly underneath: on an approach across
+ * the bay the ground below is at sea level or under it, and a rotation speed
+ * computed there would be for the wrong altitude. The field you are going to is the
+ * one whose air you will be landing in.
+ */
+function nearestFieldElevationFt(x: number, z: number): number {
+  let best = authoredMap.airfields[0]
+  let bestDistance = Infinity
+
+  for (const field of authoredMap.airfields) {
+    const d = Math.hypot(field.x - x, field.z - z)
+    if (d < bestDistance) {
+      bestDistance = d
+      best = field
+    }
+  }
+
+  return best ? mToFt(best.elevation) : 0
+}
 
 /** How far you can see, metres. The outer LOD ring goes further; fog hides its edge. */
 const VIEW_DISTANCE = 34_000
@@ -141,6 +164,7 @@ function main(): void {
   // the wheels hanging out is not a small thing to get wrong: it is the first thing
   // anyone sees, and it says the aircraft has just taken off when it has not.
   let gearDown = SPAWN.onGround === true
+  let parkingBrake = false
   let wasSlewing = false
   let saveNote = ''
   let saveNoteUntil = 0
@@ -186,12 +210,14 @@ function main(): void {
       chase.reset()
     }
     if (commands.resetCourse) course.reset()
+    if (commands.toggleParkingBrake) parkingBrake = !parkingBrake
 
     // --- Day 3 -----------------------------------------------------------
     if (commands.toggleGear) gearDown = !gearDown
     if (commands.toggleSlew) slewing = !slewing
 
     if (commands.nextField) {
+      parkingBrake = false
       // Cycle the airfields, starting on the runway at each. This is how a takeoff
       // gets flown without first flying to the field.
       fieldIndex = (fieldIndex + 1) % authoredMap.airfields.length
@@ -249,7 +275,10 @@ function main(): void {
     // so it does not belong on the §8.1 seam; steering reuses the conditioned rudder
     // command so the nosewheel gets the same smoothing the pedals do.
     simulation.gearInput = {
-      brake: input.brakes(),
+      // A held key is a poor way to park an aeroplane that taxis on its own at idle,
+      // which this one does — 1,041 lb of idle thrust against 410 lb of rolling
+      // resistance. The parking brake is the fix; the held key stays for the rollout.
+      brake: Math.max(input.brakes(), parkingBrake ? 1 : 0),
       steer: simulation.steerCommand,
       down: gearDown,
     }
@@ -328,6 +357,11 @@ function main(): void {
         onGround: simulation.onGround,
         gearDown,
         brakes: input.brakes() > 0,
+        parkingBrake,
+        // Derived from the aero tables at the nearest field's elevation, so it
+        // follows weight and altitude rather than being a constant that goes quietly
+        // wrong. See `speeds.ts`.
+        referenceKt: fpsToKt(referenceSpeed(nearestFieldElevationFt(state.position[0], state.position[2]))),
         bottomed: simulation.gear.bottomed,
         slewing,
         course: courseProgress,

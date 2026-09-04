@@ -128,6 +128,28 @@ describe('a parked aircraft', () => {
     expect(speedOf(after)).toBeLessThan(0.5)
   })
 
+  it('holds against military power but not against afterburner', () => {
+    // Both halves matter, and a flight test asked about both. The brakes are not
+    // weak: full braking stops the aircraft in 688 m from 150 kt, and they hold it
+    // still through most of the throttle range. But 11,700 lb of braking cannot
+    // hold 24,000 lb of afterburner, and it should not — a real F-16 cannot run up
+    // to full power against its brakes either, which is why a brake release is a
+    // manoeuvre and not a formality.
+    const distanceAt = (throttle: number): number => {
+      const before = parked()
+      const after = roll(before, { throttle, elevator: 0, aileron: 0, rudder: 0 }, 25, HELD)
+      return Math.hypot(
+        (after[Q.PN] as number) - (before[Q.PN] as number),
+        (after[Q.PE] as number) - (before[Q.PE] as number),
+      ) * 0.3048
+    }
+
+    // Measured: 0.6 m at idle, 7 m at 60%, 483 m at 80%.
+    expect(distanceAt(0), 'crept at idle on the brakes').toBeLessThan(3)
+    expect(distanceAt(0.5), 'crept at half power on the brakes').toBeLessThan(20)
+    expect(distanceAt(1), 'brakes held full afterburner').toBeGreaterThan(100)
+  })
+
   it('rolls forward at idle with the brakes off, because a jet at idle makes thrust', () => {
     // Not a defect, and worth pinning so nobody "fixes" it. The engine table gives
     // 1,041 lb at idle at sea level against 410 lb of rolling resistance, so the

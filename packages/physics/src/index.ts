@@ -138,6 +138,17 @@ export {
   type GroundSource,
 } from './ground.js'
 
+export {
+  ROTATION_ALPHA_DEG,
+  ROTATION_MARGIN,
+  approachSpeed,
+  liftCoefficient,
+  referenceSpeed,
+  rotationSpeed,
+  speedForLevelLift,
+  stallSpeed,
+} from './speeds.js'
+
 export { trim, trimControls, type TrimCondition, type TrimResult } from './trim.js'
 
 export {

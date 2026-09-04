@@ -14,17 +14,77 @@ import type { RenderState } from './seam.js'
 import type { CameraMode } from './camera/chase.js'
 import type { CourseProgress, Waypoint } from './course.js'
 
+/**
+ * The speed cue, decided separately from how it is drawn.
+ *
+ * A pure function so it can be tested — the class around it touches `document` and
+ * cannot be. It exists because a flight test flew the aircraft into a runway at 250
+ * kt: the overlay showed IAS the whole way down, and a bare number does not tell you
+ * whether it is the right one.
+ */
+export type SpeedCue =
+  | { kind: 'none' }
+  | { kind: 'rotate'; targetKt: number; ready: boolean }
+  | { kind: 'approach'; targetKt: number; deltaKt: number }
+
+export function speedCue(o: {
+  kt: number
+  targetKt: number
+  onGround: boolean
+  gearDown: boolean
+}): SpeedCue {
+  // Gear up is neither a takeoff nor a landing, and a cue that is always on is
+  // wallpaper.
+  if (!o.gearDown) return { kind: 'none' }
+
+  if (o.onGround) {
+    return { kind: 'rotate', targetKt: o.targetKt, ready: o.kt >= o.targetKt }
+  }
+
+  return { kind: 'approach', targetKt: o.targetKt, deltaKt: o.kt - o.targetKt }
+}
+
 /** Day 3 state the readout needs and the render state does not carry. */
 export interface GroundStatus {
   onGround: boolean
   gearDown: boolean
   brakes: boolean
+  parkingBrake: boolean
+  /** Speed the aircraft rotates and approaches at, knots. */
+  referenceKt: number
   bottomed: boolean
   slewing: boolean
   course: CourseProgress
   waypoints: readonly Waypoint[]
   /** A transient message — SAVED, RESTORED, NO SAVE. */
   note: string
+}
+
+/**
+ * The cue as one line of text.
+ *
+ * Deliberately loud when it matters. On the roll it is a target that lights up when
+ * reached; on final it is how far off you are, because "+82" is a much more useful
+ * thing to read at 250 kt than "250".
+ */
+function speedCueText(cue: SpeedCue): string {
+  if (cue.kind === 'none') return ''
+
+  if (cue.kind === 'rotate') {
+    return cue.ready
+      ? `<b>&#9650; ROTATE &#9650;</b>`
+      : `<span style="opacity:.6">ROTATE AT ${cue.targetKt.toFixed(0)} KT</span>`
+  }
+
+  const delta = cue.deltaKt
+  const sign = delta >= 0 ? '+' : '&minus;'
+  const magnitude = Math.abs(delta).toFixed(0)
+  // Comfortably fast is worth a shout: above about 30 kt over, this aircraft floats
+  // rather than lands, and above 80 it will not come down at all.
+  const hot = delta > 30
+  return hot
+    ? `<b>APPROACH ${cue.targetKt.toFixed(0)} KT &nbsp; ${sign}${magnitude} FAST</b>`
+    : `<span style="opacity:.75">APPROACH ${cue.targetKt.toFixed(0)} KT &nbsp; ${sign}${magnitude}</span>`
 }
 
 const clock = (seconds: number): string => {
@@ -126,7 +186,15 @@ export class Overlay {
       // they are carrying anything is most of what a takeoff or a landing is about.
       `GEAR ${ground.gearDown ? 'DN' : 'UP'}${ground.onGround ? ' &middot; WOW' : ''}${
         ground.brakes ? ' &middot; BRK' : ''
-      }`,
+      }${ground.parkingBrake ? ' &middot; <b>PARK</b>' : ''}`,
+      speedCueText(
+        speedCue({
+          kt: state.kt,
+          targetKt: ground.referenceKt,
+          onGround: ground.onGround,
+          gearDown: ground.gearDown,
+        }),
+      ),
       ground.note ? `<b>${ground.note}</b>` : '',
     ]
       .filter(Boolean)
@@ -176,7 +244,7 @@ export class Overlay {
       '<span style="opacity:.55">Q / E &nbsp;rudder &middot; I &nbsp;invert pitch</span>',
       '<span style="opacity:.55">C cam &middot; B preset &middot; P pause &middot; R reset</span>',
       '<span style="opacity:.55">1-6 assists &middot; 0 none &middot; 9 all</span>',
-      '<span style="opacity:.55">space brakes &middot; G gear &middot; T next field</span>',
+      '<span style="opacity:.55">space brakes &middot; K park &middot; G gear &middot; T next field</span>',
       '<span style="opacity:.55">V slew &middot; F5 save &middot; F9 load &middot; N course</span>',
     ].join('<br>')
   }
