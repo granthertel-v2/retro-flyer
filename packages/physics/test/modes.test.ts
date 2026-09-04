@@ -183,12 +183,45 @@ describe('dutch roll (§4.2 test 4)', () => {
     // Damping ratio around 0.09-0.16. Low enough to be noticeable as a wallow,
     // which is a real handling characteristic of this class of aircraft and part of
     // why REQUIREMENTS §5 wants an auto-coordination assist.
+    //
+    // The lower bound was 0.02 until the break-check (REQUIREMENTS §4.3) showed that
+    // zeroing the yaw damping derivatives roughly HALVES this ratio and the test
+    // still passed. A band loose enough to accept a model with no yaw damping is not
+    // testing yaw damping. Tightened to the physically justified range for this
+    // class of aircraft.
     for (const [alt, vt] of conditions) {
       const { lat } = analyze(alt, vt)
       const zeta = lat.dutchRoll?.zeta as number
 
-      expect(zeta, `${alt} ft / ${vt} ft/s`).toBeGreaterThan(0.02)
+      expect(zeta, `${alt} ft / ${vt} ft/s`).toBeGreaterThan(0.08)
       expect(zeta, `${alt} ft / ${vt} ft/s`).toBeLessThan(0.4)
+    }
+  })
+
+  it('has the damping the converged model produces, within §4.2 tolerance', () => {
+    // Regression pins, and labelled as such rather than dressed up as validation.
+    // No published modal values for this model were available, so these come from
+    // our own converged model at the point the suite was first trusted (after the
+    // break-check passed). They cannot prove the model is right — the band checks
+    // above and the CG-sweep tests do that work. What they add is SENSITIVITY: any
+    // change shifting a damping ratio by more than the 10% REQUIREMENTS §4.2 allows
+    // has to be a deliberate, visible act.
+    const expected: Array<[number, number, number, number]> = [
+      //  alt,    vt,   zeta,     wn
+      [0, 500, 0.1371, 3.084],
+      [10000, 500, 0.1237, 2.765],
+      [20000, 600, 0.1063, 2.806],
+      [30000, 700, 0.0911, 2.769],
+      [10000, 300, 0.1585, 2.248],
+      [10000, 900, 0.1121, 4.505],
+    ]
+
+    for (const [alt, vt, zeta, wn] of expected) {
+      const { lat } = analyze(alt, vt)
+      const at = `${alt} ft / ${vt} ft/s`
+
+      expect(Math.abs((lat.dutchRoll?.zeta as number) - zeta) / zeta, `zeta at ${at}`).toBeLessThan(0.1)
+      expect(Math.abs((lat.dutchRoll?.wn as number) - wn) / wn, `wn at ${at}`).toBeLessThan(0.1)
     }
   })
 

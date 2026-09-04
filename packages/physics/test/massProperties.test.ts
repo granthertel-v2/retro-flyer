@@ -13,6 +13,8 @@ import { describe, expect, it } from 'vitest'
 import {
   EMPTY_WEIGHT_LB,
   MEAN_CHORD,
+  WING_AREA,
+  WING_SPAN,
   PUBLISHED_MOMENT_CONSTANTS,
   REFERENCE_FUEL_LB,
   REFERENCE_IXX,
@@ -29,6 +31,39 @@ import { G_FT_S2 } from '../src/units.js'
 
 const relativeError = (actual: number, expected: number): number =>
   Math.abs(actual - expected) / Math.abs(expected)
+
+describe('sourced constants match the published values literally', () => {
+  // These assert against LITERALS, not against the constants themselves.
+  //
+  // The break-check (REQUIREMENTS §4.3) found this hole: every other test here
+  // compares `mp.xcg` to `XCG_REF`, so changing XCG_REF changes both sides and the
+  // test passes regardless. A tautology that reports clean forever is exactly what
+  // §4.3 warns about. These are the values traced to [NASA-TM] Table 1 and p.29,
+  // written out so that editing a constant has to be a deliberate act.
+  it('CG reference is 0.35 c-bar', () => {
+    expect(XCG_REF).toBe(0.35)
+  })
+
+  it('mass properties match NASA/TM-2003-212145 Table 1', () => {
+    expect(REFERENCE_WEIGHT_LB).toBe(20500)
+    expect(REFERENCE_IXX).toBe(9496)
+    expect(REFERENCE_IYY).toBe(55814)
+    expect(REFERENCE_IZZ).toBe(63100)
+    expect(REFERENCE_IXZ).toBe(982)
+  })
+
+  it('geometry matches the reference implementation', () => {
+    expect(WING_AREA).toBe(300)
+    expect(WING_SPAN).toBe(30)
+    expect(MEAN_CHORD).toBe(11.32)
+  })
+
+  it('the default loadout puts the CG at the aero reference station', () => {
+    // Also a literal. If the CG reference moved, the aerodynamic coefficients would
+    // need a correction term that the default configuration currently gets for free.
+    expect(computeMassProperties().xcg).toBeCloseTo(0.35, 12)
+  })
+})
 
 describe('reference configuration', () => {
   it('reproduces the published weight and CG', () => {
