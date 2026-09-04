@@ -21,6 +21,7 @@ import {
 } from 'three'
 import { PRESETS } from '@retro-flyer/control'
 import { buildAircraft } from './aircraft.js'
+import { Afterburner } from './afterburner.js'
 import { CAMERA_MODES, ChaseCamera, type CameraMode } from './camera/chase.js'
 import { FovController } from './camera/fov.js'
 import { InputReader } from './input.js'
@@ -98,6 +99,9 @@ function main(): void {
   scene.add(clouds.mesh)
 
   const aircraft = buildAircraft()
+  // Parented to the aeroplane, so it inherits attitude and needs no frame work.
+  const burner = new Afterburner()
+  aircraft.add(burner.object)
   scene.add(aircraft)
 
   const simulation = new Simulation(SPAWN)
@@ -181,6 +185,8 @@ function main(): void {
     positionSun(sun, camera.position)
     camera.fov = fov.update(state.kt, simulation.ax, simulation.sustain, dt)
     camera.updateProjectionMatrix()
+
+    burner.update(state.power, dt)
 
     // In the cockpit the aircraft is the thing you are inside of.
     aircraft.visible = mode !== 'cockpit'
