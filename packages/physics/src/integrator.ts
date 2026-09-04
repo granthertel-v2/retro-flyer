@@ -101,6 +101,19 @@ export class FixedStepClock {
   /** Total physics ticks run since construction. */
   public ticks = 0
 
+  /**
+   * State as it was *before* the most recent tick.
+   *
+   * This is what the renderer interpolates from, together with the returned state
+   * and `alpha` (REQUIREMENTS §8.3). It has to be the previous **tick**, not the
+   * state at the start of the frame: at 60 fps a frame runs two ticks, so
+   * interpolating from the frame's starting state blends across 16 ms of motion
+   * with a fraction that only describes the last 8 — and the aircraft visibly
+   * shivers, worst at high speed and low altitude where there is most to compare it
+   * against.
+   */
+  public previous: number[] = []
+
   constructor(
     public readonly dt: number = PHYSICS_DT,
     public readonly maxCatchup: number = MAX_CATCHUP_SECONDS,
@@ -110,21 +123,29 @@ export class FixedStepClock {
    * Advance the state by however many whole ticks `elapsed` allows.
    *
    * @param v        Current quaternion state vector
-   * @param controls Called once per tick — so an assist layer can respond at the
-   *                 physics rate rather than the frame rate
+   * @param controls Called once per tick, with the tick number and the state that
+   *                 tick is starting from — so an assist layer can respond at the
+   *                 physics rate rather than the frame rate. Passing the state is
+   *                 what makes that actually possible: without it a caller can only
+   *                 see the state from the start of the frame, so every tick within
+   *                 a frame is computed from identical inputs and the control law
+   *                 is effectively running at the frame rate after all.
    * @param elapsed  Wall-clock seconds since the last call
    */
   advance(
     v: readonly number[],
-    controls: (tick: number) => Controls,
+    controls: (tick: number, state: readonly number[]) => Controls,
     elapsed: number,
     mass: MassProperties = computeMassProperties(),
   ): number[] {
     this.accumulator += Math.min(elapsed, this.maxCatchup)
 
     let state = v as number[]
+    this.previous = state
+
     while (this.accumulator >= this.dt) {
-      state = step(state, controls(this.ticks), this.dt, mass)
+      this.previous = state
+      state = step(state, controls(this.ticks, state), this.dt, mass)
       this.accumulator -= this.dt
       this.ticks++
     }
@@ -146,6 +167,7 @@ export class FixedStepClock {
   reset(): void {
     this.accumulator = 0
     this.ticks = 0
+    this.previous = []
   }
 }
 

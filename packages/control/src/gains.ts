@@ -65,12 +65,12 @@ import { ackermann, eigenvaluesOf, secondOrderRoots, type Vector } from './linal
 export const PITCH_ZETA = 0.7
 
 /** Target short-period frequency at `PITCH_WN_QBAR_REF`, rad/s. */
-export const PITCH_WN_REF = 3.0
+export const PITCH_WN_REF = 4.0
 /** Dynamic pressure at which `PITCH_WN_REF` applies, lb/ft^2 — mid-envelope. */
 export const PITCH_WN_QBAR_REF = 300
 /** Bounds on the scheduled frequency. Below the first it is mush; above it, twitchy. */
 export const PITCH_WN_MIN = 1.6
-export const PITCH_WN_MAX = 4.0
+export const PITCH_WN_MAX = 5.2
 
 /** Target short-period frequency at a given dynamic pressure, rad/s. */
 export function pitchWn(qbar: number): number {
@@ -103,8 +103,13 @@ export const ROLL_TAU = 0.25
  * mode's frequency costs a large gain of whichever sign fights the airframe hardest,
  * and nobody has ever complained that a dutch roll was at the wrong frequency. They
  * complain that it is there at all, which is a damping problem.
+ *
+ * Raised from 0.75 to kill the sideslip transient at roll-out. Peak beta in a roll
+ * turns out not to happen during the roll — the feedforward handles that — but when
+ * the stick centres and the yaw rate built up during the roll has to be got rid of.
+ * That is a damping problem too.
  */
-export const YAW_ZETA = 0.75
+export const YAW_ZETA = 0.9
 
 // ---------------------------------------------------------------------------
 // Anchor conditions

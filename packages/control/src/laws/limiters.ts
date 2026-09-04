@@ -21,6 +21,18 @@ import { G_FT_S2, radToDeg } from '@retro-flyer/physics'
  */
 export const AOA_CEILING_DEG = 25
 
+/**
+ * Angle-of-attack floor, degrees.
+ *
+ * The data envelope is -10 to +45 (§2) and the limiter guarded only the top of it,
+ * which is the half everyone thinks about. Full forward stick walks straight out of
+ * the bottom: an oscillating full-deflection input left the envelope at -10.4
+ * degrees with every assist on, at no point having gone anywhere near a high-alpha
+ * departure. A floor at -5 leaves margin below in the same way the ceiling leaves
+ * margin above.
+ */
+export const AOA_FLOOR_DEG = -5
+
 /** Positive load factor limit, g. The F-16's real structural limit. */
 export const G_LIMIT = 9
 /** Negative load factor limit, g. */
@@ -68,9 +80,17 @@ export function limitAoA(
   alphaRad: number,
   q: number,
   ceilingDeg = AOA_CEILING_DEG,
+  floorDeg = AOA_FLOOR_DEG,
 ): number {
   const predicted = radToDeg(alphaRad) + radToDeg(q) * AOA_LEAD_SECONDS
-  return Math.min(qCmd, (ceilingDeg - predicted) * AOA_GAIN_PER_DEG)
+
+  // Symmetric: the ceiling caps how much nose-up may be commanded, the floor caps
+  // how much nose-down. Both are one-line approaches to a boundary, and between
+  // them the stick is untouched.
+  const ceiling = (ceilingDeg - predicted) * AOA_GAIN_PER_DEG
+  const floor = (floorDeg - predicted) * AOA_GAIN_PER_DEG
+
+  return Math.max(floor, Math.min(qCmd, ceiling))
 }
 
 export function limitG(
@@ -97,4 +117,46 @@ export function limitG(
   const qMin = Math.max(qMinSteady, qMinSteady + (negative - nz) * NZ_FEEDBACK)
 
   return Math.min(qMax, Math.max(qMin, qCmd))
+}
+
+/** Fraction of roll authority retained when hard against an envelope limit. */
+const ROLL_MIN_AUTHORITY = 0.28
+
+const smoothstep = (a: number, b: number, x: number): number => {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)))
+  return t * t * (3 - 2 * t)
+}
+
+/**
+ * How much of the commanded roll rate the pilot gets, 0 to 1.
+ *
+ * Rolling hard while pulling or pushing hard is how fighters depart, and it is not
+ * something the pitch axis can save you from: an oscillating full-deflection input
+ * put this aircraft at -6 g and -12 degrees alpha with the elevator **at its stop**,
+ * commanding full nose-up and losing. There was no authority left to take. The only
+ * thing that helps is not rolling that fast in the first place, which is why real
+ * fly-by-wire reduces roll rate near the limits rather than trying to catch the
+ * result.
+ *
+ * Authority is never taken away entirely — being unable to roll is its own kind of
+ * emergency — it just stops being enough to break the aeroplane.
+ */
+export function rollAuthority(
+  alphaRad: number,
+  nz: number,
+  ceilingDeg = AOA_CEILING_DEG,
+  floorDeg = AOA_FLOOR_DEG,
+  positiveG = G_LIMIT,
+  negativeG = G_LIMIT_NEGATIVE,
+): number {
+  const alphaDeg = radToDeg(alphaRad)
+
+  const closeness = Math.max(
+    smoothstep(ceilingDeg - 9, ceilingDeg, alphaDeg),
+    smoothstep(floorDeg + 7, floorDeg, alphaDeg),
+    smoothstep(positiveG - 2.5, positiveG, nz),
+    smoothstep(negativeG + 2, negativeG, nz),
+  )
+
+  return 1 - (1 - ROLL_MIN_AUTHORITY) * closeness
 }

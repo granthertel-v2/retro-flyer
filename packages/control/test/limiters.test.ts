@@ -13,9 +13,18 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { radToDeg } from '@retro-flyer/physics'
-import { AOA_CEILING_DEG, BALANCED, G_LIMIT, limitAoA, limitG } from '../src/index.js'
-import { ALPHA_DATA_MAX, fly, hold } from './helpers.js'
+import { degToRad, radToDeg } from '@retro-flyer/physics'
+import {
+  AOA_CEILING_DEG,
+  AOA_FLOOR_DEG,
+  BALANCED,
+  G_LIMIT,
+  PitchLaw,
+  limitAoA,
+  limitG,
+  scheduledGains,
+} from '../src/index.js'
+import { ALPHA_DATA_MAX, ALPHA_DATA_MIN, fly, hold, peak } from './helpers.js'
 
 const deg = (d: number): number => (d * Math.PI) / 180
 
@@ -40,10 +49,11 @@ describe('the AoA limiter, as a function', () => {
     expect(limitAoA(-0.5, deg(5), 0)).toBe(-0.5)
   })
 
-  it('never trades a nose-down command for a gentler one', () => {
+  it('never trades a nose-down command for a gentler one, above the floor', () => {
     // Past the ceiling it may command MORE nose-down than asked — that is the
-    // recovery. What it must never do is give back less than was requested.
-    for (const alphaDeg of [-5, 0, 10, 24, 26, 35]) {
+    // recovery. What it must never do is give back less than was requested, unless
+    // the floor is the thing intervening, which is the whole point of the floor.
+    for (const alphaDeg of [0, 10, 24, 26, 35]) {
       expect(limitAoA(-0.5, deg(alphaDeg), 0)).toBeLessThanOrEqual(-0.5)
     }
   })
@@ -141,11 +151,31 @@ describe('flown: full aft stick', () => {
     )
   })
 
-  it('gives the limits back when the stick is released', () => {
-    // The anti-windup case. Hold the stick against the limiter for ten seconds,
-    // release, and the aircraft has to respond immediately. Without back-calculation
-    // in the pitch law the integrator is wound up and there are several seconds of
-    // an aircraft that has stopped listening.
+  it('unwinds its integrator instead of storing up a debt', () => {
+    // Anti-windup, tested where it actually happens: drive the pitch law hard into
+    // the elevator stop and check the integrator does not keep accumulating for as
+    // long as the stick is held. Without back-calculation it grows without bound
+    // and releasing the stick does nothing until it has wound back down.
+    const gains = scheduledGains(700, 10_000)
+    const law = new PitchLaw()
+
+    // Command far more pitch rate than the elevator can deliver, from a state that
+    // cannot satisfy it, for five seconds.
+    let integralAfterOneSecond = 0
+    for (let i = 0; i < 600; i++) {
+      law.update(3, degToRad(2), 0, gains, 1 / 120)
+      if (i === 119) integralAfterOneSecond = law.integral
+    }
+
+    expect(Math.abs(law.integral)).toBeLessThan(Math.abs(integralAfterOneSecond) * 1.5 + 0.5)
+  })
+
+  it('responds promptly when a sustained pull is released', () => {
+    // Ten seconds at full aft stick is a loop, so the aircraft is inverted by the
+    // time the stick is centred and the load factor there is cos(gamma) — which is
+    // negative, and correct. So this checks the thing that is actually a control
+    // law property: that the commanded pitch rate is obeyed promptly and settles,
+    // not what the load factor happens to be while upside down.
     const flight = fly({
       alt: 10_000,
       vt: 800,
@@ -153,13 +183,15 @@ describe('flown: full aft stick', () => {
       input: (t) => ({ pitch: t < 10 ? 1 : 0, roll: 0, yaw: 0, throttle: 1 }),
     })
 
-    const atRelease = flight.samples.find((s) => s.t >= 10)!
-    const oneSecondLater = flight.samples.find((s) => s.t >= 11)!
+    const after = flight.samples.filter((s) => s.t > 10)
+    const crossing = after.find((s) => s.state.qRate <= 0)
 
-    expect(Math.abs(atRelease.state.qRate)).toBeGreaterThan(0.1)
-    expect(Math.abs(oneSecondLater.state.qRate)).toBeLessThan(
-      Math.abs(atRelease.state.qRate) * 0.4,
-    )
+    expect(crossing).toBeDefined()
+    expect(crossing!.t - 10).toBeLessThan(1.0)
+
+    // And it settles rather than oscillating.
+    const late = after.filter((s) => s.t > 17)
+    expect(peak(late.map((s) => s.state.qRate))).toBeLessThan(0.05)
   })
 })
 
@@ -178,5 +210,33 @@ describe('with the limiters off', () => {
 
     const worst = Math.max(...flight.samples.map((s) => s.alphaDeg))
     expect(worst).toBeGreaterThan(AOA_CEILING_DEG)
+  })
+})
+
+describe('the angle-of-attack floor', () => {
+  it('caps a nose-down command approaching the floor', () => {
+    // The data envelope has two ends. The first version of this limiter guarded
+    // only the ceiling, and an oscillating full-deflection input walked out of the
+    // bottom at -10.4 degrees with every assist switched on.
+    expect(limitAoA(-1, deg(AOA_FLOOR_DEG + 1), 0)).toBeGreaterThan(-1)
+    expect(limitAoA(-1, deg(AOA_FLOOR_DEG - 2), 0)).toBeGreaterThan(0)
+  })
+
+  it('leaves the stick alone in the middle of the envelope', () => {
+    for (const alphaDeg of [0, 5, 10, 15]) {
+      expect(limitAoA(-0.2, deg(alphaDeg), 0)).toBeCloseTo(-0.2, 9)
+    }
+  })
+
+  it('holds alpha inside the data envelope under full forward stick', () => {
+    const flight = fly({
+      alt: 15_000,
+      vt: 800,
+      seconds: 20,
+      input: hold({ pitch: -1, throttle: 1 }),
+    })
+
+    expect(flight.departed).toBe(false)
+    expect(Math.min(...flight.samples.map((s) => s.alphaDeg))).toBeGreaterThan(ALPHA_DATA_MIN)
   })
 })

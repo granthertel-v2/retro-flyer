@@ -31,8 +31,13 @@ export const CAMERA_MODES: readonly CameraMode[] = ['chase', 'cockpit', 'orbit']
 const CHASE_BACK = 34
 const CHASE_UP = 7.6
 
-/** Extra trail per g above one, metres. This is the "throws it wide" term. */
-const CHASE_G_STRETCH = 3.4
+/**
+ * Extra trail per g above one, metres. The "throws it wide" term.
+ *
+ * Deliberately small. At 3.4 a hard pull pushed the aircraft most of the way out of
+ * frame, which does not read as weight — it reads as losing your aeroplane.
+ */
+const CHASE_G_STRETCH = 1.1
 
 /**
  * Spring stiffness and damping. Slightly under critical (`2*sqrt(SPRING)` would be
@@ -41,6 +46,15 @@ const CHASE_G_STRETCH = 3.4
  */
 const SPRING = 34
 const DAMPING = 9.4
+
+/**
+ * How much of the aircraft's bank the camera copies, 0 to 1.
+ *
+ * Not the full amount: a chase camera that rolls all the way with the aircraft is a
+ * cockpit camera with extra steps, and a horizon spinning through 360 degrees is
+ * where motion sickness comes from.
+ */
+const CHASE_BANK_FOLLOW = 0.45
 
 /** Where the pilot's eye sits, metres forward of the reference point. */
 const EYE_FORWARD = 6.2
@@ -51,6 +65,7 @@ export class ChaseCamera {
   private readonly velocity = new Vector3()
   private readonly desired = new Vector3()
   private readonly up = new Vector3()
+  private readonly right = new Vector3()
   private readonly aim = new Vector3()
   private readonly quaternion = new Quaternion()
   private started = false
@@ -135,17 +150,29 @@ export class ChaseCamera {
 
     camera.position.copy(this.position)
 
-    // Look slightly ahead of the aircraft rather than at it, so the aeroplane sits
-    // low in frame and there is world to see in front of it.
     // Aim ahead of and slightly above the aircraft, so it sits low in frame with
     // the horizon near the middle and most of the picture is where you are going.
     this.aim.set(0, 4.2, -58).applyQuaternion(this.quaternion).add(origin)
-    // Roll the camera partway with the aircraft. Not fully: a chase camera that
-    // rolls all the way is a cockpit camera with extra steps, and the horizon
-    // spinning through 360 degrees is where motion sickness comes from.
-    this.up.set(0, 1, 0).lerp(new Vector3(0, 1, 0).applyQuaternion(this.quaternion), 0.55).normalize()
-    camera.up.copy(this.up)
+
+    // Level the camera first, then roll it about its own view axis by a fraction of
+    // the aircraft's bank.
+    //
+    // The obvious approach — lerp the camera's `up` toward the aircraft's and hand
+    // that to `lookAt` — has a singularity in it. As the aircraft passes through
+    // inverted, the blended `up` sweeps through being parallel to the view
+    // direction; `lookAt` cannot build a basis from two parallel vectors, and the
+    // camera snaps a half turn. Rolling about the view axis has no such case: it is
+    // one angle, continuous through inverted and out the other side.
+    camera.up.set(0, 1, 0)
     camera.lookAt(this.aim)
+
+    this.up.set(0, 1, 0).applyQuaternion(this.quaternion)
+    this.right.set(1, 0, 0).applyQuaternion(this.quaternion)
+
+    // Bank from the aircraft's own axes rather than from an Euler angle, because
+    // Euler roll is undefined at vertical and this is not.
+    const bank = Math.atan2(-this.right.y, this.up.y)
+    camera.rotateZ(-bank * CHASE_BANK_FOLLOW)
   }
 
   reset(): void {

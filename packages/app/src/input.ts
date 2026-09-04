@@ -43,7 +43,7 @@ const CLAIMED = new Set([
   'KeyW', 'KeyA', 'KeyS', 'KeyD',
   'KeyQ', 'KeyE',
   'ShiftLeft', 'ShiftRight', 'ControlLeft', 'ControlRight',
-  'KeyC', 'KeyI', 'KeyP', 'KeyR', 'KeyB',
+  'KeyC', 'KeyI', 'KeyP', 'KeyR', 'KeyB', 'KeyZ', 'KeyX',
   'Digit0', 'Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit9',
 ])
 
@@ -122,8 +122,12 @@ export class InputReader {
     if (this.held('KeyE')) yaw += 1
     if (this.held('KeyQ')) yaw -= 1
 
-    if (this.held('ShiftLeft', 'ShiftRight')) this.throttle += dt / 1.5
-    if (this.held('ControlLeft', 'ControlRight')) this.throttle -= dt / 1.5
+    // Two bindings for throttle. Shift/Ctrl is the convention, but Ctrl is a
+    // modifier the browser and the OS both have opinions about, and it is not
+    // discoverable — the first person to fly this could find no way to throttle
+    // back. Z and X sit next to each other and are only ever this.
+    if (this.held('ShiftLeft', 'ShiftRight', 'KeyX')) this.throttle += dt / 1.5
+    if (this.held('ControlLeft', 'ControlRight', 'KeyZ')) this.throttle -= dt / 1.5
 
     if (pad) {
       // Standard mapping: left stick roll/pitch, right stick X yaw, triggers

@@ -69,15 +69,17 @@ export {
 
 export {
   AOA_CEILING_DEG,
+  AOA_FLOOR_DEG,
   G_LIMIT,
   G_LIMIT_NEGATIVE,
   limitAoA,
   limitG,
+  rollAuthority,
 } from './laws/limiters.js'
 
 export { PitchLaw } from './laws/pitch.js'
 export { BASE_ROLL_RATE_DEG, rollCommand } from './laws/roll.js'
-export { coordinatedYawRate, yawCommand } from './laws/yaw.js'
+export { coordinatedYawRate, pedalAuthority, yawCommand } from './laws/yaw.js'
 
 export {
   ackermann,

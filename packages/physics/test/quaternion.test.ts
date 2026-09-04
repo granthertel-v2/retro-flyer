@@ -323,3 +323,74 @@ describe('quaternion and Euler agree — and only one survives vertical', () => 
     expect(norm).toBeCloseTo(1, 10)
   })
 })
+
+describe('FixedStepClock hands the renderer what it needs (§8.3)', () => {
+  it('calls the controls callback with the state that tick starts from', () => {
+    // Without this the callback can only see the state from the start of the
+    // frame, so every tick inside one frame runs on identical inputs — and an
+    // assist layer that believes it is running at 120 Hz is running at the frame
+    // rate.
+    const clock = new FixedStepClock()
+    const state = toQuatVector({
+      vt: 500, alpha: 0.05, beta: 0,
+      q: IDENTITY_QUATERNION,
+      p: 0, qRate: 0.1, r: 0,
+      pn: 0, pe: 0, alt: 10_000, power: 50,
+    })
+
+    const seen: number[][] = []
+    clock.advance(
+      state,
+      (_tick, v) => {
+        seen.push([...v])
+        return { throttle: 0.5, elevator: -1, aileron: 0, rudder: 0 }
+      },
+      // Four ticks' worth.
+      4 * PHYSICS_DT,
+    )
+
+    expect(seen.length).toBe(4)
+    // Each tick must see something different from the last.
+    for (let i = 1; i < seen.length; i++) {
+      expect(seen[i]).not.toEqual(seen[i - 1])
+    }
+  })
+
+  it('exposes the state before the LAST tick, not before the frame', () => {
+    // The renderer blends `previous` and the returned state by `alpha`. If
+    // `previous` were the frame's starting state, that blend would span two ticks
+    // of motion while alpha only describes one — which reads as a shiver.
+    const clock = new FixedStepClock()
+    const start = toQuatVector({
+      vt: 600, alpha: 0.04, beta: 0,
+      q: IDENTITY_QUATERNION,
+      p: 0, qRate: 0, r: 0,
+      pn: 0, pe: 0, alt: 12_000, power: 60,
+    })
+
+    const controls = { throttle: 0.6, elevator: -0.7, aileron: 0, rudder: 0 }
+    const end = clock.advance(start, () => controls, 3 * PHYSICS_DT)
+
+    // One tick separates `previous` from the result...
+    const oneMore = step(clock.previous, controls, PHYSICS_DT)
+    oneMore.forEach((x, i) => expect(x).toBeCloseTo(end[i] as number, 12))
+
+    // ...and `previous` is genuinely not where the frame started.
+    expect(clock.previous[Q.PN]).not.toBeCloseTo(start[Q.PN] as number, 6)
+  })
+
+  it('leaves previous equal to the input when no whole tick elapsed', () => {
+    const clock = new FixedStepClock()
+    const start = toQuatVector({
+      vt: 500, alpha: 0.05, beta: 0,
+      q: IDENTITY_QUATERNION,
+      p: 0, qRate: 0, r: 0,
+      pn: 0, pe: 0, alt: 10_000, power: 50,
+    })
+
+    const out = clock.advance(start, () => ({ throttle: 0.5, elevator: 0, aileron: 0, rudder: 0 }), PHYSICS_DT / 3)
+
+    expect(out).toEqual(start)
+    expect(clock.previous).toEqual(start)
+  })
+})

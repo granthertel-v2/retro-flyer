@@ -26,6 +26,7 @@ import { FovController } from './camera/fov.js'
 import { InputReader } from './input.js'
 import { Simulation, type SpawnCondition } from './loop.js'
 import { Overlay } from './overlay.js'
+import { Clouds, SUN_DIRECTION, buildSun, positionSun } from './sky.js'
 import { MAP_EXTENT, authoredMap } from './terrain/authored.js'
 import { buildCity, buildRunways } from './terrain/city.js'
 import { TerrainMesh } from './terrain/mesh.js'
@@ -52,7 +53,11 @@ function main(): void {
   document.body.style.cssText = 'margin:0;overflow:hidden;background:#000'
   document.body.append(canvas)
 
-  const renderer = new WebGLRenderer({ canvas, antialias: true })
+  // Logarithmic depth. The view spans two metres to forty kilometres, and a linear
+  // depth buffer over that range spends almost all its precision in the first few
+  // hundred metres — leaving the shoreline, where terrain meets the sea plane at
+  // exactly zero, to shimmer.
+  const renderer = new WebGLRenderer({ canvas, antialias: true, logarithmicDepthBuffer: true })
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
 
   const scene = new Scene()
@@ -68,10 +73,12 @@ function main(): void {
 
   const camera = new PerspectiveCamera(58, 1, 2, VIEW_DISTANCE * 1.3)
 
-  // Flat shading needs a real directional source or every face reads the same.
-  const sun = new DirectionalLight(0xfff2df, 2.15)
-  sun.position.set(-0.45, 0.78, -0.44)
-  scene.add(sun, new AmbientLight(0x93a9c4, 1.25))
+  // Flat shading needs a real directional source or every face reads the same. The
+  // light direction and the visible sun disc share `SUN_DIRECTION`, so the shadows
+  // point away from the thing casting them.
+  const sunLight = new DirectionalLight(0xfff2df, 2.15)
+  sunLight.position.copy(SUN_DIRECTION)
+  scene.add(sunLight, new AmbientLight(0x93a9c4, 1.25))
 
   // The sea. Terrain below zero is seabed; this is the surface over it.
   const sea = new Mesh(
@@ -91,6 +98,12 @@ function main(): void {
 
   const scatter = new Scatter(authoredMap)
   scene.add(scatter.mesh)
+
+  const sun = buildSun()
+  scene.add(sun)
+
+  const clouds = new Clouds()
+  scene.add(clouds.mesh)
 
   const aircraft = buildAircraft()
   scene.add(aircraft)
@@ -167,16 +180,28 @@ function main(): void {
 
     terrain.update(state.position[0], state.position[2])
     scatter.update(state.position[0], state.position[2])
-    sea.position.set(state.position[0], 0, state.position[2])
+    clouds.update(state.position[0], state.position[2])
+    // A hair below sea level, so a terrain triangle that touches exactly zero at the
+    // waterline is not co-planar with it.
+    sea.position.set(state.position[0], -0.4, state.position[2])
 
     chase.update(camera, state, mode, simulation.nz, dt)
+    positionSun(sun, camera.position)
     camera.fov = fov.update(state.kt, dt)
     camera.updateProjectionMatrix()
 
     // In the cockpit the aircraft is the thing you are inside of.
     aircraft.visible = mode !== 'cockpit'
 
-    overlay.update(state, simulation.layer, simulation.nz, mode, simulation.paused, simulation.clock.ticks)
+    overlay.update(
+      state,
+      simulation.layer,
+      simulation.nz,
+      mode,
+      simulation.paused,
+      simulation.clock.ticks,
+      input.axes(0).throttle,
+    )
     renderer.render(scene, camera)
   }
 

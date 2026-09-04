@@ -6,10 +6,10 @@
  * whole ticks and keeping the remainder, and the renderer draws between the last two
  * states using the leftover fraction (§8.3).
  *
- * That interpolation is not optional polish. 120 Hz physics sampled at 60 fps
- * without it lands on a tick boundary only half the time, and the aircraft visibly
- * stutters — worse at 144 Hz, where the beat frequency puts a lurch in roughly every
- * fifth frame.
+ * That interpolation is not optional polish, and it has to blend the last two
+ * **ticks**. Blending from the state at the start of the frame instead spans two
+ * ticks of motion with a fraction that describes one, and the aircraft shivers
+ * against the ground — which is exactly how this was found.
  *
  * The clock calls back for controls **once per tick**, not once per frame, which is
  * exactly the hook the assist layer wants: a control law running at the frame rate
@@ -112,16 +112,17 @@ export class Simulation {
   advance(elapsed: number, input: () => RawInput): void {
     if (this.paused) return
 
-    this.previous = this.state
-
     this.state = this.clock.advance(
       this.state,
-      () => {
-        const aircraft = fromQuatVector(this.state)
+      (_tick, v) => {
+        // `v` is this tick's own starting state, not the frame's. At 60 fps a frame
+        // is two ticks, and running both from the frame's state means the control
+        // law is really updating at 60 Hz however fast the physics runs.
+        const aircraft = fromQuatVector(v)
         this.controls = this.layer.update(aircraft, input(), PHYSICS_DT, this.nz)
 
         // Load factor for the next tick's G limiter, and for the camera.
-        const { accel } = quatDerivative(this.state, this.controls, this.mass, {
+        const { accel } = quatDerivative(v, this.controls, this.mass, {
           clampAeroAngles: true,
         })
         this.nz = accel.nz + 1
@@ -131,6 +132,8 @@ export class Simulation {
       elapsed,
       this.mass,
     )
+
+    this.previous = this.clock.previous
   }
 
   /** What the renderer should draw: the two most recent ticks, blended. */

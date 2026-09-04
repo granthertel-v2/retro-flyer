@@ -22,6 +22,7 @@
 
 import {
   degToRad,
+  eulerFromQuaternion,
   type AircraftState,
   type Controls,
 } from '@retro-flyer/physics'
@@ -34,7 +35,7 @@ import {
 } from './conditioning.js'
 import { scheduledGains, type GainSet } from './gains.js'
 import { AILERON_LIMIT_DEG, ELEVATOR_LIMIT_DEG, RUDDER_LIMIT_DEG } from './limits.js'
-import { limitAoA, limitG } from './laws/limiters.js'
+import { AOA_FLOOR_DEG, limitAoA, limitG, rollAuthority } from './laws/limiters.js'
 import { PitchLaw } from './laws/pitch.js'
 import { BASE_ROLL_RATE_DEG, rollCommand } from './laws/roll.js'
 import { yawCommand } from './laws/yaw.js'
@@ -127,8 +128,11 @@ export const BALANCED: AssistPreset = {
   gLimit: 9,
   gLimitNegative: -3,
   aoaCeilingDeg: 25,
-  rollAmplification: 1.4,
-  maxPitchRateDeg: 40,
+  // Down from 1.4. At 308 deg/s the roll was quicker than anyone could aim with,
+  // and it spent most of a full-stick input against the aileron stops — which means
+  // the extra command was buying nothing anyway. 220 deg/s is still a fast roll.
+  rollAmplification: 1.0,
+  maxPitchRateDeg: 45,
 }
 
 /**
@@ -154,7 +158,7 @@ export const HONEST: AssistPreset = {
   gLimit: 9,
   gLimitNegative: -3,
   aoaCeilingDeg: 25,
-  rollAmplification: 1.0,
+  rollAmplification: 0.75,
   maxPitchRateDeg: 30,
 }
 
@@ -230,7 +234,24 @@ export class AssistLayer {
 
     // --- Roll -------------------------------------------------------------
     const amplification = this.toggles.rollAmplification ? this.preset.rollAmplification : 1
-    const pCmd = rollStick * degToRad(BASE_ROLL_RATE_DEG * amplification)
+
+    // Roll authority is reduced near the envelope edges when the limiters are on.
+    // A hard roll while hard against the pitch limit is what actually departs this
+    // aircraft, and no amount of elevator recovers it once the surface is on its
+    // stop — see `rollAuthority`.
+    const authority =
+      this.toggles.aoaLimiter || this.toggles.gLimiter
+        ? rollAuthority(
+            state.alpha,
+            nz,
+            this.preset.aoaCeilingDeg,
+            AOA_FLOOR_DEG,
+            this.preset.gLimit,
+            this.preset.gLimitNegative,
+          )
+        : 1
+
+    const pCmd = rollStick * degToRad(BASE_ROLL_RATE_DEG * amplification) * authority
 
     const aileron = this.toggles.rollRateCommand
       ? rollCommand(pCmd, state.p, gains)
@@ -276,11 +297,15 @@ export class AssistLayer {
     }
 
     // --- Yaw --------------------------------------------------------------
+    const { phi, theta } = eulerFromQuaternion(state.q)
     const rudder = yawCommand(
       state.beta,
       state.r,
       state.p,
       state.alpha,
+      phi,
+      theta,
+      state.vt,
       yawStick,
       gains,
       this.toggles.autoCoordination,

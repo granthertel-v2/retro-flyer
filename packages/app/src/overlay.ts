@@ -60,6 +60,7 @@ export class Overlay {
     mode: CameraMode,
     paused: boolean,
     ticks: number,
+    throttle: number,
   ): void {
     this.frames++
     const now = performance.now()
@@ -81,6 +82,7 @@ export class Overlay {
       pad('BETA', `${state.betaDeg.toFixed(1)}°`),
       pad('G', nz.toFixed(2)),
       pad('ROLL RT', `${state.rates[0].toFixed(0)}°/s`),
+      pad('THROTTLE', `${Math.round(throttle * 100)}%`),
       pad('POWER', `${Math.round(state.power)}%`),
       '',
       telemetry?.aoaLimiting ? '<b>AOA LIMIT</b>' : '',
@@ -104,8 +106,11 @@ export class Overlay {
       '',
       assists,
       '',
-      '<span style="opacity:.55">C cam &middot; B preset &middot; 1-6 assists</span>',
-      '<span style="opacity:.55">0 none &middot; 9 all &middot; I invert &middot; R reset</span>',
+      '<span style="opacity:.55">X / Z &nbsp;throttle up / down</span>',
+      '<span style="opacity:.55">arrows or WASD &nbsp;pitch, roll</span>',
+      '<span style="opacity:.55">Q / E &nbsp;rudder &middot; I &nbsp;invert pitch</span>',
+      '<span style="opacity:.55">C cam &middot; B preset &middot; P pause &middot; R reset</span>',
+      '<span style="opacity:.55">1-6 assists &middot; 0 none &middot; 9 all</span>',
     ].join('<br>')
   }
 }

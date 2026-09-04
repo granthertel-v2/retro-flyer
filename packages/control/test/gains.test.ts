@@ -30,6 +30,7 @@ import {
   PITCH_WN_MIN,
   PITCH_ZETA,
   ROLL_TAU,
+  YAW_ZETA,
   anchorGains,
   characteristicPolynomial,
   controlJacobian,
@@ -130,7 +131,7 @@ describe('roll and yaw', () => {
     const wn = Math.sqrt(poly[0] as number)
     const zeta = (poly[1] as number) / (2 * wn)
 
-    expect(zeta).toBeCloseTo(0.75, 4)
+    expect(zeta).toBeCloseTo(YAW_ZETA, 4)
     expect(isHurwitz(poly)).toBe(true)
   })
 })
