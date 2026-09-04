@@ -31,6 +31,28 @@ jobs:
       - name: Validation suite
         run: npm test
 
+  app:
+    name: App build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      # The renderer cannot be tested for whether it looks right, but it can be
+      # tested for whether it still compiles and bundles. The parts of the app that
+      # DO have a right answer — the §8.2 terrain source and the §8.3 unit and frame
+      # conversion — are covered by the headless suite above.
+      - name: Build
+        working-directory: packages/app
+        run: npx vite build
+
   break-check:
     # REQUIREMENTS §4.3: a passing suite proves nothing until each test is confirmed
     # able to fail. This deliberately corrupts the model and asserts the right tests
