@@ -189,9 +189,11 @@ describe('the strut', () => {
       const v = parked()
       v[Q.W] = rate // climbing or descending
       const g = gearLoads(v, paved)
+      // Asserted on the strut forces themselves. `loads.fz` bundles them together
+      // with gear-down aerodynamic drag, which legitimately has a downward component
+      // when the aircraft is descending, so it is no longer a clean proxy for "the
+      // strut is not pulling".
       for (const N of g.normal) expect(N).toBeGreaterThanOrEqual(0)
-      // Gear force is up (negative body z) or nothing, never down.
-      expect(g.loads.fz).toBeLessThanOrEqual(1e-9)
     }
   })
 

@@ -27,8 +27,9 @@
 
 import { NO_EXTERNAL_LOADS, type ExternalLoads } from './dynamics.js'
 import { Q, rotateBodyToNed, rotateNedToBody, type Quaternion } from './state.js'
-import { REFERENCE_WEIGHT_LB } from './massProperties.js'
+import { REFERENCE_WEIGHT_LB, WING_AREA } from './massProperties.js'
 import { clamp } from './envelope.js'
+import { airData } from './atmosphere.js'
 import type { GroundSource } from './ground.js'
 
 /**
@@ -197,6 +198,33 @@ const STRIBECK_FPS = 2.0
  */
 const STATIC_FRICTION_BONUS = 1.15
 
+/**
+ * Extra drag from the gear being down, as a change in drag coefficient referenced
+ * to the wing area. `[A]`
+ *
+ * ## Why this is `[A]` and how it was chosen
+ *
+ * The NASA dataset behind this model is aerodynamic coefficients for the clean
+ * airframe. Gear-down increments are not in it, and there is no honest way to make
+ * one up and call it `[S]`. But the alternative that was here before is worse than
+ * an assumption: gear down produced *exactly zero* drag, which is not a
+ * simplification, it is a false statement about three struts and three wheels
+ * hanging in the airstream.
+ *
+ * So it is estimated from first principles rather than quoted. An exposed strut and
+ * wheel is a bluff body with a drag coefficient somewhere around 0.4 on its own
+ * frontal area; the three legs together present very roughly 13 sq ft to the wind
+ * against a 300 sq ft wing. That gives 0.4 * 13 / 300 ~= 0.017, rounded to 0.02
+ * because the last digit of an estimate like this is not real.
+ *
+ * The number to argue with is the consequence, not the coefficient: it costs about
+ * 800 lb of drag at 200 kt, which is close to what the engine makes at idle — so
+ * lowering the gear roughly doubles how quickly the aircraft slows down on an
+ * approach. That is the behaviour it exists to produce, and it is what a flight test
+ * asked for after finding there was no way to lose speed at all.
+ */
+export const GEAR_DOWN_DELTA_CD = 0.02
+
 /** Brake and steering commands. The assist layer decides what fills these. */
 export interface GearInput {
   /** Wheel brakes, 0 to 1. Mains only. */
@@ -281,6 +309,39 @@ export function gearLoads(
 
   const compression: number[] = []
   const normal: number[] = []
+
+  // --- Drag from having the gear out ---------------------------------------
+  // Applied whether or not a wheel is touching anything: this is the air, not the
+  // runway. It acts along the relative wind, and at the wheels rather than at the
+  // CG, so it also pitches the nose down slightly — which is what a real aircraft
+  // does when the gear comes out.
+  const vt = Math.hypot(vb[0], vb[1], vb[2])
+  if (vt > 1) {
+    const { qbar } = airData(vt, alt)
+    const dragLb = qbar * WING_AREA * GEAR_DOWN_DELTA_CD
+
+    // Opposite the velocity vector, in body axes.
+    fx -= (dragLb * vb[0]) / vt
+    fy -= (dragLb * vb[1]) / vt
+    fz -= (dragLb * vb[2]) / vt
+
+    // At the mean strut position, so the moment arm is real rather than assumed zero.
+    let mx = 0
+    let my = 0
+    let mz = 0
+    for (const s of struts) {
+      mx += s.x / struts.length
+      my += s.y / struts.length
+      mz += s.z / struts.length
+    }
+    const dx = -(dragLb * vb[0]) / vt
+    const dy = -(dragLb * vb[1]) / vt
+    const dz = -(dragLb * vb[2]) / vt
+
+    l += my * dz - mz * dy
+    m += mz * dx - mx * dz
+    n += mx * dy - my * dx
+  }
 
   for (const s of struts) {
     const rBody: [number, number, number] = [s.x, s.y, s.z]

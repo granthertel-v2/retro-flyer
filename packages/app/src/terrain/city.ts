@@ -123,8 +123,8 @@ export function buildRunways(source: TerrainSource): Object3D {
 
     const strip = new Mesh(new PlaneGeometry(f.widthM, f.lengthM), surface)
     strip.rotation.set(-Math.PI / 2, 0, -heading)
-    // Lifted clear of the terrain under it — see RUNWAY_SURFACE_OFFSET_M, which the
-    // ground source uses too so that the wheels stand on the surface being drawn.
+    // Lifted by RUNWAY_SURFACE_OFFSET_M, which `surfaceHeight` matches and ramps out
+    // beyond the strip so the gear never meets it as a step.
     strip.position.set(f.x, f.elevation + RUNWAY_SURFACE_OFFSET_M, f.z)
     group.add(strip)
 
@@ -137,7 +137,7 @@ export function buildRunways(source: TerrainSource): Object3D {
       dash.rotation.set(-Math.PI / 2, 0, -heading)
       dash.position.set(
         f.x + Math.sin(heading) * along,
-        f.elevation + RUNWAY_SURFACE_OFFSET_M + 0.1,
+        f.elevation + RUNWAY_SURFACE_OFFSET_M + 0.04,
         f.z - Math.cos(heading) * along,
       )
       group.add(dash)

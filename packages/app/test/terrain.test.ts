@@ -22,7 +22,7 @@ import {
 } from '../src/terrain/authored.js'
 import { Surface } from '../src/terrain/source.js'
 import { AuthoredGroundSource } from '../src/terrain/groundSource.js'
-import { RUNWAY_SURFACE_OFFSET_M } from '../src/terrain/source.js'
+import { RUNWAY_RAMP_M, RUNWAY_SURFACE_OFFSET_M } from '../src/terrain/source.js'
 
 /** Walk a grid over the whole map and hand each sample to a visitor. */
 function overMap(step: number, visit: (x: number, z: number) => void): void {
@@ -288,11 +288,57 @@ describe('the airfields (§7)', () => {
 describe('the runway the wheels stand on is the runway you can see (Day 3)', () => {
   const source = new AuthoredGroundSource(map)
 
-  it('reports the drawn strip height, not the terrain under it', () => {
-    // Found in the browser, invisible to every test that existed: the strip is
-    // lifted clear of the terrain to stop it z-fighting, and the gear was standing
-    // on the raw terrain — so the aircraft sat 0.595 m inside the tarmac. One
-    // constant now feeds both, and this is what holds them together.
+  it('has no step at the runway edge for the gear to hit', () => {
+    // The regression test for a two-foot kerb. The strip was briefly drawn 0.6 m
+    // above the terrain to stop it z-fighting, and the ground source was taught to
+    // match — which stood the aircraft on the visible surface and left a vertical
+    // wall at the boundary. A 4 ft/s landing that touched down just short of the
+    // threshold rolled onto it and bottomed the gear at 12 g, while an 8 ft/s
+    // landing was fine, because it happened to land past the edge.
+    //
+    // Walked across every threshold and every side, because a step anywhere on the
+    // perimeter is a step the aircraft can find.
+    for (const f of map.airfields) {
+      const heading = (f.headingDeg * Math.PI) / 180
+      const along: [number, number] = [Math.sin(heading), -Math.cos(heading)]
+      const across: [number, number] = [Math.cos(heading), Math.sin(heading)]
+
+      const probe = (x: number, z: number): number =>
+        source.sample(-z / 0.3048, x / 0.3048).elevation
+
+      for (const [label, from, dir] of [
+        ['approach threshold', [-f.lengthM / 2, 0], along],
+        ['far threshold', [f.lengthM / 2, 0], along],
+        ['left edge', [0, -f.widthM / 2], across],
+        ['right edge', [0, f.widthM / 2], across],
+      ] as [string, [number, number], [number, number]][]) {
+        let previous: number | null = null
+        for (let d = -40; d <= 40; d += 2) {
+          const s = from[0] + along[0] * 0 + dir[0] * d
+          const w = from[1] + dir[1] * d
+          const x = f.x + along[0] * from[0] + across[0] * from[1] + dir[0] * d
+          const z = f.z + along[1] * from[0] + across[1] * from[1] + dir[1] * d
+          void s
+          void w
+          const h = probe(x, z)
+          if (previous !== null) {
+            // 2 m of travel may cross at most a gentle ramp, never a step. The lift
+            // is 0.12 m spread over 60 m, so any 2 m sample is under 1.5 cm.
+            expect(
+              Math.abs(h - previous),
+              `${f.name} ${label}: ${Math.abs(h - previous).toFixed(3)} ft step at d=${d} m`,
+            ).toBeLessThan(0.05)
+          }
+          previous = h
+        }
+      }
+    }
+  })
+
+  it('stands the wheels on the strip that is drawn, not the landform under it', () => {
+    // The strip is lifted a little to stop it z-fighting with the flat ground it
+    // sits on, so the physics has to be lifted by exactly the same amount or the
+    // aircraft sinks into the tarmac. Both numbers come from one constant.
     for (const field of map.airfields) {
       const pn = -field.z / 0.3048
       const pe = field.x / 0.3048
@@ -302,23 +348,46 @@ describe('the runway the wheels stand on is the runway you can see (Day 3)', () 
 
       expect(sample.elevation * 0.3048, `${field.name} surface height`).toBeCloseTo(drawnM, 6)
       expect(sample.solid).toBe(true)
-      // And it is pavement, not grass.
-      expect(sample.friction).toBeGreaterThan(0.5)
+      expect(sample.friction, 'a runway is pavement').toBeGreaterThan(0.5)
     }
   })
 
-  it('does not lift ground that is not a runway', () => {
-    // The offset is a property of the drawn strip, so it must not leak into open
-    // country — a half-metre step at the edge of every airfield would be worse than
-    // the bug it fixes.
-    const field = map.airfields[0] as (typeof map.airfields)[number]
-    const offRunwayM = 4_000
+  it('ramps the lift away instead of ending it in a cliff', () => {
+    // The lift must be gone by the time it reaches open country, or every airfield
+    // has a lip around it.
+    for (const field of map.airfields) {
+      const heading = (field.headingDeg * Math.PI) / 180
+      const across: [number, number] = [Math.cos(heading), Math.sin(heading)]
 
-    const pn = -(field.z + offRunwayM) / 0.3048
-    const pe = field.x / 0.3048
+      const far = field.widthM / 2 + RUNWAY_RAMP_M + 20
+      const x = field.x + across[0] * far
+      const z = field.z + across[1] * far
 
-    const sample = source.sample(pn, pe)
-    expect(sample.elevation * 0.3048).toBeCloseTo(map.height(field.x, field.z + offRunwayM), 6)
+      expect(map.surfaceHeight(x, z), `${field.name} lift leaked into open ground`).toBeCloseTo(
+        map.height(x, z),
+        9,
+      )
+    }
+  })
+
+  it('is flat to exactly zero under the strip, which is why no lift is needed', () => {
+    // The measurement the 0.6 m offset was invented in the absence of. The pad
+    // flattening lerps fully to the field elevation well before the runway edge.
+    for (const f of map.airfields) {
+      const heading = (f.headingDeg * Math.PI) / 180
+      let min = Infinity
+      let max = -Infinity
+      for (let s = -f.lengthM / 2; s <= f.lengthM / 2; s += 25) {
+        for (let w = -f.widthM / 2; w <= f.widthM / 2; w += 10) {
+          const x = f.x + Math.sin(heading) * s + Math.cos(heading) * w
+          const z = f.z - Math.cos(heading) * s + Math.sin(heading) * w
+          const h = map.height(x, z)
+          if (h < min) min = h
+          if (h > max) max = h
+        }
+      }
+      expect(max - min, `${f.name} strip flatness`).toBeLessThan(1e-9)
+    }
   })
 
   it('converts NED feet to renderer metres in the right direction', () => {
