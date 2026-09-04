@@ -27,7 +27,7 @@ import { G_FT_S2, radToDeg } from '@retro-flyer/physics'
  * 34 was tried and is not worth it — a tenth of a g more, alpha touching 44 in a
  * slow-speed pull, and a full-deflection input leaving the envelope.
  */
-export const AOA_CEILING_DEG = 30
+export const AOA_CEILING_DEG = 32
 
 /**
  * Angle-of-attack floor, degrees.
@@ -70,7 +70,7 @@ export const G_LIMIT_NEGATIVE = -3
 export const AOA_CEILING_LOW_SPEED_DEG = 18
 
 /** Airspeeds, ft/s, between which the ceiling is reduced. */
-const CEILING_FULL_FPS = 480
+const CEILING_FULL_FPS = 700
 const CEILING_LOW_FPS = 320
 
 /** The alpha ceiling actually in force at this airspeed, degrees. */
@@ -102,41 +102,68 @@ const AOA_GAIN_PER_DEG = 0.17
  * aircraft decelerates in the pull. Limiting on where alpha will be in half a second
  * gives the aircraft time to stop.
  */
-const AOA_LEAD_SECONDS = 0.20
+const AOA_LEAD_SECONDS = 0.12
 
 /** Reduction in the pitch rate cap per g of overshoot, rad/s. */
 const NZ_FEEDBACK = 0.035
 
 /**
- * Pitch rate that produces a commanded load factor at the current attitude.
+ * Pitch rate the stick is asking for, in rad/s.
  *
- * `q = (g/V) * (n - cos(phi)*cos(theta))`. The second term is the component of
- * gravity along the aircraft's lift axis, and including it is what makes this a
- * **g command** rather than a pitch-rate command — which matters far more than it
- * sounds.
+ * Two terms, and they do different jobs:
  *
- * With a pure rate command, centring the stick asks for zero pitch rate, which is
- * an attitude hold: roll inverted, let go, and the aircraft obligingly flies along
- * upside down at a slightly negative alpha, generating just enough lift to hold its
- * height. Correct for what it was asked, and completely wrong as an aeroplane —
- * losing 712 ft in ten seconds inverted where the same ten seconds knife-edge lost
- * 2,150. With the gravity term, centring the stick asks for one g toward the
- * aircraft's own belly, so inverted it pulls toward the ground and comes down,
- * banked it turns and descends, and level it does nothing. Which is what wings do.
+ *     q = (g/V) * (1 - cos(phi)*cos(theta))     hold one g wherever gravity is
+ *       + stick * maxRate                        what the pilot actually asked for
  *
- * @param n     Commanded load factor, g
- * @param vt    True airspeed, ft/s
- * @param phi   Bank angle, radians
- * @param theta Pitch attitude, radians
+ * The first is gravity compensation. It is what makes centre stick mean "one g
+ * toward my own belly" rather than "stop rotating": level it is zero, banked it
+ * turns and descends, inverted it pulls toward the ground. An aeroplane, rather than
+ * an attitude hold.
+ *
+ * The second is a plain rate command, and it is deliberately **not** derived from a
+ * load factor. Deriving it — `q = (g/V)(n - ...)` for a commanded n — is more
+ * elegant and it was the first version, but it ties rotation rate to airspeed by
+ * construction: nine g at 640 ft/s is 23 deg/s and at 900 ft/s is 16, so the faster
+ * you fly the more sluggish the aircraft feels, which is the opposite of what speed
+ * ought to buy. Tying the stick to rate directly means full deflection means the
+ * same thing everywhere, and the g limiter downstream is what stops you bending it.
+ *
+ * That ordering — ask for a rate, cap it with the limits — is also what makes the
+ * limits legible. When the aircraft stops pulling, it is because a limiter said so,
+ * not because the command mapping quietly ran out.
+ *
+ * @param stick   Pitch stick, -1 to 1. Positive is nose up.
+ * @param maxRate Commanded rate at full deflection, rad/s
+ * @param vt      True airspeed, ft/s
+ * @param phi     Bank angle, radians
+ * @param theta   Pitch attitude, radians
  */
-export function pitchRateForLoadFactor(
-  n: number,
+export function pitchRateCommand(
+  stick: number,
+  maxRateUp: number,
+  maxRateDown: number,
   vt: number,
   phi: number,
   theta: number,
 ): number {
-  const gravityAlongLift = Math.cos(phi) * Math.cos(theta)
-  return (G_FT_S2 / Math.max(vt, 100)) * (n - gravityAlongLift)
+  const holdOneG = (G_FT_S2 / Math.max(vt, 100)) * (1 - Math.cos(phi) * Math.cos(theta))
+  const rate = stick >= 0 ? stick * maxRateUp : stick * maxRateDown
+
+  return holdOneG + rate
+}
+
+/**
+ * Nose-down command rate, as a fraction of the nose-up one.
+ *
+ * Full forward is not the mirror of full aft, and it should not be: the load factor
+ * limits are +11 and -4, so the aircraft has less than half as much room to push as
+ * to pull. Commanding the same rate in both directions just means the AoA floor
+ * catches the pushover instead of the g limiter — and it catches it *late*, outside
+ * the aerodynamic data, because the floor is only two degrees from the edge where
+ * the ceiling has thirteen.
+ */
+export function downRateFraction(positiveG: number, negativeG: number): number {
+  return Math.min(1, (1 - negativeG) / Math.max(1e-6, positiveG - 1))
 }
 
 /**

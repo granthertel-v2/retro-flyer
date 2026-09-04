@@ -37,10 +37,10 @@ import { scheduledGains, type GainSet } from './gains.js'
 import { AILERON_LIMIT_DEG, ELEVATOR_LIMIT_DEG, RUDDER_LIMIT_DEG } from './limits.js'
 import {
   AOA_FLOOR_DEG,
-  commandedLoadFactor,
+  downRateFraction,
   limitAoA,
   limitG,
-  pitchRateForLoadFactor,
+  pitchRateCommand,
   rollAuthority,
 } from './laws/limiters.js'
 import { PitchLaw } from './laws/pitch.js'
@@ -132,14 +132,14 @@ export interface AssistPreset {
  */
 export const BALANCED: AssistPreset = {
   name: 'Balanced',
-  gLimit: 9,
-  gLimitNegative: -3,
-  aoaCeilingDeg: 30,
+  gLimit: 11,
+  gLimitNegative: -4,
+  aoaCeilingDeg: 32,
   // Down from 1.4. At 308 deg/s the roll was quicker than anyone could aim with,
   // and it spent most of a full-stick input against the aileron stops — which means
   // the extra command was buying nothing anyway. 220 deg/s is still a fast roll.
   rollAmplification: 1.0,
-  maxPitchRateDeg: 45,
+  maxPitchRateDeg: 55,
 }
 
 /**
@@ -273,19 +273,16 @@ export class AssistLayer {
     let gLimiting = false
 
     if (this.toggles.pitchRateCommand) {
-      // The stick commands a load factor; the pitch rate that delivers it depends on
-      // airspeed and on where gravity currently is relative to the wings. Centre
-      // stick is one g, not zero pitch rate — see `pitchRateForLoadFactor`.
-      const nCmd = commandedLoadFactor(
+      // The stick commands a pitch RATE, plus enough to hold one g against gravity
+      // wherever the aircraft currently is. See `pitchRateCommand`.
+      const maxRate = degToRad(this.preset.maxPitchRateDeg)
+      qCmdRaw = pitchRateCommand(
         pitchStick,
-        this.preset.gLimit,
-        this.preset.gLimitNegative,
-      )
-
-      const cap = degToRad(this.preset.maxPitchRateDeg)
-      qCmdRaw = Math.min(
-        cap,
-        Math.max(-cap, pitchRateForLoadFactor(nCmd, state.vt, phi, theta)),
+        maxRate,
+        maxRate * downRateFraction(this.preset.gLimit, this.preset.gLimitNegative),
+        state.vt,
+        phi,
+        theta,
       )
       qCmd = qCmdRaw
 

@@ -74,10 +74,10 @@ export {
   effectiveCeiling,
   G_LIMIT,
   G_LIMIT_NEGATIVE,
-  commandedLoadFactor,
   limitAoA,
   limitG,
-  pitchRateForLoadFactor,
+  downRateFraction,
+  pitchRateCommand,
   rollAuthority,
 } from './laws/limiters.js'
 
