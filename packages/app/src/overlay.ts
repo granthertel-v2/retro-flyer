@@ -78,7 +78,13 @@ export class Overlay {
       pad('IAS', `${state.kt.toFixed(0)} kt`),
       pad('MACH', state.mach.toFixed(2)),
       pad('ALT', `${state.altFt.toFixed(0)} ft`),
+      pad('VS', `${(state.climbFpm >= 0 ? '+' : '')}${Math.round(state.climbFpm)} fpm`),
       pad('AOA', `${state.alphaDeg.toFixed(1)}°`),
+      // Where it is actually going, as opposed to where it is pointed. This is the
+      // gap the §9.1 flight path marker exists to show, and without some form of it
+      // a hard pull looks like nothing is happening: the nose reaches sixty degrees
+      // nose-up several seconds before the aircraft is meaningfully climbing.
+      pad('PATH', `${state.gammaDeg.toFixed(1)}°`),
       pad('BETA', `${state.betaDeg.toFixed(1)}°`),
       pad('G', nz.toFixed(2)),
       pad('ROLL RT', `${state.rates[0].toFixed(0)}°/s`),

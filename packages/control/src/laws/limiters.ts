@@ -46,7 +46,7 @@ export const G_LIMIT_NEGATIVE = -3
  * the allowance shrinks; past it the allowance is negative and the limiter commands
  * an actual recovery.
  */
-const AOA_GAIN_PER_DEG = 0.11
+const AOA_GAIN_PER_DEG = 0.17
 
 /**
  * How far ahead the limiter looks, seconds.
@@ -58,7 +58,7 @@ const AOA_GAIN_PER_DEG = 0.11
  * aircraft decelerates in the pull. Limiting on where alpha will be in half a second
  * gives the aircraft time to stop.
  */
-const AOA_LEAD_SECONDS = 0.55
+const AOA_LEAD_SECONDS = 0.25
 
 /** Reduction in the pitch rate cap per g of overshoot, rad/s. */
 const NZ_FEEDBACK = 0.035

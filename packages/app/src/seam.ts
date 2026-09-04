@@ -189,6 +189,10 @@ export interface RenderState {
   rates: [number, number, number]
   /** Engine power level, percent. */
   power: number
+  /** Rate of climb, feet per minute. */
+  climbFpm: number
+  /** Flight path angle — where the aircraft is going, degrees. Positive is climbing. */
+  gammaDeg: number
 }
 
 /**
@@ -231,6 +235,8 @@ export function toRenderState(v: readonly number[]): RenderState {
     betaDeg: radToDeg(s.beta),
     rates: [radToDeg(s.p), radToDeg(s.qRate), radToDeg(s.r)],
     power: s.power,
+    climbFpm: threeVel[1] * 60,
+    gammaDeg: radToDeg(Math.asin(Math.max(-1, Math.min(1, threeVel[1] / Math.max(s.vt, 1))))),
   }
 }
 
@@ -266,6 +272,8 @@ export function lerpRenderState(a: RenderState, b: RenderState, t: number): Rend
     betaDeg: lerp(a.betaDeg, b.betaDeg),
     rates: lerp3(a.rates, b.rates),
     power: lerp(a.power, b.power),
+    climbFpm: lerp(a.climbFpm, b.climbFpm),
+    gammaDeg: lerp(a.gammaDeg, b.gammaDeg),
   }
 }
 

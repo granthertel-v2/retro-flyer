@@ -60,6 +60,27 @@ const CHASE_BANK_FOLLOW = 0.45
 const EYE_FORWARD = 6.2
 const EYE_UP = 0.9
 
+/**
+ * How far the camera actually rolls, given the aircraft's bank.
+ *
+ * Copying a fixed fraction of the bank does not work, and it took two attempts to
+ * see why. `bank` lives on a circle: it wraps from +180 to -180 degrees, and those
+ * are the same attitude. Any fixed fraction k of it does not wrap — 0.45 * 180 and
+ * 0.45 * -180 are 162 degrees apart — so rolling through inverted snapped the camera
+ * a hundred and sixty degrees, exactly where a barrel roll spends its most
+ * interesting moment.
+ *
+ * The fix is to make the fraction rise to 1 as bank approaches +/-180. At the wrap
+ * point the camera is fully aligned with the aircraft, +180 and -180 give the same
+ * orientation, and the function is continuous all the way round. Near level it still
+ * behaves like a gentle partial follow, which is the whole point of it.
+ */
+export function followedBank(bank: number): number {
+  const t = Math.abs(bank) / Math.PI
+  const follow = CHASE_BANK_FOLLOW + (1 - CHASE_BANK_FOLLOW) * t * t
+  return bank * follow
+}
+
 export class ChaseCamera {
   private readonly position = new Vector3()
   private readonly velocity = new Vector3()
@@ -172,7 +193,8 @@ export class ChaseCamera {
     // Bank from the aircraft's own axes rather than from an Euler angle, because
     // Euler roll is undefined at vertical and this is not.
     const bank = Math.atan2(-this.right.y, this.up.y)
-    camera.rotateZ(-bank * CHASE_BANK_FOLLOW)
+
+    camera.rotateZ(-followedBank(bank))
   }
 
   reset(): void {

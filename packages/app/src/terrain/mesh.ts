@@ -39,7 +39,7 @@ import {
   MeshLambertMaterial,
   Object3D,
 } from 'three'
-import { Surface, type TerrainSource } from './source.js'
+import { Surface, hash2, type TerrainSource } from './source.js'
 
 /** Cells across each ring. Every ring uses the same count; only the cell size grows. */
 const RES = 64
@@ -232,7 +232,16 @@ class Ring {
         const flip = Math.abs(h00 - h11) > Math.abs(h10 - h01)
 
         // One surface and one colour per triangle: the flattest possible read.
-        const jitter = 0.9 + 0.2 * (((i * 73_856_093) ^ (j * 19_349_663)) >>> 24) / 255
+        //
+        // Keyed to the cell's position in the WORLD, not its index within this
+        // ring. Ring indices are relative to an origin that follows the aircraft,
+        // so a pattern built from them is pinned to the camera and slides across
+        // the landscape — which shows up as bands of shading gliding over the
+        // ground at a fixed distance ahead, looking for all the world like a
+        // rendering fault in the terrain rather than in its colouring.
+        const worldI = at.gx - RES / 2 + i
+        const worldJ = at.gz - RES / 2 + j
+        const jitter = 0.94 + 0.13 * hash2(worldI, worldJ)
 
         // Wound counter-clockwise **seen from above**, which is what puts the face
         // normal along +Y. Getting this backwards is completely silent: the

@@ -215,7 +215,12 @@ describe('auto-coordination', () => {
     const withAssist = measure(true)
     const without = measure(false)
 
-    expect(withAssist).toBeLessThan(7)
+    // The absolute figure moves with the AoA limiter, because the coupling being
+    // cancelled is proportional to sin(alpha) and the limiter decides how much
+    // alpha there is: relaxing it from holding 16 degrees to holding 20 raised this
+    // from 5.7 to 7.5 without the coordination doing anything differently. The
+    // ratio is the claim that survives retuning, so it is the one to lean on.
+    expect(withAssist).toBeLessThan(8.5)
     expect(without).toBeGreaterThan(withAssist * 1.3)
   })
 
