@@ -42,14 +42,39 @@ export const YAW_AXIS: AxisConfig = { rate: 3.0, centeringRate: 4.0, tau: 0.08, 
 
 /**
  * Throttle does not self-centre — it stays where it is put — so its centring rate is
- * its normal rate, and it is deliberately the slowest axis. Two and a half seconds
- * idle to full is roughly what a real throttle quadrant takes, and it is what makes
- * energy something you manage rather than something you toggle.
+ * its normal rate.
+ *
+ * It used to be much slower than this, at 0.4 per second: two and a half seconds
+ * idle to full, on the reasoning that it is roughly what a real throttle quadrant
+ * takes and that it makes energy something you manage rather than toggle. The
+ * intent was right and the mechanism was wrong, because **the engine already does
+ * this job**, with validated physics rather than a taste setting. `pdot` and `rtau`
+ * model turbofan spool-up, including afterburner hysteresis at the 50 per cent
+ * line, and they are held to 1e-12 against the reference implementation. Slewing
+ * the input as well simply lagged a lag.
+ *
+ * Measured at 5,000 ft and 500 ft/s, slamming to full from trim, the two contributions
+ * were not close to equal:
+ *
+ *     0.00 - 2.13 s    the COMMAND is still slewing        conditioning
+ *     2.13 - 3.04 s    the engine spools, AB lights        physics
+ *
+ * Two thirds of the delay was this file, and it was the two thirds nearest the
+ * pilot's hand, so it was all of what a flight test described as "a lag from when I
+ * start accelerating to when I start seeing it in the plane".
+ *
+ * At 1.2 the command is full in 0.71 s and thrust one second after the slam is 6,036
+ * lb against 4,107 — half again as much, in the window where it is actually felt.
+ * Time to 90 per cent thrust goes 3.04 s to 2.56 s. Raising it further buys nothing:
+ * past about 1.2 the smoothing below binds instead, and past that the engine does.
+ *
+ * What remains is engine spool, and it stays. It is the real aeroplane, it is what
+ * makes energy worth managing, and §4.4 puts it firmly out of reach.
  */
 export const THROTTLE_AXIS: AxisConfig = {
-  rate: 0.4,
-  centeringRate: 0.4,
-  tau: 0.18,
+  rate: 1.2,
+  centeringRate: 1.2,
+  tau: 0.10,
   deadband: 0,
 }
 

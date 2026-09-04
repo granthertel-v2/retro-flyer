@@ -106,10 +106,54 @@ describe('a key press never reaches the model as a step', () => {
       seconds += PHYSICS_DT
     }
 
-    // Idle to full should take a couple of seconds, so that energy is something
-    // managed rather than toggled.
-    expect(seconds).toBeGreaterThan(1.5)
-    expect(seconds).toBeLessThan(6)
+    // §5's requirement is only that bang-bang input never reaches the model. It is
+    // NOT this axis's job to make spool-up feel slow — see below, and see the note
+    // on THROTTLE_AXIS. This used to demand more than 1.5 seconds, which was this
+    // file duplicating a lag the engine already models properly, and it cost two
+    // thirds of the throttle response nearest the pilot's hand.
+    expect(seconds).toBeGreaterThan(0.4)
+    expect(seconds).toBeLessThan(2)
+  })
+})
+
+describe('energy is still managed rather than toggled', () => {
+  it('takes seconds to spool up, and that comes from the engine', () => {
+    // The property the throttle axis used to assert, tested where it actually lives.
+    // `pdot` and `rtau` model turbofan spool-up including afterburner hysteresis at
+    // the 50 per cent line, and they are validated to 1e-12 against the reference
+    // implementation — so this is the real aeroplane rather than a taste setting,
+    // and §4.4 puts it out of reach of feel tuning.
+    //
+    // Which is why speeding the INPUT up is safe: slamming the throttle still does
+    // not slam the engine.
+    const flight = fly({
+      alt: 5_000,
+      vt: 500,
+      seconds: 8,
+      input: hold({ pitch: 0, throttle: 1 }),
+    })
+
+    const spooled = flight.samples.find((s) => s.state.power > 90)
+
+    expect(spooled, 'never reached 90% power').toBeDefined()
+    expect(spooled!.t).toBeGreaterThan(1.5)
+    expect(spooled!.t).toBeLessThan(6)
+  })
+
+  it('still gets there faster than it used to, in the window that is felt', () => {
+    // Reported from a flight test as "a lag from when I start accelerating to when I
+    // start seeing it in the plane". One second after the slam, thrust was 4,107 lb;
+    // it is now 6,036. The engine is unchanged — the command reaching it is not.
+    const flight = fly({
+      alt: 5_000,
+      vt: 500,
+      seconds: 4,
+      input: hold({ pitch: 0, throttle: 1 }),
+    })
+
+    const atOneSecond = flight.samples.find((s) => s.t >= 1)
+
+    expect(atOneSecond!.state.power).toBeGreaterThan(24)
   })
 })
 
