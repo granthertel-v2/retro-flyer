@@ -73,6 +73,7 @@ export function parseSituation(raw: string | null): Situation | null {
     if (!sim.layer || typeof sim.layer !== 'object') return null
     if (!sim.controls || typeof sim.controls !== 'object') return null
     if (typeof sim.nz !== 'number' || !Number.isFinite(sim.nz)) return null
+    if (!sim.gear || typeof sim.gear !== 'object') return null
 
     return {
       version: SITUATION_VERSION,

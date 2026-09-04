@@ -27,7 +27,7 @@ import {
   Vector3,
 } from 'three'
 import { CITY, inCity } from './authored.js'
-import { hash2, type TerrainSource } from './source.js'
+import { RUNWAY_SURFACE_OFFSET_M, hash2, type TerrainSource } from './source.js'
 
 /** Spacing of the street grid, metres. */
 const BLOCK_PITCH = 130
@@ -123,10 +123,9 @@ export function buildRunways(source: TerrainSource): Object3D {
 
     const strip = new Mesh(new PlaneGeometry(f.widthM, f.lengthM), surface)
     strip.rotation.set(-Math.PI / 2, 0, -heading)
-    // 0.6 m of clearance. The pad is flat to within half a metre (asserted in
-    // test/terrain.test.ts), so this is enough to stay out of a z-fight and low
-    // enough that Day 3's gear will not notice it.
-    strip.position.set(f.x, f.elevation + 0.6, f.z)
+    // Lifted clear of the terrain under it — see RUNWAY_SURFACE_OFFSET_M, which the
+    // ground source uses too so that the wheels stand on the surface being drawn.
+    strip.position.set(f.x, f.elevation + RUNWAY_SURFACE_OFFSET_M, f.z)
     group.add(strip)
 
     // A centreline, in dashes. Cheap, and it is what makes a runway read as a
@@ -138,7 +137,7 @@ export function buildRunways(source: TerrainSource): Object3D {
       dash.rotation.set(-Math.PI / 2, 0, -heading)
       dash.position.set(
         f.x + Math.sin(heading) * along,
-        f.elevation + 0.7,
+        f.elevation + RUNWAY_SURFACE_OFFSET_M + 0.1,
         f.z - Math.cos(heading) * along,
       )
       group.add(dash)

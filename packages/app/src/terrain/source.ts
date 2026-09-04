@@ -46,6 +46,23 @@ export interface Airfield {
   widthM: number
 }
 
+/**
+ * How far the drawn runway sits above the terrain under it, metres.
+ *
+ * The pad is flattened but only to within half a metre (asserted in
+ * `test/terrain.test.ts`), and the runway strip is a single flat quad — so it has to
+ * be lifted clear or the terrain pokes through it in a scatter of z-fighting
+ * triangles.
+ *
+ * It lives here, rather than in the renderer that draws the strip, because Day 3
+ * gave it a second consumer. The physics has to stand the aircraft on the surface
+ * people can see: with the strip lifted 0.6 m and the gear standing on the raw
+ * terrain, the wheels sit 0.595 m under the tarmac, which is exactly what happened
+ * and exactly what a green test suite will never mention. Day 2's note here guessed
+ * "low enough that Day 3's gear will not notice it". It noticed.
+ */
+export const RUNWAY_SURFACE_OFFSET_M = 0.6
+
 export interface TerrainSource {
   /** Half-width of the map, metres. The world spans [-extent, +extent] on X and Z. */
   readonly extent: number

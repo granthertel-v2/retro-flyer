@@ -21,6 +21,8 @@ import {
   separationNm,
 } from '../src/terrain/authored.js'
 import { Surface } from '../src/terrain/source.js'
+import { AuthoredGroundSource } from '../src/terrain/groundSource.js'
+import { RUNWAY_SURFACE_OFFSET_M } from '../src/terrain/source.js'
 
 /** Walk a grid over the whole map and hand each sample to a visitor. */
 function overMap(step: number, visit: (x: number, z: number) => void): void {
@@ -280,5 +282,52 @@ describe('the airfields (§7)', () => {
       expect(Math.abs(f.x), f.name).toBeLessThan(MAP_EXTENT)
       expect(Math.abs(f.z), f.name).toBeLessThan(MAP_EXTENT)
     }
+  })
+})
+
+describe('the runway the wheels stand on is the runway you can see (Day 3)', () => {
+  const source = new AuthoredGroundSource(map)
+
+  it('reports the drawn strip height, not the terrain under it', () => {
+    // Found in the browser, invisible to every test that existed: the strip is
+    // lifted clear of the terrain to stop it z-fighting, and the gear was standing
+    // on the raw terrain — so the aircraft sat 0.595 m inside the tarmac. One
+    // constant now feeds both, and this is what holds them together.
+    for (const field of map.airfields) {
+      const pn = -field.z / 0.3048
+      const pe = field.x / 0.3048
+
+      const sample = source.sample(pn, pe)
+      const drawnM = field.elevation + RUNWAY_SURFACE_OFFSET_M
+
+      expect(sample.elevation * 0.3048, `${field.name} surface height`).toBeCloseTo(drawnM, 6)
+      expect(sample.solid).toBe(true)
+      // And it is pavement, not grass.
+      expect(sample.friction).toBeGreaterThan(0.5)
+    }
+  })
+
+  it('does not lift ground that is not a runway', () => {
+    // The offset is a property of the drawn strip, so it must not leak into open
+    // country — a half-metre step at the edge of every airfield would be worse than
+    // the bug it fixes.
+    const field = map.airfields[0] as (typeof map.airfields)[number]
+    const offRunwayM = 4_000
+
+    const pn = -(field.z + offRunwayM) / 0.3048
+    const pe = field.x / 0.3048
+
+    const sample = source.sample(pn, pe)
+    expect(sample.elevation * 0.3048).toBeCloseTo(map.height(field.x, field.z + offRunwayM), 6)
+  })
+
+  it('converts NED feet to renderer metres in the right direction', () => {
+    // North is -Z and east is +X. Getting this backwards puts the aircraft on the
+    // wrong side of the map while everything still looks internally consistent.
+    const probeX = 12_000
+    const probeZ = -7_500
+
+    const sample = source.sample(-probeZ / 0.3048, probeX / 0.3048)
+    expect(sample.elevation * 0.3048).toBeCloseTo(map.height(probeX, probeZ), 6)
   })
 })

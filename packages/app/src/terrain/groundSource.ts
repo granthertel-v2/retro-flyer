@@ -16,7 +16,7 @@
 
 import { ftToM, mToFt, type GroundSample, type GroundSource } from '@retro-flyer/physics'
 import { PAVED, SOFT, WATER } from '@retro-flyer/physics'
-import { Surface, type TerrainSource } from './source.js'
+import { RUNWAY_SURFACE_OFFSET_M, Surface, type TerrainSource } from './source.js'
 
 /**
  * Surface type to what it is like to roll on. `[A]`
@@ -46,6 +46,11 @@ export class AuthoredGroundSource implements GroundSource {
 
     const t = this.terrain.sample(x, z)
 
-    return { elevation: mToFt(t.height), ...material(t.surface) }
+    // A runway is drawn as a flat quad lifted clear of the terrain under it, so the
+    // surface the wheels have to stand on is that quad and not the ground beneath.
+    // Without this the aircraft sits 0.6 m — two feet — inside the tarmac.
+    const height = t.surface === Surface.Runway ? t.height + RUNWAY_SURFACE_OFFSET_M : t.height
+
+    return { elevation: mToFt(height), ...material(t.surface) }
   }
 }

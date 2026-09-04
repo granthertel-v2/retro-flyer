@@ -155,6 +155,10 @@ describe('situation save and restore', () => {
       parseSituation(withSim({ ...good.sim, nz: 'x' })),
       'nz not a number',
     ).toBeNull()
+    expect(
+      parseSituation(withSim({ ...good.sim, gear: undefined })),
+      'no gear state',
+    ).toBeNull()
 
     // And the good one still parses, so the guards are not simply refusing everything.
     expect(parseSituation(JSON.stringify(good))).not.toBeNull()
@@ -234,6 +238,31 @@ describe('slew', () => {
     // documented behaviour of leaving slew, not a bug.
     expect(aeroAngles(after[Q.U] as number, after[Q.V] as number, after[Q.W] as number).vt)
       .toBeGreaterThan(0)
+  })
+})
+
+describe('gear position travels with the situation', () => {
+  it('is captured and restored', () => {
+    // Restoring onto short final with the wheels up, having saved them down, is not
+    // the situation that was saved.
+    const sim = new Simulation(runwayStart(bayside), undefined, ground)
+    sim.gearInput = { brake: 0.5, steer: 0.2, down: true }
+    const saved = sim.capture()
+
+    sim.gearInput = { brake: 0, steer: 0, down: false }
+    expect(sim.capture().gear.down).toBe(false)
+
+    sim.restore(saved)
+    expect(sim.capture().gear.down).toBe(true)
+    expect(sim.capture().gear.brake).toBe(0.5)
+  })
+
+  it('survives JSON', () => {
+    const sim = new Simulation(SPAWN, undefined, ground)
+    sim.gearInput = { brake: 0, steer: 0, down: false }
+
+    const parsed = parseSituation(JSON.stringify(captureSituation(sim.capture(), {}, 0)))
+    expect(parsed!.sim.gear.down).toBe(false)
   })
 })
 

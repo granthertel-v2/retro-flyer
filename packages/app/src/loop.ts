@@ -65,6 +65,14 @@ export interface SimSnapshot {
   controls: Controls
   nz: number
   layer: AssistSnapshot
+  /**
+   * Brakes, steering and gear position.
+   *
+   * Part of the situation because it is part of the aircraft: restoring onto short
+   * final with the gear up, having saved it down, is not the situation that was
+   * saved.
+   */
+  gear: GearInput
 }
 
 export interface SpawnCondition {
@@ -407,6 +415,7 @@ export class Simulation {
       controls: { ...this.controls },
       nz: this.nz,
       layer: this.layer.capture(),
+      gear: { ...this.gearInput },
     }
   }
 
@@ -417,6 +426,7 @@ export class Simulation {
     this.controls = { ...s.controls }
     this.nz = s.nz
     this.layer.restore(s.layer)
+    if (s.gear) this.gearInput = { ...s.gear }
     this.ax = 0
     this.sustain = 0
     this.gear = gearLoads(this.state, this.ground, this.gearInput, this.gearStruts)

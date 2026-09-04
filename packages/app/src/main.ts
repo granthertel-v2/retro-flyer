@@ -21,6 +21,7 @@ import {
 } from 'three'
 import { PRESETS } from '@retro-flyer/control'
 import { buildAircraft } from './aircraft.js'
+import { GearModel } from './gear.js'
 import { Afterburner } from './afterburner.js'
 import { CAMERA_MODES, ChaseCamera, type CameraMode } from './camera/chase.js'
 import { FovController } from './camera/fov.js'
@@ -107,6 +108,11 @@ function main(): void {
   // Parented to the aeroplane, so it inherits attitude and needs no frame work.
   const burner = new Afterburner()
   aircraft.add(burner.object)
+
+  // Likewise the gear, which is placed from the flight model's own strut geometry.
+  const gearModel = new GearModel()
+  aircraft.add(gearModel.object)
+
   scene.add(aircraft)
 
   // §8.2 says the renderer asks the terrain for height. The physics now asks too,
@@ -131,7 +137,10 @@ function main(): void {
 
   let mode: CameraMode = 'chase'
   let presetIndex = 0
-  let gearDown = true
+  // Down for a runway start, up for an airborne one. Starting the Day 2 spawn with
+  // the wheels hanging out is not a small thing to get wrong: it is the first thing
+  // anyone sees, and it says the aircraft has just taken off when it has not.
+  let gearDown = SPAWN.onGround === true
   let wasSlewing = false
   let saveNote = ''
   let saveNoteUntil = 0
@@ -221,6 +230,7 @@ function main(): void {
 
       if (situation) {
         simulation.restore(situation.sim)
+        gearDown = situation.sim.gear.down
         Object.assign(simulation.layer.toggles, situation.toggles)
         presetIndex = Math.min(PRESETS.length - 1, Math.max(0, situation.preset))
         simulation.layer.preset = PRESETS[presetIndex]!
@@ -301,6 +311,7 @@ function main(): void {
     camera.updateProjectionMatrix()
 
     burner.update(state.power, dt)
+    gearModel.update(gearDown, simulation.gear.compression)
 
     // In the cockpit the aircraft is the thing you are inside of.
     aircraft.visible = mode !== 'cockpit'
