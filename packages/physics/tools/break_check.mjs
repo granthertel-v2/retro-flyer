@@ -22,8 +22,9 @@
  */
 
 import { execFileSync, spawnSync } from 'node:child_process'
-import { readFileSync, writeFileSync } from 'node:fs'
-import { resolve, dirname } from 'node:path'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { resolve, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -185,23 +186,39 @@ function assertCleanTree() {
   }
 }
 
-/** Run the suite; return the set of test files that failed. */
-function runSuite() {
-  const res = spawnSync('npx', ['vitest', 'run', '--reporter=json', '--outputFile=/dev/stdout'], {
-    cwd: PKG,
-    encoding: 'utf8',
-    maxBuffer: 64 * 1024 * 1024,
-  })
+const SCRATCH = mkdtempSync(join(tmpdir(), 'breakcheck-'))
+const REPORT_PATH = join(SCRATCH, 'report.json')
 
-  const out = `${res.stdout || ''}`
-  const start = out.indexOf('{')
-  if (start === -1) return { failed: new Set(SUITES), parseError: true }
+/**
+ * Run the suite; return the set of test files that failed.
+ *
+ * The report goes to a real file rather than /dev/stdout. Writing it to stdout
+ * interleaves with vitest's own console output, so the JSON arrives corrupted some
+ * of the time, the parse fails, and the fallback marks EVERY suite as failed. That
+ * silently inflates detection — a mutation looks broadly caught when in fact the
+ * run never produced readable results. It is a false negative for suite holes,
+ * which is the one error this tool must not make.
+ */
+function runSuite() {
+  rmSync(REPORT_PATH, { force: true })
+
+  const res = spawnSync(
+    'npx',
+    ['vitest', 'run', '--reporter=json', `--outputFile=${REPORT_PATH}`],
+    { cwd: PKG, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
+  )
 
   let report
   try {
-    report = JSON.parse(out.slice(start, out.lastIndexOf('}') + 1))
+    report = JSON.parse(readFileSync(REPORT_PATH, 'utf8'))
   } catch {
-    // A compile error takes the whole run down; treat that as everything failing.
+    // No readable report means the run itself failed — a compile error, most
+    // likely. Treat that as everything failing, but say so, because it is a
+    // different thing from a mutation being detected.
+    console.error(
+      `\n    [run produced no readable report; exit ${res.status}. ` +
+        `Treating as all-suites-failed.]`,
+    )
     return { failed: new Set(SUITES), parseError: true }
   }
 
@@ -256,32 +273,37 @@ async function main() {
 
     let caught
     try {
-      caught = runSuite().failed
+      caught = runSuite()
     } finally {
       revert()
     }
 
-    const detected = caught.size > 0
-    const missed = m.expect.filter((s) => !caught.has(s))
-    const surprises = [...caught].filter((s) => !m.expect.includes(s))
+    const detected = caught.failed.size > 0
+    const missed = m.expect.filter((s) => !caught.failed.has(s))
+    const surprises = [...caught.failed].filter((s) => !m.expect.includes(s))
 
     results.push({
       ...m,
-      caughtBy: [...caught].sort(),
+      caughtBy: [...caught.failed].sort(),
       detected,
+      buildFailed: caught.parseError,
       missedExpected: missed,
       unexpectedCatches: surprises.sort(),
     })
 
+    const n = caught.failed.size
     console.error(
       detected
-        ? `caught by ${caught.size} suite${caught.size === 1 ? '' : 's'}${missed.length ? `  (MISSED: ${missed.join(', ')})` : ''}`
+        ? `caught by ${n} suite${n === 1 ? '' : 's'}` +
+            (caught.parseError ? ' [BUILD FAILED]' : '') +
+            (missed.length ? `  (MISSED: ${missed.join(', ')})` : '')
         : 'NOT DETECTED',
     )
   }
 
   // Restore, belt and braces.
   git('checkout', '--', 'packages/physics/src')
+  rmSync(SCRATCH, { recursive: true, force: true })
 
   const undetected = results.filter((r) => !r.detected)
 
