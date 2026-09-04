@@ -134,7 +134,7 @@ export const BALANCED: AssistPreset = {
   name: 'Balanced',
   gLimit: 9,
   gLimitNegative: -3,
-  aoaCeilingDeg: 25,
+  aoaCeilingDeg: 30,
   // Down from 1.4. At 308 deg/s the roll was quicker than anyone could aim with,
   // and it spent most of a full-stick input against the aileron stops — which means
   // the extra command was buying nothing anyway. 220 deg/s is still a fast roll.
@@ -154,7 +154,7 @@ export const ACE: AssistPreset = {
   name: 'Ace',
   gLimit: 12,
   gLimitNegative: -4,
-  aoaCeilingDeg: 30,
+  aoaCeilingDeg: 34,
   rollAmplification: 1.6,
   maxPitchRateDeg: 55,
 }
@@ -305,7 +305,13 @@ export class AssistLayer {
       // bends the aircraft; an AoA limit exceeded leaves the aerodynamic data
       // entirely, and past the data edge the model has nothing to say.
       if (this.toggles.aoaLimiter) {
-        const limited = limitAoA(qCmd, state.alpha, state.qRate, this.preset.aoaCeilingDeg)
+        const limited = limitAoA(
+          qCmd,
+          state.alpha,
+          state.qRate,
+          state.vt,
+          this.preset.aoaCeilingDeg,
+        )
         aoaLimiting = Math.abs(limited - qCmd) > 1e-9
         qCmd = limited
       }

@@ -16,7 +16,9 @@ import { describe, expect, it } from 'vitest'
 import { degToRad, radToDeg } from '@retro-flyer/physics'
 import {
   AOA_CEILING_DEG,
+  AOA_CEILING_LOW_SPEED_DEG,
   AOA_FLOOR_DEG,
+  effectiveCeiling,
   BALANCED,
   G_LIMIT,
   PitchLaw,
@@ -32,11 +34,11 @@ const deg = (d: number): number => (d * Math.PI) / 180
 
 describe('the AoA limiter, as a function', () => {
   it('passes a nose-up command through well below the ceiling', () => {
-    expect(limitAoA(0.5, deg(5), 0)).toBeCloseTo(0.5, 9)
+    expect(limitAoA(0.5, deg(5), 0, 640)).toBeCloseTo(0.5, 9)
   })
 
   it('squeezes the command approaching the ceiling', () => {
-    const near = limitAoA(0.5, deg(AOA_CEILING_DEG - 2), 0)
+    const near = limitAoA(0.5, deg(AOA_CEILING_DEG - 2), 0, 640)
     expect(near).toBeGreaterThan(0)
     expect(near).toBeLessThan(0.5)
   })
@@ -44,11 +46,11 @@ describe('the AoA limiter, as a function', () => {
   it('commands nose down past the ceiling rather than merely nothing', () => {
     // Allowing zero would leave the aircraft sitting stably at 26 degrees, slowing
     // down, with the limiter reporting success.
-    expect(limitAoA(0.5, deg(AOA_CEILING_DEG + 4), 0)).toBeLessThan(0)
+    expect(limitAoA(0.5, deg(AOA_CEILING_DEG + 4), 0, 640)).toBeLessThan(0)
   })
 
   it('leaves a nose-down command alone when alpha is low', () => {
-    expect(limitAoA(-0.5, deg(5), 0)).toBe(-0.5)
+    expect(limitAoA(-0.5, deg(5), 0, 640)).toBe(-0.5)
   })
 
   it('never trades a nose-down command for a gentler one, above the floor', () => {
@@ -56,15 +58,18 @@ describe('the AoA limiter, as a function', () => {
     // recovery. What it must never do is give back less than was requested, unless
     // the floor is the thing intervening, which is the whole point of the floor.
     for (const alphaDeg of [0, 10, 24, 26, 35]) {
-      expect(limitAoA(-0.5, deg(alphaDeg), 0)).toBeLessThanOrEqual(-0.5)
+      expect(limitAoA(-0.5, deg(alphaDeg), 0, 640)).toBeLessThanOrEqual(-0.5)
     }
   })
 
   it('looks ahead, so a fast pull is limited before the ceiling arrives', () => {
     // Same alpha, different pitch rate. Rate matters, because alpha will not stop
     // where it is.
-    const settled = limitAoA(0.5, deg(18), 0)
-    const climbing = limitAoA(0.5, deg(18), deg(20))
+    // Close enough to the ceiling that the limiter is in play; at 18 degrees with
+    // a 30 degree ceiling there is enough margin that neither is limited at all and
+    // the comparison says nothing.
+    const settled = limitAoA(0.5, deg(26), 0, 640)
+    const climbing = limitAoA(0.5, deg(26), deg(20), 640)
 
     expect(climbing).toBeLessThan(settled)
   })
@@ -235,13 +240,13 @@ describe('the angle-of-attack floor', () => {
     // The data envelope has two ends. The first version of this limiter guarded
     // only the ceiling, and an oscillating full-deflection input walked out of the
     // bottom at -10.4 degrees with every assist switched on.
-    expect(limitAoA(-1, deg(AOA_FLOOR_DEG + 1), 0)).toBeGreaterThan(-1)
-    expect(limitAoA(-1, deg(AOA_FLOOR_DEG - 2), 0)).toBeGreaterThan(0)
+    expect(limitAoA(-1, deg(AOA_FLOOR_DEG + 1), 0, 640)).toBeGreaterThan(-1)
+    expect(limitAoA(-1, deg(AOA_FLOOR_DEG - 2), 0, 640)).toBeGreaterThan(0)
   })
 
   it('leaves the stick alone in the middle of the envelope', () => {
     for (const alphaDeg of [0, 5, 10, 15]) {
-      expect(limitAoA(-0.2, deg(alphaDeg), 0)).toBeCloseTo(-0.2, 9)
+      expect(limitAoA(-0.2, deg(alphaDeg), 0, 640)).toBeCloseTo(-0.2, 9)
     }
   })
 
@@ -255,5 +260,50 @@ describe('the angle-of-attack floor', () => {
 
     expect(flight.departed).toBe(false)
     expect(Math.min(...flight.samples.map((s) => s.alphaDeg))).toBeGreaterThan(ALPHA_DATA_MIN)
+  })
+})
+
+describe('the ceiling is scheduled on airspeed', () => {
+  it('gives the full ceiling at combat speed', () => {
+    expect(effectiveCeiling(30, 700)).toBeCloseTo(30, 9)
+    expect(effectiveCeiling(30, 480)).toBeCloseTo(30, 9)
+  })
+
+  it('reduces it when there is not enough speed to recover', () => {
+    expect(effectiveCeiling(30, 320)).toBeCloseTo(AOA_CEILING_LOW_SPEED_DEG, 9)
+    expect(effectiveCeiling(30, 200)).toBeCloseTo(AOA_CEILING_LOW_SPEED_DEG, 9)
+  })
+
+  it('is monotonic in airspeed and never above the preset', () => {
+    let previous = 0
+    for (let vt = 150; vt <= 900; vt += 25) {
+      const c = effectiveCeiling(30, vt)
+      expect(c).toBeGreaterThanOrEqual(previous - 1e-9)
+      expect(c).toBeLessThanOrEqual(30 + 1e-9)
+      previous = c
+    }
+  })
+
+  it('never raises a preset whose ceiling is already low', () => {
+    // Honest sits at 25, below the low-speed figure. The schedule must not hand it
+    // more alpha at low speed than it asks for at high.
+    expect(effectiveCeiling(15, 200)).toBeLessThanOrEqual(15 + 1e-9)
+  })
+
+  it('recovers from a slow-speed pull instead of departing', () => {
+    // 25,000 ft, part throttle, sustained pull, then roll. Without the schedule
+    // this bled from 420 ft/s to 159 with alpha at 84 degrees and the elevator on
+    // its nose-down stop, which nothing recovers from.
+    const flight = fly({
+      alt: 25_000,
+      vt: 420,
+      seconds: 25,
+      input: (t) => ({ pitch: t > 2 ? 1 : 0, roll: t > 6 ? 1 : 0, yaw: 0, throttle: 0.3 }),
+    })
+
+    expect(flight.departed).toBe(false)
+    expect(Math.max(...flight.samples.map((s) => s.alphaDeg))).toBeLessThan(ALPHA_DATA_MAX - 10)
+    // And it flies out the other side rather than mushing to a stop.
+    expect(flight.last.state.vt).toBeGreaterThan(350)
   })
 })

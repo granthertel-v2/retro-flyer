@@ -11,15 +11,23 @@ import { G_FT_S2, radToDeg } from '@retro-flyer/physics'
 /**
  * Angle-of-attack ceiling, degrees.
  *
- * 25 degrees, well below the 45 degree edge of the aerodynamic data (§2). Outside
- * that data the model diverges to NaN in about six seconds — the integrator clamps
- * by default so it cannot actually happen, but a limiter that only works because
+ * 30 degrees, against the 45 degree edge of the aerodynamic data (§2). Outside that
+ * data the model diverges to NaN in about six seconds — the integrator clamps by
+ * default so it cannot actually happen, but a limiter that only works because
  * something downstream is catching it is not a limiter.
  *
- * It is also roughly where the real F-16's limiter sits, which is a coincidence
- * worth having.
+ * Raised from 25, which was the real F-16's figure and the wrong one to copy. At 25
+ * the AERODYNAMIC limit bound before the STRUCTURAL one at every speed worth
+ * flying: full aft stick at 11,000 ft and 640 ft/s reached 6.3 g against a 9 g
+ * limit, so the g limiter was decoration and the aircraft simply stopped pulling
+ * partway through every turn. At 30 the g limiter is what binds at combat speeds
+ * and alpha only takes over down low and slow, where nine g is not available
+ * anyway. That ordering is the right one: structure first, aerodynamics second.
+ *
+ * 34 was tried and is not worth it — a tenth of a g more, alpha touching 44 in a
+ * slow-speed pull, and a full-deflection input leaving the envelope.
  */
-export const AOA_CEILING_DEG = 25
+export const AOA_CEILING_DEG = 30
 
 /**
  * Angle-of-attack floor, degrees.
@@ -31,12 +39,48 @@ export const AOA_CEILING_DEG = 25
  * departure. A floor at -5 leaves margin below in the same way the ceiling leaves
  * margin above.
  */
-export const AOA_FLOOR_DEG = -7
+export const AOA_FLOOR_DEG = -8
 
 /** Positive load factor limit, g. The F-16's real structural limit. */
 export const G_LIMIT = 9
 /** Negative load factor limit, g. */
 export const G_LIMIT_NEGATIVE = -3
+
+/**
+ * Angle-of-attack ceiling at low airspeed, degrees.
+ *
+ * The ceiling is not a constant, and the reason is energy rather than aerodynamics.
+ * High alpha costs induced drag; induced drag costs airspeed; and low airspeed costs
+ * the control authority you need to get the alpha back down. That loop has a corner
+ * it does not come out of — 25,000 ft, part throttle, a sustained pull, and the
+ * aircraft went from 420 ft/s to 159 with the elevator pinned full nose-down and
+ * alpha at 84 degrees. Nothing recovers from that, because at 94 knots there is
+ * nothing to recover it with.
+ *
+ * So the ceiling comes down as speed does: the full 30 degrees above 480 ft/s,
+ * declining to 18 by 320, where the real limit on how hard you can turn is that you
+ * are running out of aeroplane.
+ *
+ * The window is worth more than it looks. Fading from 550 rather than 480 costs
+ * half a degree per second of sustained turn rate, because a hard turn bleeds
+ * through it; fading from 400 lets the slow-speed case reach 43 degrees alpha, two
+ * off the edge of the data. 480 keeps the whole ceiling available for the pull that
+ * matters and still arrests the one that does not end well.
+ */
+export const AOA_CEILING_LOW_SPEED_DEG = 18
+
+/** Airspeeds, ft/s, between which the ceiling is reduced. */
+const CEILING_FULL_FPS = 480
+const CEILING_LOW_FPS = 320
+
+/** The alpha ceiling actually in force at this airspeed, degrees. */
+export function effectiveCeiling(ceilingDeg: number, vt: number): number {
+  const t = Math.min(1, Math.max(0, (vt - CEILING_FULL_FPS) / (CEILING_LOW_FPS - CEILING_FULL_FPS)))
+  const fade = t * t * (3 - 2 * t)
+  const low = Math.min(AOA_CEILING_LOW_SPEED_DEG, ceilingDeg)
+
+  return ceilingDeg - (ceilingDeg - low) * fade
+}
 
 /**
  * Pitch rate allowed per degree of margin to the ceiling, rad/s.
@@ -58,7 +102,7 @@ const AOA_GAIN_PER_DEG = 0.17
  * aircraft decelerates in the pull. Limiting on where alpha will be in half a second
  * gives the aircraft time to stop.
  */
-const AOA_LEAD_SECONDS = 0.25
+const AOA_LEAD_SECONDS = 0.20
 
 /** Reduction in the pitch rate cap per g of overshoot, rad/s. */
 const NZ_FEEDBACK = 0.035
@@ -127,18 +171,20 @@ export function limitAoA(
   qCmd: number,
   alphaRad: number,
   q: number,
+  vt: number,
   ceilingDeg = AOA_CEILING_DEG,
   floorDeg = AOA_FLOOR_DEG,
 ): number {
+  const ceiling = effectiveCeiling(ceilingDeg, vt)
   const predicted = radToDeg(alphaRad) + radToDeg(q) * AOA_LEAD_SECONDS
 
   // Symmetric: the ceiling caps how much nose-up may be commanded, the floor caps
   // how much nose-down. Both are one-line approaches to a boundary, and between
   // them the stick is untouched.
-  const ceiling = (ceilingDeg - predicted) * AOA_GAIN_PER_DEG
-  const floor = (floorDeg - predicted) * AOA_GAIN_PER_DEG
+  const upper = (ceiling - predicted) * AOA_GAIN_PER_DEG
+  const lower = (floorDeg - predicted) * AOA_GAIN_PER_DEG
 
-  return Math.max(floor, Math.min(qCmd, ceiling))
+  return Math.max(lower, Math.min(qCmd, upper))
 }
 
 export function limitG(

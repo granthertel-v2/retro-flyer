@@ -69,7 +69,9 @@ export {
 
 export {
   AOA_CEILING_DEG,
+  AOA_CEILING_LOW_SPEED_DEG,
   AOA_FLOOR_DEG,
+  effectiveCeiling,
   G_LIMIT,
   G_LIMIT_NEGATIVE,
   commandedLoadFactor,

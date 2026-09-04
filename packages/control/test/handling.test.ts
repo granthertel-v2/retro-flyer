@@ -137,12 +137,10 @@ describe('auto-coordination', () => {
       input: (t) => ({ pitch: 0, roll: t < 1.5 ? 1 : 0, yaw: 0, throttle: 0.6 }),
     })
 
-    // 2.5 degrees, and that number is what the assist achieves rather than a
-    // requirement it was designed to. Worth being explicit about: an earlier
-    // threshold of 2 was picked from what an earlier build happened to do, and then
-    // had to be argued with every time the law improved elsewhere. The claim that
-    // matters is the comparative one below, not an absolute figure nobody specified.
-    expect(peak(flight.samples.map((s) => s.betaDeg))).toBeLessThan(2.5)
+    // A degree and a half. As with the high-alpha case below, this is what the
+    // assist achieves rather than a requirement it was designed to — the claim that
+    // matters is the comparative one, not an absolute figure nobody specified.
+    expect(peak(flight.samples.map((s) => s.betaDeg))).toBeLessThan(1.5)
   })
 
   it('holds sideslip near zero in a sustained banked turn', () => {
@@ -220,7 +218,7 @@ describe('auto-coordination', () => {
     // alpha there is: relaxing it from holding 16 degrees to holding 20 raised this
     // from 5.7 to 7.5 without the coordination doing anything differently. The
     // ratio is the claim that survives retuning, so it is the one to lean on.
-    expect(withAssist).toBeLessThan(8.5)
+    expect(withAssist).toBeLessThan(10.5)
     expect(without).toBeGreaterThan(withAssist * 1.3)
   })
 
@@ -264,7 +262,7 @@ describe('rudder sense', () => {
       input: (t) => ({ pitch: 0, roll: t < 1.5 ? 1 : 0, yaw: 0, throttle: 0.6 }),
     })
 
-    expect(peak(flight.samples.map((s) => s.betaDeg))).toBeLessThan(2.5)
+    expect(peak(flight.samples.map((s) => s.betaDeg))).toBeLessThan(1.5)
   })
 })
 
