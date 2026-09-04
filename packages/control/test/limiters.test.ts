@@ -22,8 +22,10 @@ import {
   BALANCED,
   G_LIMIT,
   PitchLaw,
-  commandedLoadFactor,
-  pitchRateForLoadFactor,
+  downRateFraction,
+  pitchRateCommand,
+  effectiveFloor,
+  AOA_FLOOR_LOW_SPEED_DEG,
   limitAoA,
   limitG,
   scheduledGains,
@@ -138,10 +140,13 @@ describe('flown: full aft stick', () => {
 
     const worst = Math.max(...flight.samples.map((s) => s.nz))
 
-    expect(worst).toBeLessThan(G_LIMIT + 0.75)
+    // Against the PRESET's limit, not the module default. The flight above is flown
+    // by BALANCED, and once a preset raises its own limit above G_LIMIT a test
+    // asserting the default is measuring a number nothing in that flight used.
+    expect(worst).toBeLessThan(BALANCED.gLimit + 0.75)
     // And it should actually get near it, or the test is passing for the wrong
     // reason — a limiter that never engages proves nothing.
-    expect(worst).toBeGreaterThan(G_LIMIT - 2.5)
+    expect(worst).toBeGreaterThan(BALANCED.gLimit - 2.5)
   })
 
   it('respects the negative limit under full forward stick', () => {
@@ -196,24 +201,42 @@ describe('flown: full aft stick', () => {
     expect(Math.max(...settledNz)).toBeLessThan(1.5)
   })
 
-  it('commands one g at centre stick, and the limits at the stops', () => {
-    expect(commandedLoadFactor(0)).toBeCloseTo(1, 12)
-    expect(commandedLoadFactor(1)).toBeCloseTo(G_LIMIT, 12)
-    expect(commandedLoadFactor(-1)).toBeCloseTo(BALANCED.gLimitNegative, 12)
+  it('commands the same rate at every speed, which is the point of it', () => {
+    // The reason the command is a rate and not a load factor. Deriving pitch rate
+    // from a commanded n makes full stick mean less and less the faster you fly —
+    // 23 deg/s at 640 ft/s and 16 at 900 — so speed made the aircraft feel more
+    // sluggish. Full stick now asks for the same thing everywhere, and the limiters
+    // downstream are what stop you bending it.
+    const rate = degToRad(55)
+    const level = (vt: number): number => pitchRateCommand(1, rate, rate, vt, 0, 0)
+
+    expect(level(500)).toBeCloseTo(rate, 9)
+    expect(level(900)).toBeCloseTo(rate, 9)
   })
 
   it('asks for a pull when inverted at centre stick, and nothing when level', () => {
-    // The whole reason for the gravity term. Level, one g needs no pitch rate;
-    // inverted, one g toward the aircraft's belly means pulling toward the ground,
-    // which is why an aeroplane does not fly upside down hands-off.
-    expect(pitchRateForLoadFactor(1, 640, 0, 0)).toBeCloseTo(0, 9)
-    expect(pitchRateForLoadFactor(1, 640, Math.PI, 0)).toBeGreaterThan(0.05)
+    // The whole reason for the gravity term, which survived the change from a load
+    // factor command to a rate one. Level, one g needs no pitch rate; inverted, one
+    // g toward the aircraft's belly means pulling toward the ground, which is why an
+    // aeroplane does not fly upside down hands-off.
+    const r = degToRad(55)
+    expect(pitchRateCommand(0, r, r, 640, 0, 0)).toBeCloseTo(0, 9)
+    expect(pitchRateCommand(0, r, r, 640, Math.PI, 0)).toBeGreaterThan(0.05)
 
     // And knife-edge is in between: no vertical lift at all, so one g of pull just
     // turns while gravity takes it down.
-    const knifeEdge = pitchRateForLoadFactor(1, 640, Math.PI / 2, 0)
+    const knifeEdge = pitchRateCommand(0, r, r, 640, Math.PI / 2, 0)
     expect(knifeEdge).toBeGreaterThan(0)
-    expect(knifeEdge).toBeLessThan(pitchRateForLoadFactor(1, 640, Math.PI, 0))
+    expect(knifeEdge).toBeLessThan(pitchRateCommand(0, r, r, 640, Math.PI, 0))
+  })
+
+  it('gives less nose-down authority than nose-up, because the limits are not symmetric', () => {
+    // +11 and -4 means less than half as much room to push as to pull. Commanding
+    // the same rate both ways just moves the catch from the g limiter to the AoA
+    // floor, which is the end with 2 degrees of margin rather than 13.
+    expect(downRateFraction(11, -4)).toBeCloseTo(0.5, 9)
+    expect(downRateFraction(9, -3)).toBeCloseTo(0.5, 9)
+    expect(downRateFraction(4, -9)).toBe(1)
   })
 })
 
@@ -263,10 +286,51 @@ describe('the angle-of-attack floor', () => {
   })
 })
 
+describe('the floor is scheduled on airspeed too', () => {
+  it('gives the full floor where there is authority to recover with', () => {
+    expect(effectiveFloor(-8, 700)).toBeCloseTo(-8, 9)
+    expect(effectiveFloor(-8, 900)).toBeCloseTo(-8, 9)
+  })
+
+  it('raises it where there is not', () => {
+    // Recovering from negative alpha means commanding a pull, and how fast that pull
+    // arrives depends on dynamic pressure. A rate command asks for the same degrees
+    // per second at every speed, so at low q-bar the aircraft reaches the floor just
+    // as quickly with far less available to stop it. Every departure in the
+    // adversarial family was at 20,000 ft or above before this existed.
+    expect(effectiveFloor(-8, 400)).toBeCloseTo(AOA_FLOOR_LOW_SPEED_DEG, 9)
+    expect(effectiveFloor(-8, 250)).toBeCloseTo(AOA_FLOOR_LOW_SPEED_DEG, 9)
+    expect(effectiveFloor(-8, 550)).toBeGreaterThan(-8)
+    expect(effectiveFloor(-8, 550)).toBeLessThan(AOA_FLOOR_LOW_SPEED_DEG)
+  })
+
+  it('never lowers a floor that is already above the low-speed one', () => {
+    // A preset with a shallow floor should not have it pushed DOWN by flying slowly.
+    expect(effectiveFloor(-3, 300)).toBeCloseTo(-3, 9)
+  })
+
+  it('stops harder at the floor than at the ceiling, because it has less room', () => {
+    // The floor is 2 degrees from the edge of the data where the ceiling is 13. A
+    // gentle approach lets alpha coast a degree or two past the boundary, which is
+    // fine above and was the entire failure below.
+    const nearFloor = limitAoA(-1, deg(AOA_FLOOR_DEG + 1), 0, 800)
+    const nearCeiling = limitAoA(1, deg(AOA_CEILING_DEG - 1), 0, 800)
+
+    expect(Math.abs(nearFloor)).toBeGreaterThan(Math.abs(nearCeiling))
+  })
+})
+
 describe('the ceiling is scheduled on airspeed', () => {
   it('gives the full ceiling at combat speed', () => {
     expect(effectiveCeiling(30, 700)).toBeCloseTo(30, 9)
-    expect(effectiveCeiling(30, 480)).toBeCloseTo(30, 9)
+    expect(effectiveCeiling(30, 900)).toBeCloseTo(30, 9)
+
+    // The fade now starts at 700, not 480. A rate command asks for the same pitch
+    // rate at every speed, so it demands far more of the aircraft at low q-bar than
+    // the load-factor mapping did, and the ceiling has to start coming down to meet
+    // it — at 480 a sustained pull at 20,000 ft reached 162 degrees alpha.
+    expect(effectiveCeiling(30, 480)).toBeLessThan(30)
+    expect(effectiveCeiling(30, 480)).toBeGreaterThan(AOA_CEILING_LOW_SPEED_DEG)
   })
 
   it('reduces it when there is not enough speed to recover', () => {

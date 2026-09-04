@@ -109,6 +109,58 @@ describe('assists on, same inputs', () => {
     expect(flight.diverged).toBe(false)
   })
 
+  it('survives full deflection across a family of inputs, not just one', () => {
+    // The single adversarial script above passed once by luck. A fix that made it
+    // pass left five of these departing, which is the whole reason this test exists:
+    // one stick script finds a number that works for that stick script.
+    //
+    // Both ends matter and both have been seen to fail. Early versions left through
+    // the FLOOR at -12 degrees; a later one, with the ceiling fade starting too
+    // late for a rate command, left through the CEILING at 239.
+    const conditions = [
+      [12_000, 700],
+      [5_000, 850],
+      [20_000, 600],
+      [8_000, 500],
+      [25_000, 450],
+    ] as const
+    const frequencies = [
+      [1.7, 1.1, 0.7],
+      [2.3, 1.9, 1.3],
+      [1.1, 2.7, 0.5],
+      [3.1, 0.9, 2.1],
+      [0.7, 1.3, 1.7],
+    ] as const
+
+    const departures: string[] = []
+
+    for (const [alt, vt] of conditions) {
+      for (const f of frequencies) {
+        const flight = fly({
+          alt,
+          vt,
+          seconds: 20,
+          input: (t) => ({
+            pitch: Math.sign(Math.sin(t * f[0])),
+            roll: Math.sign(Math.sin(t * f[1])),
+            yaw: Math.sign(Math.sin(t * f[2])),
+            throttle: 1,
+          }),
+        })
+
+        if (flight.departed || flight.diverged) {
+          const alphas = flight.samples.map((s) => s.alphaDeg)
+          departures.push(
+            `${alt}ft/${vt}fps/${f.join(',')} ` +
+              `alpha ${Math.min(...alphas).toFixed(1)}..${Math.max(...alphas).toFixed(1)}`,
+          )
+        }
+      }
+    }
+
+    expect(departures).toEqual([])
+  })
+
   it('survives being flown slowly, where there is least authority to work with', () => {
     const flight = fly({
       alt: 25_000,

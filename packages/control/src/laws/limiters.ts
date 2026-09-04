@@ -36,8 +36,13 @@ export const AOA_CEILING_DEG = 32
  * which is the half everyone thinks about. Full forward stick walks straight out of
  * the bottom: an oscillating full-deflection input left the envelope at -10.4
  * degrees with every assist on, at no point having gone anywhere near a high-alpha
- * departure. A floor at -5 leaves margin below in the same way the ceiling leaves
- * margin above.
+ * departure. A floor leaves margin below in the same way the ceiling leaves margin
+ * above — but far less of it, and that asymmetry drives three other constants in
+ * this file. -8 against a -10 edge is two degrees; the ceiling has thirteen.
+ *
+ * This is the HIGH-SPEED floor. Below 700 ft/s it is raised, because recovering from
+ * negative alpha needs dynamic pressure the aircraft may not have — see
+ * `effectiveFloor`.
  */
 export const AOA_FLOOR_DEG = -8
 
@@ -57,21 +62,62 @@ export const G_LIMIT_NEGATIVE = -3
  * alpha at 84 degrees. Nothing recovers from that, because at 94 knots there is
  * nothing to recover it with.
  *
- * So the ceiling comes down as speed does: the full 30 degrees above 480 ft/s,
+ * So the ceiling comes down as speed does: the full ceiling above 700 ft/s,
  * declining to 18 by 320, where the real limit on how hard you can turn is that you
  * are running out of aeroplane.
  *
- * The window is worth more than it looks. Fading from 550 rather than 480 costs
- * half a degree per second of sustained turn rate, because a hard turn bleeds
- * through it; fading from 400 lets the slow-speed case reach 43 degrees alpha, two
- * off the edge of the data. 480 keeps the whole ceiling available for the pull that
- * matters and still arrests the one that does not end well.
+ * The fade used to start at 480, which was correct while the stick commanded a load
+ * factor. It is not correct now. A rate command asks for the same degrees per second
+ * at every speed, so at low q-bar it demands far more of the aircraft than the old
+ * mapping ever did, and the ceiling has to start coming down much earlier to meet
+ * it. Measured at 480 with the rate command: a sustained pull at 20,000 ft and 480
+ * ft/s reaches 162 degrees alpha, and the adversarial full-deflection family departs
+ * 6 times out of 25 — through the CEILING, at alpha 239.
+ *
+ * At 700 none of that happens, and the slow turn is better rather than worse: 3.7
+ * deg/s sustained at 20,000 ft against 1.3, because an aircraft that has departed is
+ * not turning at all. Fading earlier costs a little of the ceiling in the 480-700
+ * band and buys back the entire low-speed corner.
  */
 export const AOA_CEILING_LOW_SPEED_DEG = 18
 
 /** Airspeeds, ft/s, between which the ceiling is reduced. */
 const CEILING_FULL_FPS = 700
 const CEILING_LOW_FPS = 320
+
+/**
+ * Angle-of-attack floor at low airspeed, degrees.
+ *
+ * The floor is scheduled on airspeed for the same reason the ceiling is, and the
+ * reason is authority rather than aerodynamics.
+ *
+ * Recovering from negative alpha means commanding a pull, and how fast that pull
+ * arrives depends on dynamic pressure: the same elevator deflection makes a
+ * fraction of the pitching moment at 450 ft/s that it makes at 850. A rate command
+ * does not care — full forward stick asks for the same degrees per second at every
+ * speed, which is exactly what makes it feel right — so at low q-bar the aircraft
+ * arrives at the floor just as quickly with far less available to stop it.
+ *
+ * Measured, that is the whole of the remaining problem. Across 25 adversarial
+ * full-deflection inputs, every departure left through the floor at 20,000 ft and
+ * above; nothing below 12,000 ft ever came close, at any setting of the lead. So
+ * the floor comes up as speed comes down, and the aircraft keeps the full -8
+ * degrees exactly where it has the authority to use it.
+ */
+export const AOA_FLOOR_LOW_SPEED_DEG = -4.5
+
+/** Airspeeds, ft/s, between which the floor is raised. */
+const FLOOR_FULL_FPS = 700
+const FLOOR_LOW_FPS = 400
+
+/** The alpha floor actually in force at this airspeed, degrees. */
+export function effectiveFloor(floorDeg: number, vt: number): number {
+  const t = Math.min(1, Math.max(0, (vt - FLOOR_FULL_FPS) / (FLOOR_LOW_FPS - FLOOR_FULL_FPS)))
+  const fade = t * t * (3 - 2 * t)
+  const high = Math.max(AOA_FLOOR_LOW_SPEED_DEG, floorDeg)
+
+  return floorDeg + (high - floorDeg) * fade
+}
 
 /** The alpha ceiling actually in force at this airspeed, degrees. */
 export function effectiveCeiling(ceilingDeg: number, vt: number): number {
@@ -93,16 +139,61 @@ export function effectiveCeiling(ceilingDeg: number, vt: number): number {
 const AOA_GAIN_PER_DEG = 0.17
 
 /**
- * How far ahead the limiter looks, seconds.
+ * The same, approaching the FLOOR, rad/s per degree.
+ *
+ * Higher than the ceiling's, and for the third time in this file the reason is that
+ * 2 degrees of margin and 13 degrees of margin are not the same problem. A gentle
+ * approach gain lets alpha coast past the boundary and settle a degree or two beyond
+ * it, which is fine at the ceiling, where there is room to coast, and is not at the
+ * floor, where there is none.
+ *
+ * Worth being straight about what this is and is not: it is NOT what stops the
+ * departure. Setting it back to the ceiling's 0.17 leaves the adversarial family at
+ * 0 departures out of 25 — the lead, the scheduled floor and the ceiling fade are
+ * what do that work, and each of those turns the family red when reverted. This buys
+ * margin rather than correctness: worst-case alpha across the family goes from -9.65
+ * to -9.35 against a data edge at -10, which is a little under half a degree of room
+ * turned into a little under two thirds. It saturates around 0.45; 0.60 measures the
+ * same.
+ *
+ * At the end with two degrees to give, doubling what is left is worth one constant.
+ * It costs nothing elsewhere — the gain multiplies the margin, so far from the floor
+ * it still authorises more nose-down rate than the stick can ask for.
+ */
+const AOA_GAIN_DOWN_PER_DEG = 0.45
+
+/**
+ * How far ahead the limiter looks approaching the CEILING, seconds.
  *
  * Limiting on present alpha alone does not work, and the first version of this file
  * did exactly that: fading the command out at the ceiling let alpha coast to 43
  * degrees at 20,000 ft — two degrees from the edge of the aerodynamic data. Pitch
  * rate does not stop when the command does, and alpha keeps rising anyway while the
- * aircraft decelerates in the pull. Limiting on where alpha will be in half a second
- * gives the aircraft time to stop.
+ * aircraft decelerates in the pull. Limiting on where alpha will be a fraction of a
+ * second from now gives the aircraft time to stop.
+ *
+ * Short, because the ceiling can afford it: 13 degrees of margin to the data edge,
+ * and a longer lead here just makes the aircraft feel like it is backing out of
+ * pulls it could have completed.
  */
-const AOA_LEAD_SECONDS = 0.12
+const AOA_LEAD_UP_SECONDS = 0.12
+
+/**
+ * How far ahead the limiter looks approaching the FLOOR, seconds.
+ *
+ * Deliberately more than double the ceiling's, because the two ends are not the
+ * same problem and sharing one constant between them was the bug. The data envelope
+ * is -10 to +45: the floor sits 2 degrees from its edge where the ceiling sits 13.
+ * The end with a sixth of the margin needs to start stopping sooner, not at the same
+ * time.
+ *
+ * There is a second asymmetry underneath the first. Recovering from high alpha is
+ * something the aircraft helps with — it is stable in that direction and the nose
+ * wants to come down. Recovering from negative alpha means pulling, at negative g,
+ * with less elevator authority than the pull needed, and the aircraft does not help
+ * at all. Whatever the floor is going to do, it has to have started earlier.
+ */
+const AOA_LEAD_DOWN_SECONDS = 0.32
 
 /** Reduction in the pitch rate cap per g of overshoot, rad/s. */
 const NZ_FEEDBACK = 0.035
@@ -203,13 +294,19 @@ export function limitAoA(
   floorDeg = AOA_FLOOR_DEG,
 ): number {
   const ceiling = effectiveCeiling(ceilingDeg, vt)
-  const predicted = radToDeg(alphaRad) + radToDeg(q) * AOA_LEAD_SECONDS
+  const floor = effectiveFloor(floorDeg, vt)
+  const alphaDeg = radToDeg(alphaRad)
+  const rateDeg = radToDeg(q)
 
-  // Symmetric: the ceiling caps how much nose-up may be commanded, the floor caps
-  // how much nose-down. Both are one-line approaches to a boundary, and between
-  // them the stick is untouched.
-  const upper = (ceiling - predicted) * AOA_GAIN_PER_DEG
-  const lower = (floorDeg - predicted) * AOA_GAIN_PER_DEG
+  // Each end looks ahead by its own lead. Not symmetric, because the margins are
+  // not: see AOA_LEAD_DOWN_SECONDS. The ceiling caps how much nose-up may be
+  // commanded, the floor caps how much nose-down, and between them the stick is
+  // untouched.
+  const predictedUp = alphaDeg + rateDeg * AOA_LEAD_UP_SECONDS
+  const predictedDown = alphaDeg + rateDeg * AOA_LEAD_DOWN_SECONDS
+
+  const upper = (ceiling - predictedUp) * AOA_GAIN_PER_DEG
+  const lower = (floor - predictedDown) * AOA_GAIN_DOWN_PER_DEG
 
   return Math.max(lower, Math.min(qCmd, upper))
 }
@@ -243,6 +340,7 @@ export function limitG(
 /** Fraction of roll authority retained when hard against an envelope limit. */
 const ROLL_MIN_AUTHORITY = 0.28
 
+
 const smoothstep = (a: number, b: number, x: number): number => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)))
   return t * t * (3 - 2 * t)
@@ -272,6 +370,14 @@ export function rollAuthority(
 ): number {
   const alphaDeg = radToDeg(alphaRad)
 
+  // Left alone deliberately. Widening the floor's window was the obvious fix for the
+  // departure this file's floor limiter now handles, and measured across 25
+  // adversarial full-deflection inputs it changes nothing: 0 departures at a 5
+  // degree window and 0 at 16. The pitch-axis floor — its own lead, its own gain,
+  // scheduled on airspeed — is doing all of the work, so the roll axis does not need
+  // to pay for it. A wider window here is not free: at 16 degrees the fade reaches
+  // +8 degrees alpha, which is ordinary cruise, and roll authority quietly drops a
+  // fifth in normal flight.
   const closeness = Math.max(
     smoothstep(ceilingDeg - 9, ceilingDeg, alphaDeg),
     smoothstep(floorDeg + 7, floorDeg, alphaDeg),
