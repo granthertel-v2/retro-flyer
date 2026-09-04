@@ -27,9 +27,25 @@
  * §4.3 exists to catch.
  */
 
-import type { Controls, DerivativeOptions } from './dynamics.js'
+import {
+  NO_EXTERNAL_LOADS,
+  type Controls,
+  type DerivativeOptions,
+  type ExternalLoads,
+} from './dynamics.js'
 import { computeMassProperties, type MassProperties } from './massProperties.js'
 import { Q, quatDerivative, renormalizeQuat } from './state.js'
+
+/**
+ * External loads as a function of state.
+ *
+ * A callback rather than a value because RK4 evaluates the derivative at four
+ * different states inside one tick, and ground reaction depends on every one of
+ * them — a strut's compression is a function of where the aircraft is. Passing a
+ * fixed load would hold the gear force constant across the step and reintroduce
+ * exactly the first-order error RK4 is here to remove.
+ */
+export type LoadsFn = (v: readonly number[]) => ExternalLoads
 
 /** Physics tick rate, Hz (REQUIREMENTS §3). */
 export const PHYSICS_HZ = 120
@@ -63,6 +79,7 @@ export function step(
   dt: number = PHYSICS_DT,
   mass: MassProperties = computeMassProperties(),
   opts: DerivativeOptions = { clampAeroAngles: true },
+  loads: LoadsFn | null = null,
 ): number[] {
   const n = v.length
 
@@ -72,10 +89,13 @@ export function step(
     return out
   }
 
-  const k1 = quatDerivative(v, u, mass, opts).vd
-  const k2 = quatDerivative(add(v, k1, dt / 2), u, mass, opts).vd
-  const k3 = quatDerivative(add(v, k2, dt / 2), u, mass, opts).vd
-  const k4 = quatDerivative(add(v, k3, dt), u, mass, opts).vd
+  const d = (s: readonly number[]): number[] =>
+    quatDerivative(s, u, mass, opts, loads ? loads(s) : NO_EXTERNAL_LOADS).vd
+
+  const k1 = d(v)
+  const k2 = d(add(v, k1, dt / 2))
+  const k3 = d(add(v, k2, dt / 2))
+  const k4 = d(add(v, k3, dt))
 
   const out = new Array<number>(n)
   for (let i = 0; i < n; i++) {
@@ -86,48 +106,8 @@ export function step(
   }
 
   renormalizeQuat(out)
-  wrapAlpha(out, opts)
   return out
 }
-
-/**
- * Bring the integrated angle of attack back into (-180, 180].
- *
- * Alpha is a *state* here, integrated from `alphaDot`, rather than recovered from
- * the body velocity each step. That is the standard wind-axis formulation and it is
- * correct — but only modulo a full turn, because the quantity it is integrating
- * toward is `atan2(w, u)`, and that angle has no business leaving (-180, 180].
- *
- * Nothing in normal flight notices. A tumble does. Flown with the AoA limiter
- * switched off, full aft stick pitches the aircraft end over end and alpha simply
- * accumulates: measured, 1,477 degrees after 25 seconds, still climbing, when the
- * aircraft's actual incidence was 37. Everything downstream then reads a number
- * that is wrong by four full turns. The aero tables clamp it to their +45 edge and
- * compute forces for an aeroplane at 45 degrees alpha that is really at 37; the
- * clamp never releases, because alpha never comes back down; and the aircraft can
- * no longer recover from a departure it should merely have found difficult. §5 asks
- * for departure-prone with the assists off, not unrecoverable by arithmetic.
- *
- * Wrapping is exact rather than a guard: it restores the value the formulation was
- * always integrating toward. It runs only on the clamped path, so the unguarded one
- * stays bit-exact against the reference implementation for the §4.2.1 Tier A
- * fidelity vectors.
- *
- * Beta is deliberately left alone. It is an `asin`, bounded to +/-90 by
- * construction, and it does not run away — the same tumble kept it inside 25
- * degrees. Wrapping it at 180 would be wrong for the quantity it represents.
- */
-function wrapAlpha(out: number[], opts: DerivativeOptions): void {
-  if (!opts.clampAeroAngles) return
-
-  const alpha = out[Q.ALPHA] as number
-  if (alpha > -Math.PI && alpha <= Math.PI) return
-  if (!Number.isFinite(alpha)) return
-
-  out[Q.ALPHA] = alpha - TWO_PI * Math.ceil((alpha - Math.PI) / TWO_PI)
-}
-
-const TWO_PI = 2 * Math.PI
 
 /**
  * Integration clock. Converts variable wall-clock time into whole fixed ticks.
@@ -177,6 +157,7 @@ export class FixedStepClock {
     controls: (tick: number, state: readonly number[]) => Controls,
     elapsed: number,
     mass: MassProperties = computeMassProperties(),
+    loads: LoadsFn | null = null,
   ): number[] {
     this.accumulator += Math.min(elapsed, this.maxCatchup)
 
@@ -185,7 +166,7 @@ export class FixedStepClock {
 
     while (this.accumulator >= this.dt) {
       this.previous = state
-      state = step(state, controls(this.ticks, state), this.dt, mass)
+      state = step(state, controls(this.ticks, state), this.dt, mass, undefined, loads)
       this.accumulator -= this.dt
       this.ticks++
     }
@@ -223,6 +204,7 @@ export function simulate(
   duration: number,
   dt: number = PHYSICS_DT,
   mass: MassProperties = computeMassProperties(),
+  loads: LoadsFn | null = null,
 ): { t: number[]; states: number[][] } {
   const steps = Math.round(duration / dt)
   const t: number[] = [0]
@@ -231,7 +213,7 @@ export function simulate(
   let v = v0 as number[]
   for (let i = 0; i < steps; i++) {
     const time = i * dt
-    v = step(v, controls(time, v), dt, mass)
+    v = step(v, controls(time, v), dt, mass, undefined, loads)
     t.push(time + dt)
     states.push(v)
   }
@@ -241,7 +223,7 @@ export function simulate(
 
 /** Total specific energy, ft — the §4.2 energy test's quantity. */
 export function specificEnergy(v: readonly number[]): number {
-  const vt = v[Q.VT] as number
+  const vt = Math.hypot(v[Q.U] as number, v[Q.V] as number, v[Q.W] as number)
   const alt = v[Q.ALT] as number
   // E/(mg) = h + V^2/(2g). Height plus the altitude the speed could buy.
   return alt + (vt * vt) / (2 * 32.17)

@@ -35,14 +35,18 @@
  */
 
 import {
+  NO_EXTERNAL_LOADS,
   S,
   STATE_SIZE,
   type Controls,
   type DerivativeOptions,
+  type ExternalLoads,
   type LoadFactors,
-  derivative,
+  forcesAndMoments,
 } from './dynamics.js'
 import { computeMassProperties, type MassProperties } from './massProperties.js'
+import { MIN_AIRSPEED_FPS, guardAngles } from './envelope.js'
+import { DEG_PER_RAD_MODEL } from './units.js'
 
 /** Hamilton quaternion `[w, x, y, z]`. */
 export type Quaternion = readonly [number, number, number, number]
@@ -210,17 +214,57 @@ export function fromStateVector(x: readonly number[]): AircraftState {
 /**
  * The quaternion state as a flat array, for the integrator.
  *
- * Layout: `[vt, alpha, beta, qw, qx, qy, qz, p, q, r, pn, pe, alt, power]`.
- * Fourteen elements — one more than the Euler form, since a quaternion carries four
- * numbers where Euler angles carry three. That redundancy is what buys the
- * singularity-free behavior.
+ * Layout: `[u, v, w, qw, qx, qy, qz, p, q, r, pn, pe, alt, power]`.
+ *
+ * ## Why body velocity rather than (vt, alpha, beta)
+ *
+ * The reference model stores velocity in wind axes and integrates `alpha` as a
+ * state. Its derivative, from `dynamics.ts`, is
+ *
+ * ```
+ *   alphaDot = (u * wdot - w * udot) / (u^2 + w^2)   ~=   wdot / vt
+ * ```
+ *
+ * so **any body-normal acceleration is amplified by 1/vt**. In flight that is a
+ * division by five hundred and nobody notices. On a runway it is a division by
+ * nothing. Measured on this model, from gravity alone and with no gear force at all:
+ * 0.4 deg/s of alphaDot at 500 ft/s, 91 deg/s at 20 ft/s, and 1,833 deg/s at 1 ft/s
+ * — fifteen degrees of alpha in a single 120 Hz tick.
+ *
+ * That is not a defect in the reference. At 1 ft/s a falling body really does change
+ * incidence that fast; the number is right. It is the *state variable* that is
+ * wrong, and only for a regime the reference never enters. Landing gear struts
+ * inject body-normal accelerations by construction and a takeoff roll begins at
+ * zero airspeed, so REQUIREMENTS §9's Day 3 cannot be built on the wind-axis form.
+ *
+ * Integrating `u, v, w` removes the term rather than bounding it. There is no
+ * division by airspeed anywhere in the body-axis force equations, so standing still
+ * is not a special case, and `alpha` becomes `atan2(w, u)` — a derived quantity,
+ * always in (-180, 180] by construction.
+ *
+ * ## What this costs, and what it buys back
+ *
+ * It costs nothing in fidelity: the conversion between the two is exact both ways
+ * (`test/bodyAxis.test.ts` flies them side by side and confirms it), and
+ * `dynamics.ts` keeps the reference's wind-axis tail untouched for the Tier A
+ * vectors. Both formulations share one force model.
+ *
+ * It buys back the alpha-wrapping fix from Day 2. That bug — a tumble running alpha
+ * to 1,477 degrees while real incidence was 37, pinning the aero table clamp and
+ * making departures unrecoverable — existed only because alpha was integrated.
+ * Derived from `atan2`, it cannot leave its range, so the guard that corrected it
+ * has been deleted rather than kept.
+ *
+ * `AircraftState` still presents `vt`, `alpha` and `beta`, so the control package,
+ * the renderer seam and the app are unaffected by any of this.
  */
 export const QUAT_STATE_SIZE = 14
 
 export const enum Q {
-  VT = 0,
-  ALPHA = 1,
-  BETA = 2,
+  /** Body-frame velocity, ft/s: x forward, y right, z down. */
+  U = 0,
+  V = 1,
+  W = 2,
   QW = 3,
   QX = 4,
   QY = 5,
@@ -234,9 +278,55 @@ export const enum Q {
   POWER = 13,
 }
 
+/**
+ * Body velocity components from airspeed and the aerodynamic angles.
+ *
+ * The same three lines `dynamics.ts` uses, and the exact inverse of `aeroAngles`.
+ */
+export function bodyVelocity(
+  vt: number,
+  alpha: number,
+  beta: number,
+): [number, number, number] {
+  const cbta = Math.cos(beta)
+  return [vt * Math.cos(alpha) * cbta, vt * Math.sin(beta), vt * Math.sin(alpha) * cbta]
+}
+
+export interface AeroAngles {
+  /** Airspeed, ft/s. */
+  vt: number
+  /** Angle of attack, radians. Always in (-pi, pi] — it is an `atan2`. */
+  alpha: number
+  /** Sideslip, radians. */
+  beta: number
+}
+
+/**
+ * Airspeed and the aerodynamic angles from body velocity.
+ *
+ * At a dead standstill neither angle is defined — there is no relative wind to have
+ * an angle to — and `asin(0/0)` is NaN, which would propagate through the entire
+ * state within one tick and be thoroughly unpleasant to trace. Zero velocity
+ * therefore reports zero for both, which is the value the aircraft will have as soon
+ * as it starts moving straight ahead, and is the only defensible answer. A cold
+ * start on a runway hits this on tick one.
+ */
+export function aeroAngles(u: number, v: number, w: number): AeroAngles {
+  const vt = Math.hypot(u, v, w)
+  if (vt === 0) return { vt: 0, alpha: 0, beta: 0 }
+
+  const s = v / vt
+  return {
+    vt,
+    alpha: Math.atan2(w, u),
+    beta: Math.asin(s < -1 ? -1 : s > 1 ? 1 : s),
+  }
+}
+
 export function toQuatVector(s: AircraftState): number[] {
+  const [u, v, w] = bodyVelocity(s.vt, s.alpha, s.beta)
   return [
-    s.vt, s.alpha, s.beta,
+    u, v, w,
     s.q[0], s.q[1], s.q[2], s.q[3],
     s.p, s.qRate, s.r,
     s.pn, s.pe, s.alt, s.power,
@@ -244,10 +334,12 @@ export function toQuatVector(s: AircraftState): number[] {
 }
 
 export function fromQuatVector(v: readonly number[]): AircraftState {
+  const a = aeroAngles(v[Q.U] as number, v[Q.V] as number, v[Q.W] as number)
+
   return {
-    vt: v[Q.VT] as number,
-    alpha: v[Q.ALPHA] as number,
-    beta: v[Q.BETA] as number,
+    vt: a.vt,
+    alpha: a.alpha,
+    beta: a.beta,
     q: [v[Q.QW] as number, v[Q.QX] as number, v[Q.QY] as number, v[Q.QZ] as number],
     p: v[Q.P] as number,
     qRate: v[Q.Q_RATE] as number,
@@ -265,21 +357,36 @@ export interface QuatDerivative {
   accel: LoadFactors
   /** True if the aerodynamic envelope guard engaged this step. */
   outsideEnvelope: boolean
+  /**
+   * Acceleration along the flight path, ft/s^2 — `d(vt)/dt`.
+   *
+   * Not a state any more, but the app's speed cues read it (§6): it is the
+   * acceleration a pilot feels in their back, as distinct from `nz`, which is the
+   * one that pushes them into the seat. Returned rather than recomputed because the
+   * terms are already here.
+   */
+  vtDot: number
 }
 
 /**
- * State derivative in quaternion form.
+ * State derivative in body-axis quaternion form.
  *
- * Converts to Euler purely to evaluate the aerodynamics — which do not depend on
- * attitude representation — then discards the Euler *rates* and substitutes the
- * quaternion rate. So the singular `1/cos(theta)` term is computed and thrown away
- * rather than integrated, which is what keeps it from ever mattering.
+ * Shares `forcesAndMoments` with the reference path in `dynamics.ts` and differs
+ * only in the tail: where that converts body accelerations back into wind-axis
+ * rates, this returns them directly.
+ *
+ * The airspeed floor is still here, but it now guards only the *lookups* — the
+ * damping coefficients nondimensionalise on `b/2V`, and `airData` divides by the
+ * speed of sound. It no longer touches a state derivative. That is a much better
+ * place for it: below the floor, dynamic pressure is effectively zero, so whatever
+ * the damping terms say is multiplied by nothing.
  */
 export function quatDerivative(
   v: readonly number[],
   u: Controls,
   mass: MassProperties = computeMassProperties(),
   opts: DerivativeOptions = { clampAeroAngles: true },
+  ext: ExternalLoads = NO_EXTERNAL_LOADS,
 ): QuatDerivative {
   const q: Quaternion = [
     v[Q.QW] as number,
@@ -289,22 +396,48 @@ export function quatDerivative(
   ]
   const { phi, theta, psi } = eulerFromQuaternion(q)
 
-  const x = new Array<number>(STATE_SIZE).fill(0)
-  x[S.VT] = v[Q.VT] as number
-  x[S.ALPHA] = v[Q.ALPHA] as number
-  x[S.BETA] = v[Q.BETA] as number
-  x[S.PHI] = phi
-  x[S.THETA] = theta
-  x[S.PSI] = psi
-  x[S.P] = v[Q.P] as number
-  x[S.Q] = v[Q.Q_RATE] as number
-  x[S.R] = v[Q.R] as number
-  x[S.PN] = v[Q.PN] as number
-  x[S.PE] = v[Q.PE] as number
-  x[S.ALT] = v[Q.ALT] as number
-  x[S.POWER] = v[Q.POWER] as number
+  const uBody = v[Q.U] as number
+  const vBody = v[Q.V] as number
+  const wBody = v[Q.W] as number
 
-  const d = derivative(x, u, mass, opts)
+  const a = aeroAngles(uBody, vBody, wBody)
+  const vtAero = Math.max(a.vt, MIN_AIRSPEED_FPS)
+
+  const rawAlphaDeg = a.alpha * DEG_PER_RAD_MODEL
+  const rawBetaDeg = a.beta * DEG_PER_RAD_MODEL
+
+  let alphaDeg = rawAlphaDeg
+  let betaDeg = rawBetaDeg
+  let outsideEnvelope = false
+
+  if (opts.clampAeroAngles) {
+    const g = guardAngles(rawAlphaDeg, rawBetaDeg)
+    alphaDeg = g.alphaDeg
+    betaDeg = g.betaDeg
+    outsideEnvelope = g.clamped
+  }
+
+  const core = forcesAndMoments(
+    {
+      uBody,
+      vBody,
+      wBody,
+      vt: vtAero,
+      alphaDeg,
+      betaDeg,
+      phi,
+      theta,
+      psi,
+      p: v[Q.P] as number,
+      q: v[Q.Q_RATE] as number,
+      r: v[Q.R] as number,
+      alt: v[Q.ALT] as number,
+      power: v[Q.POWER] as number,
+    },
+    u,
+    mass,
+    ext,
+  )
 
   const qd = quaternionDerivative(
     q,
@@ -315,20 +448,16 @@ export function quatDerivative(
 
   return {
     vd: [
-      d.xd[S.VT] as number,
-      d.xd[S.ALPHA] as number,
-      d.xd[S.BETA] as number,
+      core.udot, core.vdot, core.wdot,
       qd[0], qd[1], qd[2], qd[3],
-      d.xd[S.P] as number,
-      d.xd[S.Q] as number,
-      d.xd[S.R] as number,
-      d.xd[S.PN] as number,
-      d.xd[S.PE] as number,
-      d.xd[S.ALT] as number,
-      d.xd[S.POWER] as number,
+      core.pdot, core.qdot, core.rdot,
+      core.pnDot, core.peDot, core.altDot,
+      core.powerDot,
     ],
-    accel: d.accel,
-    outsideEnvelope: d.outsideEnvelope,
+    accel: core.accel,
+    outsideEnvelope,
+    vtDot:
+      (uBody * core.udot + vBody * core.vdot + wBody * core.wdot) / vtAero,
   }
 }
 

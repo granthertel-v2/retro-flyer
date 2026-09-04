@@ -19,7 +19,6 @@
 import {
   FixedStepClock,
   PHYSICS_DT,
-  Q,
   computeMassProperties,
   fromQuatVector,
   fromStateVector,
@@ -180,7 +179,7 @@ export class Simulation {
         this.controls = this.layer.update(aircraft, input(), PHYSICS_DT, this.nz)
 
         // Load factor for the next tick's G limiter, and for the camera.
-        const { accel, vd } = quatDerivative(v, this.controls, this.mass, {
+        const { accel, vtDot } = quatDerivative(v, this.controls, this.mass, {
           clampAeroAngles: true,
         })
         this.nz = accel.nz + 1
@@ -189,7 +188,11 @@ export class Simulation {
         // d(vt)/dt is clean enough at 120 Hz, but it steps when the afterburner
         // lights, and the cue should swell rather than snap — and having swelled,
         // should not vanish the instant the throttle moves.
-        const raw = vd[Q.VT] as number
+        //
+        // `vtDot` is returned by the derivative rather than read out of it: airspeed
+        // is no longer a state (see `state.ts` on body-axis velocity), so there is
+        // no `vd[VT]` to index. The quantity is identical.
+        const raw = vtDot
         const tau = Math.abs(raw) > Math.abs(this.ax) ? AX_ATTACK_TAU : AX_RELEASE_TAU
         this.ax += (raw - this.ax) * Math.min(1, PHYSICS_DT / tau)
 

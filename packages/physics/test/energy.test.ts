@@ -40,7 +40,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { PHYSICS_HZ, simulate, specificEnergy, step } from '../src/integrator.js'
-import { Q, fromStateVector, toQuatVector } from '../src/state.js'
+import { aeroAngles, fromStateVector, Q, toQuatVector } from '../src/state.js'
 import { trim } from '../src/trim.js'
 import { G_FT_S2 } from '../src/units.js'
 
@@ -166,7 +166,9 @@ describe('unpowered glide from trim (§4.2 test 6)', () => {
     const { v, elevator } = glideStart(20000, 600)
     const { states } = simulate(v, () => glideControls(elevator), 30)
 
-    expect((states.at(-1) as number[])[Q.VT] as number).toBeLessThan(600)
+    const last = states.at(-1) as number[]
+    const vt = aeroAngles(last[Q.U] as number, last[Q.V] as number, last[Q.W] as number).vt
+    expect(vt).toBeLessThan(600)
   })
 
   it('loses energy faster at high speed than at low', () => {

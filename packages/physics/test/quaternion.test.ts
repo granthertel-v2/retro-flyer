@@ -12,18 +12,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import {
-  IDENTITY_QUATERNION,
-  Q,
-  eulerFromQuaternion,
-  fromQuatVector,
-  fromStateVector,
-  normalize,
-  quaternionDerivative,
-  quaternionFromEuler,
-  toQuatVector,
-  toStateVector,
-} from '../src/state.js'
+import { aeroAngles, eulerFromQuaternion, fromQuatVector, fromStateVector, IDENTITY_QUATERNION, normalize, Q, quaternionDerivative, quaternionFromEuler, toQuatVector, toStateVector } from '../src/state.js'
 import { PHYSICS_DT, PHYSICS_HZ, FixedStepClock, simulate, step } from '../src/integrator.js'
 import { S, STATE_SIZE, derivative } from '../src/dynamics.js'
 
@@ -169,7 +158,9 @@ describe('integrator', () => {
     const coarse = simulate(v0, ctrl, duration, duration / 16).states.at(-1) as number[]
     const half = simulate(v0, ctrl, duration, duration / 32).states.at(-1) as number[]
 
-    const err = (a: number[]) => Math.abs((a[Q.VT] as number) - (fine[Q.VT] as number))
+    const vtOf = (a: number[]): number =>
+      aeroAngles(a[Q.U] as number, a[Q.V] as number, a[Q.W] as number).vt
+    const err = (a: number[]) => Math.abs(vtOf(a) - vtOf(fine))
 
     const ratio = err(coarse) / err(half)
     expect(ratio).toBeGreaterThan(8) // fourth order would be ~16
@@ -277,7 +268,12 @@ describe('quaternion and Euler agree — and only one survives vertical', () => 
       quat[Q.QZ] as number,
     ])
 
-    expect(quat[Q.VT] as number).toBeCloseTo(eul[S.VT] as number, 4)
+    const quatVt = aeroAngles(
+      quat[Q.U] as number,
+      quat[Q.V] as number,
+      quat[Q.W] as number,
+    ).vt
+    expect(quatVt).toBeCloseTo(eul[S.VT] as number, 4)
     expect(quat[Q.ALT] as number).toBeCloseTo(eul[S.ALT] as number, 3)
     expect(quatEuler.theta).toBeCloseTo(eul[S.THETA] as number, 5)
     expect(quatEuler.phi).toBeCloseTo(eul[S.PHI] as number, 5)

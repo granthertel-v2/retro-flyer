@@ -31,6 +31,8 @@ export {
   ALPHA_MAX_DEG,
   ALPHA_MIN_DEG,
   BETA_LIMIT_DEG,
+  MIN_AIRSPEED_FPS,
+  clamp,
   guardAngles,
   insideEnvelope,
   type GuardedAngles,
@@ -59,13 +61,18 @@ export {
 } from './massProperties.js'
 
 export {
+  NO_EXTERNAL_LOADS,
   S,
   STATE_SIZE,
   derivative,
+  forcesAndMoments,
   stateDerivative,
   type Controls,
+  type Core,
+  type CoreInputs,
   type Derivative,
   type DerivativeOptions,
+  type ExternalLoads,
   type LoadFactors,
 } from './dynamics.js'
 
@@ -73,6 +80,8 @@ export {
   IDENTITY_QUATERNION,
   Q,
   QUAT_STATE_SIZE,
+  aeroAngles,
+  bodyVelocity,
   eulerFromQuaternion,
   fromQuatVector,
   fromStateVector,
@@ -83,9 +92,11 @@ export {
   renormalizeQuat,
   toQuatVector,
   toStateVector,
+  type AeroAngles,
   type AircraftState,
   type EulerAngles,
   type Quaternion,
+  type QuatDerivative,
 } from './state.js'
 
 export {
@@ -96,6 +107,7 @@ export {
   simulate,
   specificEnergy,
   step,
+  type LoadsFn,
 } from './integrator.js'
 
 export { trim, trimControls, type TrimCondition, type TrimResult } from './trim.js'
