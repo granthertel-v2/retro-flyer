@@ -1,0 +1,58 @@
+# Physics validation, headless (REQUIREMENTS §10).
+#
+# The physics package has no rendering dependency, so this needs no browser and no
+# display. Golden fixtures are committed, so it needs no Python either — the
+# fixture generator is a dev-only tool.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  physics:
+    name: Physics validation suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Validation suite
+        run: npm test
+
+  break-check:
+    # REQUIREMENTS §4.3: a passing suite proves nothing until each test is confirmed
+    # able to fail. This deliberately corrupts the model and asserts the right tests
+    # go red. It exits non-zero if any mutation goes undetected.
+    #
+    # Runs only on main. It is a dozen full suite runs, which is too slow to sit in
+    # the PR path, but a regression here means the suite has quietly stopped testing
+    # something and that must not reach main unnoticed.
+    name: Break-check protocol
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Confirm every test can fail
+        working-directory: packages/physics
+        run: node tools/break_check.mjs
