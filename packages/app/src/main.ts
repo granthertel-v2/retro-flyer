@@ -24,10 +24,11 @@ import { buildAircraft } from './aircraft.js'
 import { CAMERA_MODES, ChaseCamera, type CameraMode } from './camera/chase.js'
 import { FovController } from './camera/fov.js'
 import { InputReader } from './input.js'
-import { Simulation, type SpawnCondition } from './loop.js'
+import { Simulation } from './loop.js'
 import { Overlay } from './overlay.js'
 import { Clouds, SUN_DIRECTION, buildSun, positionSun } from './sky.js'
 import { MAP_EXTENT, authoredMap } from './terrain/authored.js'
+import { SPAWN } from './spawn.js'
 import { buildCity, buildRunways } from './terrain/city.js'
 import { TerrainMesh } from './terrain/mesh.js'
 import { Scatter } from './terrain/scatter.js'
@@ -37,15 +38,6 @@ const VIEW_DISTANCE = 34_000
 
 const SKY = 0x86b0d6
 const HAZE = 0xb3c8d6
-
-const SPAWN: SpawnCondition = {
-  alt: 11_000,
-  vt: 640,
-  // Pointed east-south-east, at the ridge, from over the bay.
-  headingDeg: 104,
-  x: -26_000,
-  z: -6_000,
-}
 
 function main(): void {
   const canvas = document.createElement('canvas')

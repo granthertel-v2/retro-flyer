@@ -15,9 +15,25 @@
 export const FOV_BASE = 58
 export const FOV_MAX = 94
 
-/** Airspeeds, knots, between which the FOV opens up. */
-export const FOV_LOW_KT = 200
-export const FOV_HIGH_KT = 800
+/**
+ * Airspeeds, knots, between which the FOV opens up.
+ *
+ * The old band, 200 to 800 kt, put almost all of its travel above the speeds the
+ * aircraft is actually flown at. 640 ft/s — the spawn, and a fast cruise — is 379
+ * kt, which sat at 66 degrees: barely wider than the 58 degree base, so the cue was
+ * spent on speeds reached only in a dive.
+ *
+ *     kt     old FOV    new FOV
+ *     300      61         65
+ *     379      66         73
+ *     450      72         81
+ *     550      80         91
+ *
+ * Topping out at 640 kt rather than 800 puts the full widening inside the envelope
+ * that gets flown, which is the only place a cue is worth anything.
+ */
+export const FOV_LOW_KT = 170
+export const FOV_HIGH_KT = 640
 
 /** How fast the FOV may change, degrees per second. */
 const FOV_RATE = 22

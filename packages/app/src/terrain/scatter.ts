@@ -28,11 +28,20 @@ import {
 } from 'three'
 import { Surface, hash2, type TerrainSource } from './source.js'
 
-/** Grid pitch, metres. */
-const PITCH = 155
+/**
+ * Grid pitch, metres.
+ *
+ * This is §6's "ground detail density and near-field visual reference so
+ * low-altitude speed reads", and the number that matters is how often something
+ * passes you. At 250 m/s a 155 m grid put one object alongside every 0.62 seconds,
+ * which is not a stream, it is a series of events. 95 m makes it 0.38 — dense enough
+ * that the near field reads as continuous motion rather than as individual objects
+ * being counted.
+ */
+export const PITCH = 95
 
-/** Cells each way from the aircraft. 11 gives a radius of about 1.7 km. */
-const REACH = 11
+/** Cells each way from the aircraft. 19 gives a radius of about 1.8 km. */
+export const REACH = 19
 
 const COUNT = (REACH * 2 + 1) ** 2
 
