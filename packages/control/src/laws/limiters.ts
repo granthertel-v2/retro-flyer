@@ -31,7 +31,7 @@ export const AOA_CEILING_DEG = 25
  * departure. A floor at -5 leaves margin below in the same way the ceiling leaves
  * margin above.
  */
-export const AOA_FLOOR_DEG = -5
+export const AOA_FLOOR_DEG = -7
 
 /** Positive load factor limit, g. The F-16's real structural limit. */
 export const G_LIMIT = 9
@@ -62,6 +62,54 @@ const AOA_LEAD_SECONDS = 0.25
 
 /** Reduction in the pitch rate cap per g of overshoot, rad/s. */
 const NZ_FEEDBACK = 0.035
+
+/**
+ * Pitch rate that produces a commanded load factor at the current attitude.
+ *
+ * `q = (g/V) * (n - cos(phi)*cos(theta))`. The second term is the component of
+ * gravity along the aircraft's lift axis, and including it is what makes this a
+ * **g command** rather than a pitch-rate command — which matters far more than it
+ * sounds.
+ *
+ * With a pure rate command, centring the stick asks for zero pitch rate, which is
+ * an attitude hold: roll inverted, let go, and the aircraft obligingly flies along
+ * upside down at a slightly negative alpha, generating just enough lift to hold its
+ * height. Correct for what it was asked, and completely wrong as an aeroplane —
+ * losing 712 ft in ten seconds inverted where the same ten seconds knife-edge lost
+ * 2,150. With the gravity term, centring the stick asks for one g toward the
+ * aircraft's own belly, so inverted it pulls toward the ground and comes down,
+ * banked it turns and descends, and level it does nothing. Which is what wings do.
+ *
+ * @param n     Commanded load factor, g
+ * @param vt    True airspeed, ft/s
+ * @param phi   Bank angle, radians
+ * @param theta Pitch attitude, radians
+ */
+export function pitchRateForLoadFactor(
+  n: number,
+  vt: number,
+  phi: number,
+  theta: number,
+): number {
+  const gravityAlongLift = Math.cos(phi) * Math.cos(theta)
+  return (G_FT_S2 / Math.max(vt, 100)) * (n - gravityAlongLift)
+}
+
+/**
+ * Commanded load factor for a stick position, -1 to 1.
+ *
+ * Asymmetric, because the limits are: full aft is the positive limit, full forward
+ * the negative one, and centre is one g. The asymmetry belongs to the aircraft, not
+ * to a preference — nothing pulls -9 g.
+ */
+export function commandedLoadFactor(
+  stick: number,
+  positive = G_LIMIT,
+  negative = G_LIMIT_NEGATIVE,
+): number {
+  return stick >= 0 ? 1 + stick * (positive - 1) : 1 + stick * (1 - negative)
+}
+
 
 /**
  * Cap the commanded pitch rate at what keeps alpha below its ceiling.

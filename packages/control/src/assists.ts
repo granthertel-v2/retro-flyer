@@ -35,7 +35,14 @@ import {
 } from './conditioning.js'
 import { scheduledGains, type GainSet } from './gains.js'
 import { AILERON_LIMIT_DEG, ELEVATOR_LIMIT_DEG, RUDDER_LIMIT_DEG } from './limits.js'
-import { AOA_FLOOR_DEG, limitAoA, limitG, rollAuthority } from './laws/limiters.js'
+import {
+  AOA_FLOOR_DEG,
+  commandedLoadFactor,
+  limitAoA,
+  limitG,
+  pitchRateForLoadFactor,
+  rollAuthority,
+} from './laws/limiters.js'
 import { PitchLaw } from './laws/pitch.js'
 import { BASE_ROLL_RATE_DEG, rollCommand } from './laws/roll.js'
 import { yawCommand } from './laws/yaw.js'
@@ -226,6 +233,7 @@ export class AssistLayer {
    */
   update(state: AircraftState, input: RawInput, dt: number, nz = 1): Controls {
     const gains = scheduledGains(state.vt, state.alt)
+    const { phi, theta } = eulerFromQuaternion(state.q)
 
     const pitchStick = this.pitchAxis.update(input.pitch, dt)
     const rollStick = this.rollAxis.update(input.roll, dt)
@@ -265,7 +273,20 @@ export class AssistLayer {
     let gLimiting = false
 
     if (this.toggles.pitchRateCommand) {
-      qCmdRaw = pitchStick * degToRad(this.preset.maxPitchRateDeg)
+      // The stick commands a load factor; the pitch rate that delivers it depends on
+      // airspeed and on where gravity currently is relative to the wings. Centre
+      // stick is one g, not zero pitch rate — see `pitchRateForLoadFactor`.
+      const nCmd = commandedLoadFactor(
+        pitchStick,
+        this.preset.gLimit,
+        this.preset.gLimitNegative,
+      )
+
+      const cap = degToRad(this.preset.maxPitchRateDeg)
+      qCmdRaw = Math.min(
+        cap,
+        Math.max(-cap, pitchRateForLoadFactor(nCmd, state.vt, phi, theta)),
+      )
       qCmd = qCmdRaw
 
       if (this.toggles.gLimiter) {
@@ -297,7 +318,6 @@ export class AssistLayer {
     }
 
     // --- Yaw --------------------------------------------------------------
-    const { phi, theta } = eulerFromQuaternion(state.q)
     const rudder = yawCommand(
       state.beta,
       state.r,

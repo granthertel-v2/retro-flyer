@@ -267,3 +267,32 @@ describe('rudder sense', () => {
     expect(peak(flight.samples.map((s) => s.betaDeg))).toBeLessThan(2.5)
   })
 })
+
+describe('an aeroplane does not fly upside down hands-off', () => {
+  /** Roll to a bank angle, centre the stick, and see what the altitude does. */
+  function altitudeLost(rollSeconds: number, seconds = 14): number {
+    const flight = fly({
+      alt: 11_000,
+      vt: 640,
+      seconds,
+      input: (t) => ({ pitch: 0, roll: t < rollSeconds ? 1 : 0, yaw: 0, throttle: 0.7 }),
+    })
+
+    const at = (t: number): number => flight.samples.find((s) => s.t >= t)!.state.alt
+    return at(2) - at(12)
+  }
+
+  it('descends when banked on its side', () => {
+    // No vertical component of lift, so it falls while it turns.
+    expect(altitudeLost(0.42)).toBeGreaterThan(1_200)
+  })
+
+  it('descends FASTER inverted than on its side', () => {
+    // Lift and gravity both pointing down beats gravity alone. Under the
+    // rate-command law this was the wrong way round by a factor of three — the law
+    // held zero pitch rate, the aircraft obligingly trimmed to a slightly negative
+    // alpha, and it cruised along upside down losing 712 ft where knife-edge lost
+    // 2,150. Correct for what it was asked, and not what an aeroplane does.
+    expect(altitudeLost(0.84)).toBeGreaterThan(altitudeLost(0.42))
+  })
+})

@@ -72,8 +72,10 @@ export {
   AOA_FLOOR_DEG,
   G_LIMIT,
   G_LIMIT_NEGATIVE,
+  commandedLoadFactor,
   limitAoA,
   limitG,
+  pitchRateForLoadFactor,
   rollAuthority,
 } from './laws/limiters.js'
 

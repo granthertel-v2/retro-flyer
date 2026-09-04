@@ -20,6 +20,8 @@ import {
   BALANCED,
   G_LIMIT,
   PitchLaw,
+  commandedLoadFactor,
+  pitchRateForLoadFactor,
   limitAoA,
   limitG,
   scheduledGains,
@@ -170,12 +172,12 @@ describe('flown: full aft stick', () => {
     expect(Math.abs(law.integral)).toBeLessThan(Math.abs(integralAfterOneSecond) * 1.5 + 0.5)
   })
 
-  it('responds promptly when a sustained pull is released', () => {
-    // Ten seconds at full aft stick is a loop, so the aircraft is inverted by the
-    // time the stick is centred and the load factor there is cos(gamma) — which is
-    // negative, and correct. So this checks the thing that is actually a control
-    // law property: that the commanded pitch rate is obeyed promptly and settles,
-    // not what the load factor happens to be while upside down.
+  it('returns to one g when a sustained pull is released', () => {
+    // The contract of a g-command law: centre stick is one g, whatever attitude the
+    // aircraft happens to be in. This used to assert that pitch rate crossed zero
+    // after release, which was the contract of the rate-command law it replaced —
+    // and is wrong now, because ten seconds at full aft stick is a loop and one g
+    // at the top of a loop is emphatically not zero pitch rate.
     const flight = fly({
       alt: 10_000,
       vt: 800,
@@ -183,15 +185,30 @@ describe('flown: full aft stick', () => {
       input: (t) => ({ pitch: t < 10 ? 1 : 0, roll: 0, yaw: 0, throttle: 1 }),
     })
 
-    const after = flight.samples.filter((s) => s.t > 10)
-    const crossing = after.find((s) => s.state.qRate <= 0)
+    const settledNz = flight.samples.filter((s) => s.t > 14).map((s) => s.nz)
 
-    expect(crossing).toBeDefined()
-    expect(crossing!.t - 10).toBeLessThan(1.0)
+    expect(Math.min(...settledNz)).toBeGreaterThan(0.7)
+    expect(Math.max(...settledNz)).toBeLessThan(1.5)
+  })
 
-    // And it settles rather than oscillating.
-    const late = after.filter((s) => s.t > 17)
-    expect(peak(late.map((s) => s.state.qRate))).toBeLessThan(0.05)
+  it('commands one g at centre stick, and the limits at the stops', () => {
+    expect(commandedLoadFactor(0)).toBeCloseTo(1, 12)
+    expect(commandedLoadFactor(1)).toBeCloseTo(G_LIMIT, 12)
+    expect(commandedLoadFactor(-1)).toBeCloseTo(BALANCED.gLimitNegative, 12)
+  })
+
+  it('asks for a pull when inverted at centre stick, and nothing when level', () => {
+    // The whole reason for the gravity term. Level, one g needs no pitch rate;
+    // inverted, one g toward the aircraft's belly means pulling toward the ground,
+    // which is why an aeroplane does not fly upside down hands-off.
+    expect(pitchRateForLoadFactor(1, 640, 0, 0)).toBeCloseTo(0, 9)
+    expect(pitchRateForLoadFactor(1, 640, Math.PI, 0)).toBeGreaterThan(0.05)
+
+    // And knife-edge is in between: no vertical lift at all, so one g of pull just
+    // turns while gravity takes it down.
+    const knifeEdge = pitchRateForLoadFactor(1, 640, Math.PI / 2, 0)
+    expect(knifeEdge).toBeGreaterThan(0)
+    expect(knifeEdge).toBeLessThan(pitchRateForLoadFactor(1, 640, Math.PI, 0))
   })
 })
 
