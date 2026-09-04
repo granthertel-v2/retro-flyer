@@ -7,6 +7,7 @@
  */
 
 import type { SpawnCondition } from './loop.js'
+import type { Airfield } from './terrain/source.js'
 
 /**
  * Spawn state.
@@ -38,4 +39,34 @@ export const SPAWN: SpawnCondition = {
   headingDeg: 104,
   x: -26_000,
   z: -6_000,
+}
+
+/**
+ * Start on a runway, at the threshold, pointed down it.
+ *
+ * The threshold rather than the midpoint: `Airfield.x/z` is the runway's centre, so
+ * backing up half its length is what puts the whole runway ahead of the aircraft
+ * instead of half of it. An F-16 does not need 1,300 m to get airborne, but starting
+ * halfway down a runway is the sort of thing that is only ever noticed by someone
+ * who has to abort.
+ *
+ * `alt` is a placeholder. `Simulation.parkAt` ignores it and asks the terrain where
+ * the wheels go, because the field elevation is the map's business and not this
+ * file's.
+ */
+export function runwayStart(field: Airfield): SpawnCondition {
+  const heading = (field.headingDeg * Math.PI) / 180
+
+  // Back up half the runway from the centre, along the reciprocal of the heading.
+  // Renderer axes: +X is east and -Z is north, so a heading of 0 is -Z.
+  const back = field.lengthM / 2 - 120
+
+  return {
+    onGround: true,
+    alt: field.elevation / 0.3048,
+    vt: 0,
+    headingDeg: field.headingDeg,
+    x: field.x - Math.sin(heading) * back,
+    z: field.z + Math.cos(heading) * back,
+  }
 }

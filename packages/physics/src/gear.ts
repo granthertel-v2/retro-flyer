@@ -74,14 +74,33 @@ export interface Strut {
  * The resulting undamped natural frequency is 1.54 Hz, which at a 120 Hz tick is
  * 78 samples per cycle. Nothing here is numerically stiff.
  */
+/**
+ * The nosewheel.
+ *
+ * Its rates are sized by the *landing* case, not the parking one, and that
+ * distinction was found the hard way. Sized from static load alone — 2,563 lb, which
+ * is all a parked nosewheel carries — it came out at 8,500 lb/ft over a 1 ft stroke,
+ * and then bottomed on every single arrival, gentle ones included: the aircraft
+ * touches down on its mains at about 11 degrees alpha, which leaves the nosewheel
+ * 2.8 ft in the air, and it arrives carrying 14,700 lb. A strut whose entire stroke
+ * is worth 8,500 lb has nothing left to say about that.
+ *
+ * Swept against measured arrivals from 1.9 to 18.2 ft/s. 13,000 lb/ft over 1.3 ft is
+ * the softest strut that stops bottoming across all of them, and — not obviously —
+ * also the one with the lowest peak load, 9,816 lb against 11,692 for a strut half
+ * again as stiff. A stiffer strut does not absorb more, it just hits harder.
+ *
+ * Static compression comes out at 0.20 ft, 15% of stroke, so the parking case is
+ * still comfortable.
+ */
 export const NOSE_GEAR: Strut = {
   name: 'nose',
   x: 14,
   y: 0,
   z: 7,
-  k: 8_500,
-  c: 1_000,
-  stroke: 1.0,
+  k: 13_000,
+  c: 1_600,
+  stroke: 1.3,
   braked: false,
   // 30 degrees. Enough to turn off a runway without being able to spin the aircraft
   // on the spot, which is what larger authority does at low speed.
@@ -113,6 +132,36 @@ export const DEFAULT_GEAR: readonly Strut[] = [NOSE_GEAR, LEFT_MAIN, RIGHT_MAIN]
  * deliberately blunt model of a genuinely violent event.
  */
 const BOTTOMING_RATIO = 10
+
+/**
+ * Stroke over which the damper comes up to full authority, ft. `[A]`
+ *
+ * Without this the damper is at full strength the instant the wheel touches, when
+ * compression is still zero — so the whole contact force is `c * closing speed`,
+ * applied as a step. Measured on a 27 ft/s arrival: 173,871 lb in a single tick,
+ * 8.5 times the aircraft's weight, from a strut that had not yet moved.
+ *
+ * That is not what happens. The first thing to touch a runway is a tyre, which is an
+ * order of magnitude softer than the oleo behind it, and the oleo's damping orifice
+ * only does anything once the piston is actually travelling. Fading the damper in
+ * over the first two inches of stroke models both, and turns a step into a ramp.
+ *
+ * It is deliberately short. Longer, and a firm landing stops being firm.
+ */
+const DAMPING_FADE_FT = 0.16
+
+/**
+ * How much harder the strut damps extension than compression. `[A]`
+ *
+ * A real oleo has a recoil valve and is markedly stiffer on the way back out, for
+ * exactly the reason this needs one: a strut that returns the energy it stored
+ * throws the aircraft back off the runway it has just landed on. Measured before
+ * this existed — touchdown, then airborne again 0.25 s later climbing at 1,100 fpm.
+ *
+ * Three times is within the usual range for recoil-to-compression damping, and it is
+ * enough that a normal arrival settles instead of bouncing.
+ */
+const REBOUND_DAMPING_RATIO = 3
 
 /**
  * Slip speed at which tyre friction reaches its full value, ft/s. `[A]`
@@ -273,7 +322,15 @@ export function gearLoads(
     if (overStroke > 0) bottomed = true
 
     const spring = s.k * withinStroke + s.k * BOTTOMING_RATIO * overStroke
-    const N = spring + s.c * squashRate
+
+    // Damping fades in over the first inches of stroke and is stiffer on the way
+    // back out. See DAMPING_FADE_FT and REBOUND_DAMPING_RATIO — between them they
+    // are the difference between landing and being thrown off the runway.
+    const fade = Math.min(1, squash / DAMPING_FADE_FT)
+    const extending = squashRate < 0
+    const damping = s.c * fade * (extending ? REBOUND_DAMPING_RATIO : 1)
+
+    const N = spring + damping * squashRate
 
     // A strut pushes; it never pulls. On the rebound the damper term goes strongly
     // negative — a main leaving the ground at 50 ft/s computes -151,000 lb — and
@@ -374,4 +431,56 @@ export function staticCompression(
           : noseArm / base / Math.max(1, main.length)
     return (share * weight) / s.k
   })
+}
+
+export interface RestingAttitude {
+  /** Pitch the aircraft settles at, radians. Positive is nose up. */
+  pitch: number
+  /** Height of the CG above the ground when it is settled, ft. */
+  cgHeight: number
+}
+
+/**
+ * Where the aircraft sits when it is parked.
+ *
+ * Not level. Each strut compresses by its own static load over its own spring rate,
+ * and those differ — the nosewheel carries an eighth of the weight on a strut sized
+ * for landing loads, so it squashes 0.20 ft where a main squashes 0.35. The aircraft
+ * therefore rests very slightly nose-up, half a degree of it.
+ *
+ * That half degree is not cosmetic. Placing the aircraft level instead and calling
+ * it settled over-compresses the nose strut, and it starts the simulation carrying
+ * 109% of its own weight and visibly shuffling for the first two seconds. A runway
+ * spawn is supposed to be already still.
+ *
+ * Solved rather than guessed: for two struts to touch the same flat ground, their
+ * contact points must sit at equal depth below the CG, which gives
+ * `tan(pitch) = (z_nose - z_main) / (x_nose - x_main)` with each `z` reduced by that
+ * strut's own static compression.
+ */
+export function restingAttitude(
+  struts: readonly Strut[] = DEFAULT_GEAR,
+  weight = REFERENCE_WEIGHT_LB,
+): RestingAttitude {
+  const squash = staticCompression(struts, weight)
+
+  const nose = struts.findIndex((s) => s.x > 0)
+  const main = struts.findIndex((s) => s.x <= 0)
+
+  if (nose < 0 || main < 0) {
+    const only = struts[0]
+    return { pitch: 0, cgHeight: only ? only.z - (squash[0] as number) : 0 }
+  }
+
+  const zNose = (struts[nose] as Strut).z - (squash[nose] as number)
+  const zMain = (struts[main] as Strut).z - (squash[main] as number)
+  const xNose = (struts[nose] as Strut).x
+  const xMain = (struts[main] as Strut).x
+
+  const pitch = Math.atan2(zNose - zMain, xNose - xMain)
+
+  return {
+    pitch,
+    cgHeight: -xMain * Math.sin(pitch) + zMain * Math.cos(pitch),
+  }
 }

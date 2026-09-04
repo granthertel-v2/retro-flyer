@@ -27,6 +27,7 @@ export {
   NEUTRAL_INPUT,
   PRESETS,
   type AssistPreset,
+  type AssistSnapshot,
   type AssistTelemetry,
   type AssistToggles,
   type RawInput,
@@ -40,6 +41,7 @@ export {
   YAW_AXIS,
   applyDeadband,
   type AxisConfig,
+  type AxisSnapshot,
 } from './conditioning.js'
 
 export {

@@ -14,6 +14,7 @@ import {
   LEFT_MAIN,
   NOSE_GEAR,
   gearLoads,
+  restingAttitude,
   staticCompression,
 } from '../src/gear.js'
 import { FlatGround, NoGround, PAVED, SOFT } from '../src/ground.js'
@@ -321,6 +322,67 @@ describe('rolling, braking and steering', () => {
 
     expect(g.loads.fy, 'side force should oppose the drift').toBeLessThan(0)
     expect(Math.abs(g.loads.fy)).toBeGreaterThan(0.3 * REFERENCE_WEIGHT_LB)
+  })
+})
+
+describe('where it rests when parked', () => {
+  it('sits very slightly nose-up, because the struts differ', () => {
+    const rest = restingAttitude()
+
+    // Half a degree or so, nose up: the nosewheel carries an eighth of the weight on
+    // a strut sized for landing loads, so it squashes less than a main does.
+    expect(rest.pitch).toBeGreaterThan(0)
+    expect((rest.pitch * 180) / Math.PI).toBeLessThan(2)
+  })
+
+  it('predicts the height and attitude the simulation settles at', () => {
+    // The claim `parkAt` relies on: place the aircraft here and it is already still,
+    // rather than shuffling for the first two seconds of every runway start.
+    const rest = restingAttitude()
+
+    const v = toQuatVector({
+      vt: 0,
+      alpha: 0,
+      beta: 0,
+      q: quaternionFromEuler(0, rest.pitch, 0),
+      p: 0,
+      qRate: 0,
+      r: 0,
+      pn: 0,
+      pe: 0,
+      alt: FIELD_ELEV + rest.cgHeight,
+      power: 0,
+    })
+
+    const placed = gearLoads(v, paved)
+    expect(placed.onGround).toBe(true)
+    expect(placed.totalNormal / REFERENCE_WEIGHT_LB, 'not carrying its own weight').toBeCloseTo(
+      1,
+      2,
+    )
+
+    // Every strut at its own static compression, none of them fighting the others.
+    const predicted = staticCompression()
+    for (let i = 0; i < DEFAULT_GEAR.length; i++) {
+      expect(placed.compression[i] as number, DEFAULT_GEAR[i]!.name).toBeCloseTo(
+        predicted[i] as number,
+        3,
+      )
+    }
+  })
+
+  it('would over-load the nose strut if the aircraft were simply placed level', () => {
+    // The negative case, recorded because this is exactly what the code did before:
+    // level looks right and is not, and the error shows as 109% of the aircraft's
+    // weight on the gear at t=0.
+    const rest = restingAttitude()
+    const level = toQuatVector({
+      vt: 0, alpha: 0, beta: 0, q: IDENTITY_QUATERNION,
+      p: 0, qRate: 0, r: 0, pn: 0, pe: 0,
+      alt: FIELD_ELEV + rest.cgHeight, power: 0,
+    })
+
+    expect(gearLoads(level, paved).totalNormal / REFERENCE_WEIGHT_LB).toBeGreaterThan(1.03)
   })
 })
 

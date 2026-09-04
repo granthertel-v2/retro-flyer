@@ -120,9 +120,11 @@ export {
   NOSE_GEAR,
   RIGHT_MAIN,
   gearLoads,
+  restingAttitude,
   staticCompression,
   type GearInput,
   type GearState,
+  type RestingAttitude,
   type Strut,
 } from './gear.js'
 

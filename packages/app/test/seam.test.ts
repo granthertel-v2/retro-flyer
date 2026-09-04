@@ -269,3 +269,88 @@ describe('interpolation', () => {
     }
   })
 })
+
+describe('attitude angles (Day 3)', () => {
+  const build = (phi: number, theta: number, psi: number): number[] =>
+    toQuatVector({
+      vt: 500,
+      alpha: 0.05,
+      beta: 0.01,
+      q: quaternionFromEuler(phi, theta, psi),
+      p: 0,
+      qRate: 0,
+      r: 0,
+      pn: 0,
+      pe: 0,
+      alt: 5_000,
+      power: 60,
+    })
+
+  const CASES: [string, number, number, number][] = [
+    ['level, north', 0, 0, 0],
+    ['nose up', 0, 0.35, 0],
+    ['nose down', 0, -0.4, 0],
+    ['banked right', 0.7, 0.1, 0],
+    ['banked left', -0.9, -0.05, 0],
+    ['heading east', 0, 0.1, Math.PI / 2],
+    ['heading west', 0.3, -0.2, -Math.PI / 2],
+    ['heading south', -0.4, 0.25, Math.PI * 0.98],
+    ['steep and rolled', 1.2, 1.1, 2.4],
+  ]
+
+  it('reports the attitude the physics actually has', () => {
+    for (const [label, phi, theta, psi] of CASES) {
+      const r = toRenderState(build(phi, theta, psi))
+
+      expect(r.pitchDeg, `${label} pitch`).toBeCloseTo((theta * 180) / Math.PI, 6)
+      expect(r.rollDeg, `${label} roll`).toBeCloseTo((phi * 180) / Math.PI, 6)
+      expect(r.headingDeg, `${label} heading`).toBeCloseTo(
+        (((psi * 180) / Math.PI) + 360) % 360,
+        6,
+      )
+    }
+  })
+
+  it('survives the round trip out of the render frame and back', () => {
+    // `lerpRenderState` recovers these from the blended three.js quaternion, which
+    // means undoing two frame changes. At t=0 and t=1 the blend is the identity, so
+    // anything the round trip gets wrong shows up here as a mismatch with the
+    // endpoint it was handed.
+    for (const [label, phi, theta, psi] of CASES) {
+      const a = toRenderState(build(phi, theta, psi))
+      const b = toRenderState(build(0, 0, 0))
+
+      const atA = lerpRenderState(a, b, 0)
+      const atB = lerpRenderState(a, b, 1)
+
+      expect(atA.pitchDeg, `${label} pitch at t=0`).toBeCloseTo(a.pitchDeg, 6)
+      expect(atA.rollDeg, `${label} roll at t=0`).toBeCloseTo(a.rollDeg, 6)
+      expect(atA.headingDeg, `${label} heading at t=0`).toBeCloseTo(a.headingDeg, 6)
+
+      expect(atB.pitchDeg, `${label} pitch at t=1`).toBeCloseTo(b.pitchDeg, 6)
+      expect(atB.headingDeg, `${label} heading at t=1`).toBeCloseTo(b.headingDeg, 6)
+    }
+  })
+
+  it('does not flick through south when heading crosses north', () => {
+    // The reason these are recomputed from the slerp instead of lerped as numbers.
+    // Blending 359 and 1 as scalars gives 180: the heading readout swings through
+    // due south for one frame every time the aircraft passes north.
+    const a = toRenderState(build(0, 0, (-2 * Math.PI) / 180)) // 358 deg
+    const b = toRenderState(build(0, 0, (2 * Math.PI) / 180)) // 002 deg
+
+    const mid = lerpRenderState(a, b, 0.5)
+    const fromNorth = Math.min(mid.headingDeg, 360 - mid.headingDeg)
+
+    expect(fromNorth, 'heading flicked away from north mid-blend').toBeLessThan(1)
+  })
+
+  it('keeps pitch and flight path apart — the gap is angle of attack', () => {
+    // §9.1's whole intuition. In a climb at positive alpha the nose is pointed above
+    // the flight path, and the difference is what the flight path marker shows.
+    const r = toRenderState(build(0, 0.35, 0))
+
+    expect(r.pitchDeg).toBeGreaterThan(r.gammaDeg)
+    expect(r.pitchDeg - r.gammaDeg).toBeCloseTo(r.alphaDeg, 1)
+  })
+})

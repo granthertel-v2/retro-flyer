@@ -123,4 +123,26 @@ export class ConditionedAxis {
     this.value = to
     this.smoothed = to
   }
+
+  /**
+   * The axis's full internal state.
+   *
+   * `value` alone is not it: the rate limiter chases `smoothed`, so two axes showing
+   * the same output can be moving in opposite directions. A situation save that
+   * captured only the output would restore an aircraft whose stick was about to go
+   * somewhere else.
+   */
+  capture(): AxisSnapshot {
+    return { value: this.value, smoothed: this.smoothed }
+  }
+
+  restore(s: AxisSnapshot): void {
+    this.value = s.value
+    this.smoothed = s.smoothed
+  }
+}
+
+export interface AxisSnapshot {
+  value: number
+  smoothed: number
 }
