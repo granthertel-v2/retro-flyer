@@ -325,6 +325,84 @@ describe('rolling, braking and steering', () => {
   })
 })
 
+describe('the damper', () => {
+  /** A strut squashed by `depth` ft, closing on the ground at `rate` ft/s. */
+  const contact = (depth: number, rate: number) => {
+    const v = parked(0, { alt: FIELD_ELEV + LEFT_MAIN.z - depth })
+    v[Q.W] = rate
+    return gearLoads(v, paved)
+  }
+
+  it('does not answer first contact with a step force', () => {
+    // The failure this exists to prevent, measured before it was fixed: a 27 ft/s
+    // arrival produced 173,871 lb in a single tick — 8.5 times the aircraft's weight
+    // — from a strut that had not yet moved. Damping is `c * closing speed`, and at
+    // first contact `c` was already at full strength while the spring was still at
+    // zero, so the entire force was the damper, applied as a step.
+    //
+    // A tyre touches before an oleo strokes, and an orifice does nothing until the
+    // piston moves. Damping now fades in over the first inches of stroke.
+    const rate = 25
+    const justTouching = contact(0.004, rate)
+
+    // Undamped, this would be c * rate on each main: over 80,000 lb a side.
+    const naive = LEFT_MAIN.c * rate
+    expect(justTouching.normal[1] as number, 'step force at first contact').toBeLessThan(
+      naive * 0.1,
+    )
+
+    // And it must still ramp up: deeper in the stroke the damper is doing its job.
+    const settledIn = contact(0.4, rate)
+    expect(settledIn.normal[1] as number).toBeGreaterThan(
+      5 * (justTouching.normal[1] as number),
+    )
+  })
+
+  it('resists extension harder than compression', () => {
+    // A strut that gives back the energy it stored throws the aircraft off the
+    // runway it has just landed on — measured, airborne again 0.25 s after
+    // touchdown, climbing at 1,100 fpm. A real oleo has a recoil valve, and the
+    // asymmetry is what makes a landing settle rather than bounce.
+    // Deliberately a gentle rate. At 6 ft/s of extension the damper alone exceeds
+    // the spring force, the strut releases completely, and `N` clamps at zero — so
+    // the asymmetry saturates and becomes invisible. Measuring it needs a case where
+    // the strut is still pushing.
+    const depth = 0.5
+    const rate = 1
+
+    const compressing = contact(depth, rate)
+    const extending = contact(depth, -rate)
+    const still = contact(depth, 0)
+
+    const spring = still.normal[1] as number
+    expect(extending.normal[1] as number, 'test is in the clamped regime').toBeGreaterThan(0)
+
+    // Compression adds to the spring force; extension subtracts from it.
+    expect(compressing.normal[1] as number).toBeGreaterThan(spring)
+    expect(extending.normal[1] as number).toBeLessThan(spring)
+
+    // And it subtracts MORE than compression added — that is the whole point.
+    const added = (compressing.normal[1] as number) - spring
+    const removed = spring - (extending.normal[1] as number)
+    expect(removed / added, 'rebound damping is not stiffer than compression')
+      .toBeCloseTo(3, 1)
+  })
+
+  it('gives back less energy than a symmetric strut would', () => {
+    // The consequence, stated as energy rather than as a coefficient: over a full
+    // compress-and-release cycle the strut must dissipate, not return.
+    const depth = 0.4
+    const rate = 10
+
+    const pushing = (contact(depth, rate).normal[1] as number)
+    const releasing = (contact(depth, -rate).normal[1] as number)
+
+    // Work in exceeds work out at the same displacement and speed.
+    expect(pushing).toBeGreaterThan(releasing)
+    expect(releasing / pushing).toBeLessThan(0.5)
+  })
+})
+
 describe('where it rests when parked', () => {
   it('sits very slightly nose-up, because the struts differ', () => {
     const rest = restingAttitude()
