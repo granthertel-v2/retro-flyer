@@ -177,9 +177,9 @@ function main(): void {
     // waterline is not co-planar with it.
     sea.position.set(state.position[0], -0.4, state.position[2])
 
-    chase.update(camera, state, mode, simulation.nz, dt)
+    chase.update(camera, state, mode, simulation.nz, simulation.ax, dt)
     positionSun(sun, camera.position)
-    camera.fov = fov.update(state.kt, dt)
+    camera.fov = fov.update(state.kt, simulation.ax, dt)
     camera.updateProjectionMatrix()
 
     // In the cockpit the aircraft is the thing you are inside of.

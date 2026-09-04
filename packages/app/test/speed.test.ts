@@ -11,7 +11,15 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { FOV_BASE, FOV_HIGH_KT, FOV_LOW_KT, FOV_MAX, targetFov } from '../src/camera/fov.js'
+import {
+  FOV_BASE,
+  FOV_HIGH_KT,
+  FOV_LOW_KT,
+  FOV_MAX,
+  accelFovBoost,
+  targetFov,
+} from '../src/camera/fov.js'
+import { accelStretch } from '../src/camera/chase.js'
 import { PITCH } from '../src/terrain/scatter.js'
 import { SPAWN } from '../src/spawn.js'
 import { fpsToKt } from '@retro-flyer/physics'
@@ -84,5 +92,69 @@ describe('the near field is dense enough to read as motion', () => {
     const interval = PITCH / metresPerSecond
 
     expect(interval).toBeLessThan(0.45)
+  })
+})
+
+/**
+ * Measured range of along-path acceleration for this aircraft, ft/s^2.
+ *
+ * Full afterburner at 5,000 ft, and flight idle from a fast cruise. The asymmetry is
+ * real — a clean fighter accelerates far harder than it slows down — and it is why
+ * the two cues below have separate gains for the two directions.
+ */
+const AX_FULL_AB = 28.5
+const AX_IDLE_DECEL = -8.5
+
+describe('acceleration has its own cues, because speed cues cannot carry it', () => {
+  // The gap a flight test found: "I don't feel like I've accelerated quickly, I have
+  // to intuit it from the Mach number increasing and my waiting." Every cue in the
+  // renderer was a function of SPEED, and a function of speed reports the result
+  // after the fact rather than the change as it happens.
+
+  it('does nothing at all in steady flight', () => {
+    // The cue must be invisible when it has nothing to say, or it is just a wobble.
+    expect(accelFovBoost(0)).toBe(0)
+    expect(accelStretch(0)).toBe(0)
+  })
+
+  it('is clearly felt under full afterburner', () => {
+    expect(accelFovBoost(AX_FULL_AB)).toBeGreaterThan(5)
+    expect(accelStretch(AX_FULL_AB)).toBeGreaterThan(4)
+  })
+
+  it('is clearly felt decelerating, which needs its own gain to be reachable at all', () => {
+    // This is the assertion that matters most of the pair. The aircraft only reaches
+    // -8.5 ft/s^2 at idle, so a single shared gain spent the whole negative range on
+    // nothing: the clamps were unreachable and a deceleration produced under two
+    // degrees of FOV. Both directions have to be reachable by inputs a pilot can
+    // actually make.
+    expect(accelFovBoost(AX_IDLE_DECEL)).toBeLessThan(-3)
+    expect(accelStretch(AX_IDLE_DECEL)).toBeLessThan(-2)
+  })
+
+  it('is monotonic and bounded, so it cannot run away', () => {
+    let previousFov = -Infinity
+    let previousTrail = -Infinity
+
+    for (let ax = -60; ax <= 60; ax += 2) {
+      const fov = accelFovBoost(ax)
+      const trail = accelStretch(ax)
+
+      expect(fov).toBeGreaterThanOrEqual(previousFov - 1e-9)
+      expect(trail).toBeGreaterThanOrEqual(previousTrail - 1e-9)
+      expect(Math.abs(fov)).toBeLessThanOrEqual(8)
+      expect(Math.abs(trail)).toBeLessThanOrEqual(6)
+
+      previousFov = fov
+      previousTrail = trail
+    }
+  })
+
+  it('accelerating and decelerating point opposite ways', () => {
+    // Sign errors here are silent and read as the world breathing at random.
+    expect(accelFovBoost(AX_FULL_AB)).toBeGreaterThan(0)
+    expect(accelFovBoost(AX_IDLE_DECEL)).toBeLessThan(0)
+    expect(accelStretch(AX_FULL_AB)).toBeGreaterThan(0)
+    expect(accelStretch(AX_IDLE_DECEL)).toBeLessThan(0)
   })
 })

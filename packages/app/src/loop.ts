@@ -19,6 +19,7 @@
 import {
   FixedStepClock,
   PHYSICS_DT,
+  Q,
   computeMassProperties,
   fromQuatVector,
   fromStateVector,
@@ -41,12 +42,30 @@ export interface SpawnCondition {
   z: number
 }
 
+/** Smoothing time constant for the along-path acceleration cue, seconds. */
+const AX_TAU = 0.25
+
 export class Simulation {
   readonly layer: AssistLayer
   readonly clock = new FixedStepClock()
 
   /** Total normal load factor from the last tick, g. */
   nz = 1
+
+  /**
+   * Acceleration along the flight path, ft/s^2, smoothed.
+   *
+   * `d(vt)/dt` — the state derivative the integrator already computes — which is
+   * exactly the along-path acceleration a pilot feels in their back, as distinct
+   * from `nz`, which is the one that pushes them into the seat.
+   *
+   * It exists because every other speed cue in this project is a function of SPEED,
+   * and a function of speed cannot tell you about acceleration: it only reports the
+   * result once the speed has already changed. A flight test put it exactly right —
+   * "I don't feel like I've accelerated quickly, I have to intuit it from the Mach
+   * number increasing and my waiting." The camera and the FOV read this instead.
+   */
+  ax = 0
 
   private readonly mass: MassProperties = computeMassProperties()
   private state: number[]
@@ -122,10 +141,16 @@ export class Simulation {
         this.controls = this.layer.update(aircraft, input(), PHYSICS_DT, this.nz)
 
         // Load factor for the next tick's G limiter, and for the camera.
-        const { accel } = quatDerivative(v, this.controls, this.mass, {
+        const { accel, vd } = quatDerivative(v, this.controls, this.mass, {
           clampAeroAngles: true,
         })
         this.nz = accel.nz + 1
+
+        // Along-path acceleration, lightly smoothed. Raw d(vt)/dt is clean enough at
+        // 120 Hz, but it steps when the afterburner lights and the cue should swell
+        // rather than snap.
+        const blend = Math.min(1, PHYSICS_DT / AX_TAU)
+        this.ax += ((vd[Q.VT] as number) - this.ax) * blend
 
         return this.controls
       },
@@ -146,6 +171,7 @@ export class Simulation {
   }
 
   reset(): void {
+    this.ax = 0
     const { state, controls } = this.trimAt(this.spawn)
     this.state = state
     this.previous = [...state]
