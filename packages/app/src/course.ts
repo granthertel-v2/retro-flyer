@@ -65,6 +65,51 @@ export interface CourseSample {
 /** Below this the aircraft counts as stopped, ft/s. About 3 kt. `[A]` */
 const STOPPED_FPS = 5
 
+/**
+ * How far past either end of the runway still counts as finishing on it, metres. `[A]`
+ *
+ * A modest overrun. Stopping just past the far end is a scruffy landing, not a
+ * different outcome; stopping half a mile beyond it is.
+ */
+const OVERRUN_MARGIN_M = 150
+
+/**
+ * How far either side of the runway edge still counts, metres. `[A]`
+ *
+ * Enough that a wheel on the shoulder does not fail the run, and not enough that
+ * landing in the field beside the runway passes as landing on it.
+ */
+const LATERAL_MARGIN_M = 25
+
+/**
+ * Is the aircraft stopped on the destination runway?
+ *
+ * Measured in the runway's own frame — along it and across it — rather than as a
+ * distance from its midpoint. A radius is the obvious test and it is wrong: at
+ * Ridgeview `lengthM / 2 + 300` describes a circle 1.6 km wide, and the first
+ * end-to-end acceptance flight finished 775 m off the side of the runway, in a
+ * field, pointing 64 degrees away from it — and was credited with completing a
+ * "runway-to-runway" flight.
+ *
+ * §9 asks for runway to runway. This is what that means.
+ */
+function stoppedOnRunway(field: Airfield, x: number, z: number): boolean {
+  const heading = (field.headingDeg * Math.PI) / 180
+  const along = Math.sin(heading)
+  const across = -Math.cos(heading)
+
+  const dx = x - field.x
+  const dz = z - field.z
+
+  const downRunway = dx * along + dz * across
+  const offCentreline = dx * -across + dz * along
+
+  return (
+    Math.abs(downRunway) <= field.lengthM / 2 + OVERRUN_MARGIN_M &&
+    Math.abs(offCentreline) <= field.widthM / 2 + LATERAL_MARGIN_M
+  )
+}
+
 export class Course {
   status: CourseStatus = 'ready'
   index = 0
@@ -113,11 +158,9 @@ export class Course {
         // All gates taken. Now it has to be stopped, on the destination field.
         if (this.landedAt === null) this.landedAt = this.elapsed
 
-        const home =
-          Math.hypot(s.x - this.destination.x, s.z - this.destination.z) <=
-          this.destination.lengthM / 2 + 300
-
-        if (home && s.speedFps < STOPPED_FPS) this.status = 'complete'
+        if (stoppedOnRunway(this.destination, s.x, s.z) && s.speedFps < STOPPED_FPS) {
+          this.status = 'complete'
+        }
       }
     }
 

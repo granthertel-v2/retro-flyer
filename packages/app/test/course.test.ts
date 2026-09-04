@@ -124,6 +124,56 @@ describe('the course', () => {
     expect(p.index).toBe(0)
   })
 
+  it('does not complete by stopping beside the runway', () => {
+    // The looseness this replaced: a radius of `lengthM/2 + 300` describes a circle
+    // 1.6 km wide at Ridgeview, and the first end-to-end acceptance flight finished
+    // 775 m off the side in a field, pointing 64 degrees away from the runway, and
+    // was credited with a runway-to-runway flight.
+    const c = course()
+    c.update(at(c.start.x, c.start.z, 607, true, 0), DT)
+    c.update(at(c.start.x, c.start.z, 650), DT)
+    for (const w of COURSE_WAYPOINTS) {
+      c.update(at(w.x, w.z, (w.minAltFt + w.maxAltFt) / 2), DT)
+    }
+
+    const d = c.destination
+    const heading = (d.headingDeg * Math.PI) / 180
+    // 775 m off the centreline — inside the old radius, outside the runway.
+    const offX = d.x + Math.cos(heading) * 775
+    const offZ = d.z + Math.sin(heading) * 775
+
+    const p = c.update(at(offX, offZ, d.elevation / 0.3048, true, 0), DT)
+    expect(p.status, 'a field beside the runway is not the runway').toBe('running')
+
+    // And on the centreline, it does complete.
+    const ok = c.update(at(d.x, d.z, d.elevation / 0.3048, true, 0), DT)
+    expect(ok.status).toBe('complete')
+  })
+
+  it('allows a scruffy overrun but not an arrival in the next county', () => {
+    const build = () => {
+      const c = course()
+      c.update(at(c.start.x, c.start.z, 607, true, 0), DT)
+      c.update(at(c.start.x, c.start.z, 650), DT)
+      for (const w of COURSE_WAYPOINTS) c.update(at(w.x, w.z, (w.minAltFt + w.maxAltFt) / 2), DT)
+      return c
+    }
+    const d = course().destination
+    const heading = (d.headingDeg * Math.PI) / 180
+    const alongAt = (m: number): [number, number] => [
+      d.x + Math.sin(heading) * m,
+      d.z - Math.cos(heading) * m,
+    ]
+
+    const justPast = alongAt(d.lengthM / 2 + 100)
+    const wayPast = alongAt(d.lengthM / 2 + 900)
+
+    expect(build().update(at(justPast[0], justPast[1], d.elevation / 0.3048, true, 0), DT).status)
+      .toBe('complete')
+    expect(build().update(at(wayPast[0], wayPast[1], d.elevation / 0.3048, true, 0), DT).status)
+      .toBe('running')
+  })
+
   it('does not complete by landing at the wrong field', () => {
     const c = course()
     c.update(at(c.start.x, c.start.z, 607, true, 0), DT)
