@@ -20,7 +20,8 @@ The short version:
 | | |
 |---|---|
 | `X` `Z` | throttle up and down — the afterburner lights above 50% |
-| `↑ ↓` or `W S` | pitch. Pull to climb |
+| `↓` or `S` | **pull** — nose up, and climb |
+| `↑` or `W` | push — nose down |
 | `← →` or `A D` | roll |
 | `Q` `E` | rudder |
 | `Space` | wheel brakes &nbsp;·&nbsp; `K` parking brake &nbsp;·&nbsp; `G` gear |
@@ -29,10 +30,12 @@ The short version:
 | `B` | assist preset &nbsp;·&nbsp; `1`–`6` individual assists &nbsp;·&nbsp; `0` / `9` all off / all on |
 | `V` | slew &nbsp;·&nbsp; `F5` / `F9` save and restore &nbsp;·&nbsp; `N` restart the course |
 
-**A first flight.** Press `T` to line up on a runway. Hold `Space`, push the throttle
-to full with `X`, wait for `PWR` to climb — the engine takes several seconds — then
-release the brakes. At the `ROTATE` cue, pull. Raise the gear with `G`. The heading
-strip has a diamond on it pointing at the first gate of the timed course.
+**A first flight.** Press `T` to line up on a runway. Push the throttle to full with
+`X` and watch `PWR` climb — the engine takes several seconds, and the brakes will not
+hold it once it gets there, so it will start rolling on its own. At the `ROTATE` cue,
+pull back: that is `↓` or `S`, not `↑`. Raise the gear with `G`. When the next gate of
+the timed course comes within 30° of where you are pointed, a diamond appears on the
+heading strip showing its bearing.
 
 **The instrument worth understanding** is the small winged circle on the HUD: the
 flight path marker. It sits on the part of the world the aircraft is actually going

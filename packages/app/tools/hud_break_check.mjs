@@ -128,16 +128,23 @@ if (git('status', '--porcelain', '--', 'packages/app/src/hud')) {
 const original = readFileSync(TARGET, 'utf8')
 const undetected = []
 
+// Every anchor, before any of them run. Checking inside the loop instead means a
+// single stale anchor aborts the run and hides the state of every mutation behind
+// it — which is precisely how the physics break-check spent Day 3 and most of Day 4
+// silently only running the first thirteen of its twenty-five.
+const stale = MUTATIONS.filter((m) => !original.includes(m.find))
+if (stale.length > 0) {
+  console.error(`${stale.length} mutation(s) no longer apply:\n`)
+  for (const m of stale) console.error(`  ${m.id}`)
+  console.error('\nThe source has changed since these were written. Update them — a')
+  console.error('mutation that silently fails to apply reports a clean bill of health')
+  console.error('for a test that was never challenged.')
+  process.exit(1)
+}
+
 console.log(`\nHUD break-check — ${MUTATIONS.length} mutations\n`)
 
 for (const m of MUTATIONS) {
-  if (!original.includes(m.find)) {
-    console.error(`  ${m.id}: anchor text not found. The mutation would silently`)
-    console.error(`  pass without testing anything. Fix the anchor.\n`)
-    writeFileSync(TARGET, original)
-    process.exit(1)
-  }
-
   writeFileSync(TARGET, original.replace(m.find, m.replace))
   const run = spawnSync('npx', ['vitest', 'run', 'test/hud.test.ts'], {
     cwd: PKG,

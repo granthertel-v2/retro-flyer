@@ -32,12 +32,23 @@ export function speedCue(o: {
   targetKt: number
   onGround: boolean
   gearDown: boolean
+  /**
+   * True from touchdown until the aircraft stops, false otherwise.
+   *
+   * Without it, being on the ground with the gear down is read as a takeoff roll —
+   * so the HUD told the pilot to ROTATE for the whole landing rollout, at the one
+   * moment the aircraft must stay on the runway. Day 4 QA caught it: the cue is
+   * aimed at someone who does not know better, which makes a confidently wrong
+   * instruction worse than none.
+   */
+  rollingOut: boolean
 }): SpeedCue {
   // Gear up is neither a takeoff nor a landing, and a cue that is always on is
   // wallpaper.
   if (!o.gearDown) return { kind: 'none' }
 
   if (o.onGround) {
+    if (o.rollingOut) return { kind: 'none' }
     return { kind: 'rotate', targetKt: o.targetKt, ready: o.kt >= o.targetKt }
   }
 
@@ -48,6 +59,8 @@ export function speedCue(o: {
 export interface GroundStatus {
   onGround: boolean
   gearDown: boolean
+  /** Rolling out after a landing rather than rolling for takeoff. */
+  rollingOut: boolean
   brakes: boolean
   parkingBrake: boolean
   /** Speed the aircraft rotates and approaches at, knots. */
@@ -215,6 +228,7 @@ export class Overlay {
           targetKt: ground.referenceKt,
           onGround: ground.onGround,
           gearDown: ground.gearDown,
+          rollingOut: ground.rollingOut,
         }),
       ),
       ground.note ? `<b>${ground.note}</b>` : '',

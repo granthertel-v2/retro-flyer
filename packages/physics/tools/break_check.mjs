@@ -202,16 +202,12 @@ const MUTATIONS = [
     rationale:
       'On the rebound the damper term goes strongly negative — measured -151,000 lb for a main leaving the ground at 50 ft/s. Unclamped, it sucks the aircraft back onto the runway.',
     file: 'src/gear.ts',
-    find: `    if (N <= 0) {
-      compression.push(squash)
-      normal.push(0)
-      continue
-    }`,
-    replace: `    if (false) {
-      compression.push(squash)
-      normal.push(0)
-      continue
-    }`,
+    // Re-anchored after Day 3's airframe-contact work replaced the push-based
+    // accumulation with indexed assignment. The old anchor stopped matching in the
+    // same commit and nothing said so until Day 4 — see the pre-flight check below,
+    // which exists because of this.
+    find: '    if (N <= 0) continue',
+    replace: '    if (false) continue',
     expect: ['gear'],
   },
   {
@@ -383,6 +379,39 @@ function runSuite() {
   return { failed, parseError: false }
 }
 
+/**
+ * Check every anchor before running anything.
+ *
+ * `applyMutation` already refuses a mutation whose anchor has moved, and that guard
+ * is the reason this tool is trustworthy at all. But it fires *during* the run, and
+ * throwing at mutation 14 of 25 means mutations 15 to 25 never execute — so a single
+ * stale anchor hides the state of every one behind it. That is exactly what
+ * happened: Day 3's airframe-contact rewrite moved `strut-pulls-down`'s anchor in
+ * the same commit that refreshed this file, and eleven mutations went unrun and
+ * unnoticed until the Day 4 QA pass.
+ *
+ * Checking up front costs nothing, reports every stale anchor at once instead of one
+ * per run, and fails before a two-minute baseline is spent finding out.
+ */
+function assertAnchorsApply() {
+  const stale = []
+
+  for (const m of MUTATIONS) {
+    const source = readFileSync(resolve(PKG, m.file), 'utf8')
+    if (!source.includes(m.find)) stale.push(m)
+  }
+
+  if (stale.length === 0) return
+
+  console.error(`${stale.length} mutation(s) no longer apply:\n`)
+  for (const m of stale) console.error(`  ${m.id.padEnd(26)} ${m.file}`)
+  console.error(
+    `\nThe source has changed since these were written. Update them — a mutation ` +
+      `that\nsilently fails to apply reports a false clean bill of health.`,
+  )
+  process.exit(1)
+}
+
 function applyMutation(m) {
   const path = resolve(PKG, m.file)
   const original = readFileSync(path, 'utf8')
@@ -403,6 +432,7 @@ async function main() {
   const asJson = process.argv.includes('--json')
 
   assertCleanTree()
+  assertAnchorsApply()
 
   console.error('Baseline: running the suite unmutated...')
   const baseline = runSuite()

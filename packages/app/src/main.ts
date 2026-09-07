@@ -175,6 +175,19 @@ function main(): void {
   // anyone sees, and it says the aircraft has just taken off when it has not.
   let gearDown = SPAWN.onGround === true
   let parkingBrake = false
+  /**
+   * Whether the aircraft is rolling out after a landing.
+   *
+   * Being on the ground with the gear down looks identical to a takeoff roll, and
+   * before Day 4's QA pass the HUD acted on that resemblance: it displayed ROTATE
+   * for the whole landing rollout. Distinguishing them needs one bit of history —
+   * has this aircraft been in the air since it last touched the ground.
+   *
+   * It clears again below walking pace, so that after coming to a stop the next roll
+   * is a takeoff again and the cue comes back without needing a reset.
+   */
+  let rollingOut = false
+  let wasAirborne = SPAWN.onGround !== true
   let wasSlewing = false
   let saveNote = ''
   let saveNoteUntil = 0
@@ -240,6 +253,8 @@ function main(): void {
       input.setThrottle(0)
       chase.reset()
       slewing = false
+      rollingOut = false
+      wasAirborne = false
     }
 
     if (commands.saveSituation) {
@@ -321,6 +336,11 @@ function main(): void {
 
     const state = simulation.render()
 
+    if (!simulation.onGround) rollingOut = false
+    else if (wasAirborne) rollingOut = true
+    if (simulation.onGround && state.kt < 5) rollingOut = false
+    wasAirborne = !simulation.onGround
+
     courseProgress = course.update(
       {
         x: state.position[0],
@@ -376,6 +396,7 @@ function main(): void {
       {
         onGround: simulation.onGround,
         gearDown,
+        rollingOut,
         brakes: input.brakes() > 0,
         parkingBrake,
         referenceKt,
@@ -432,6 +453,7 @@ function main(): void {
         targetKt: referenceKt,
         onGround: simulation.onGround,
         gearDown,
+        rollingOut,
       }),
       steer,
       warnings,

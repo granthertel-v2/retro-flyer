@@ -23,7 +23,12 @@ const GROUPS: readonly Group[] = [
   {
     title: 'Fly',
     rows: [
-      ['↑ ↓ / W S', 'pitch — pull to climb'],
+      // Which key pulls is named, not implied. QA found this was the single most
+      // likely way a first flight fails: "pitch — pull to climb" does not tell a
+      // newcomer that UP is nose *down*, and pressing the obvious key puts the nose
+      // into the ground while the pilot concludes the simulator is broken.
+      ['↓ or S', '<b>pull</b> — nose up, and climb'],
+      ['↑ or W', 'push — nose down'],
       ['← → / A D', 'roll'],
       ['Q E', 'rudder'],
       ['X Z', 'throttle up / down — afterburner above 50%'],
@@ -63,9 +68,20 @@ const GROUPS: readonly Group[] = [
   },
 ]
 
+/**
+ * The first flight, in four sentences.
+ *
+ * Rewritten after QA flew it literally. The previous version described holding the
+ * brakes until the engine wound up and then releasing — which cannot be done, because
+ * the brakes stop holding at about 59% power and the aircraft accelerates away with
+ * them fully applied (measured: 173 kt after twenty seconds, brakes on). It also
+ * described a takeoff without mentioning that the opening position is airborne, and
+ * said "pull" without saying which key pulls.
+ */
 const INTRO = `You are in an F-16 with a real aerodynamic model underneath it.
-Push the throttle up with <b>X</b>, hold the brakes with <b>Space</b> until it
-winds up, then let go and pull back at the <b>ROTATE</b> cue.`
+Press <b>T</b> to line up on a runway. Run the throttle to full with <b>X</b> and
+give the engine a few seconds — it will start rolling on its own, and the brakes
+will not hold it. At the <b>ROTATE</b> cue, pull back: that is <b>↓</b> or <b>S</b>.`
 
 export class HelpCard {
   private readonly root: HTMLElement
