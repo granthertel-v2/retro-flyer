@@ -15,6 +15,7 @@ import {
   Mesh,
   MeshBasicMaterial,
   PerspectiveCamera,
+  Matrix4,
   PlaneGeometry,
   Scene,
   WebGLRenderer,
@@ -27,7 +28,10 @@ import { CAMERA_MODES, ChaseCamera, type CameraMode } from './camera/chase.js'
 import { FovController } from './camera/fov.js'
 import { InputReader } from './input.js'
 import { Simulation } from './loop.js'
-import { Overlay } from './overlay.js'
+import { Overlay, speedCue } from './overlay.js'
+import { Hud, type SteerCue } from './hud/hud.js'
+import { bearingTo } from './hud/symbology.js'
+import { HelpCard } from './help.js'
 import { Clouds, SUN_DIRECTION, buildSun, positionSun } from './sky.js'
 import { MAP_EXTENT, authoredMap } from './terrain/authored.js'
 import { AuthoredGroundSource } from './terrain/groundSource.js'
@@ -157,6 +161,12 @@ function main(): void {
   const chase = new ChaseCamera()
   const fov = new FovController()
   const overlay = new Overlay()
+  const hud = new Hud()
+  const help = new HelpCard()
+
+  // Rebuilt every frame rather than allocated every frame. `Matrix4.elements` is the
+  // column-major array `projectDirection` wants, so no conversion happens anywhere.
+  const viewProj = new Matrix4()
 
   let mode: CameraMode = 'chase'
   let presetIndex = 0
@@ -211,6 +221,9 @@ function main(): void {
     }
     if (commands.resetCourse) course.reset()
     if (commands.toggleParkingBrake) parkingBrake = !parkingBrake
+    if (commands.toggleHud) hud.visible = !hud.visible
+    if (commands.toggleOverlay) overlay.visible = !overlay.visible
+    if (commands.toggleHelp) help.toggle()
 
     // --- Day 3 -----------------------------------------------------------
     if (commands.toggleGear) gearDown = !gearDown
@@ -345,6 +358,13 @@ function main(): void {
     // In the cockpit the aircraft is the thing you are inside of.
     aircraft.visible = mode !== 'cockpit'
 
+    const referenceKt = fpsToKt(
+      // Derived from the aero tables at the nearest field's elevation, so it follows
+      // weight and altitude rather than being a constant that goes quietly wrong.
+      // See `speeds.ts`.
+      referenceSpeed(nearestFieldElevationFt(state.position[0], state.position[2])),
+    )
+
     overlay.update(
       state,
       simulation.layer,
@@ -358,10 +378,7 @@ function main(): void {
         gearDown,
         brakes: input.brakes() > 0,
         parkingBrake,
-        // Derived from the aero tables at the nearest field's elevation, so it
-        // follows weight and altitude rather than being a constant that goes quietly
-        // wrong. See `speeds.ts`.
-        referenceKt: fpsToKt(referenceSpeed(nearestFieldElevationFt(state.position[0], state.position[2]))),
+        referenceKt,
         bottomed: simulation.gear.bottomed,
         slewing,
         course: courseProgress,
@@ -370,6 +387,55 @@ function main(): void {
       },
     )
     renderer.render(scene, camera)
+
+    // The HUD is drawn from the same matrix the terrain went through, which is the
+    // whole reason the flight path marker lands on real ground rather than near it.
+    // It has to be read after `chase.update` and the FOV change, both of which move
+    // the camera this frame.
+    camera.updateMatrixWorld()
+    viewProj.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)
+
+    const nextGate = course.waypoints[courseProgress.index]
+    const steer: SteerCue | null =
+      nextGate && courseProgress.status !== 'complete'
+        ? {
+            name: nextGate.name,
+            bearingDeg: bearingTo(
+              { x: state.position[0], z: state.position[2] },
+              { x: nextGate.x, z: nextGate.z },
+            ),
+            distanceNm: courseProgress.distanceM / 1852,
+          }
+        : null
+
+    const telemetry = simulation.layer.lastTelemetry()
+    const warnings: string[] = []
+    if (telemetry?.aoaLimiting) warnings.push('AOA LIMIT')
+    if (telemetry?.gLimiting) warnings.push('G LIMIT')
+    if (simulation.gear.bottomed) warnings.push('GEAR BOTTOMED')
+    if (slewing) warnings.push('SLEW')
+    else if (simulation.paused) warnings.push('PAUSED')
+
+    hud.draw({
+      state,
+      viewProj: viewProj.elements,
+      nz: simulation.nz,
+      throttle: input.axes(0).throttle,
+      onGround: simulation.onGround,
+      gearDown,
+      parkingBrake,
+      // Orbit swings the camera around the aircraft, and a world-referenced ladder
+      // seen from a moving external viewpoint is unreadable. See `HudInputs`.
+      conformal: mode !== 'orbit',
+      cue: speedCue({
+        kt: state.kt,
+        targetKt: referenceKt,
+        onGround: simulation.onGround,
+        gearDown,
+      }),
+      steer,
+      warnings,
+    })
   }
 
   const frame = (now: number): void => {
