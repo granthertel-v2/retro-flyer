@@ -15,6 +15,9 @@ to fly it over, a full runway-to-runway cycle, and a HUD to fly it on.
 Nothing to install — it is a web page. It opens with a card listing the controls;
 press any key to dismiss it, `/` to bring it back.
 
+Desktop browser and a keyboard. There is no touch control scheme and the HUD is laid
+out for a landscape window, so a phone will load it and you will not be able to fly it.
+
 The short version:
 
 | | |
