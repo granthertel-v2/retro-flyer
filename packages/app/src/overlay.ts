@@ -12,6 +12,86 @@
 import type { AssistLayer } from '@retro-flyer/control'
 import type { RenderState } from './seam.js'
 import type { CameraMode } from './camera/chase.js'
+import type { CourseProgress, Waypoint } from './course.js'
+
+/**
+ * The speed cue, decided separately from how it is drawn.
+ *
+ * A pure function so it can be tested — the class around it touches `document` and
+ * cannot be. It exists because a flight test flew the aircraft into a runway at 250
+ * kt: the overlay showed IAS the whole way down, and a bare number does not tell you
+ * whether it is the right one.
+ */
+export type SpeedCue =
+  | { kind: 'none' }
+  | { kind: 'rotate'; targetKt: number; ready: boolean }
+  | { kind: 'approach'; targetKt: number; deltaKt: number }
+
+export function speedCue(o: {
+  kt: number
+  targetKt: number
+  onGround: boolean
+  gearDown: boolean
+}): SpeedCue {
+  // Gear up is neither a takeoff nor a landing, and a cue that is always on is
+  // wallpaper.
+  if (!o.gearDown) return { kind: 'none' }
+
+  if (o.onGround) {
+    return { kind: 'rotate', targetKt: o.targetKt, ready: o.kt >= o.targetKt }
+  }
+
+  return { kind: 'approach', targetKt: o.targetKt, deltaKt: o.kt - o.targetKt }
+}
+
+/** Day 3 state the readout needs and the render state does not carry. */
+export interface GroundStatus {
+  onGround: boolean
+  gearDown: boolean
+  brakes: boolean
+  parkingBrake: boolean
+  /** Speed the aircraft rotates and approaches at, knots. */
+  referenceKt: number
+  bottomed: boolean
+  slewing: boolean
+  course: CourseProgress
+  waypoints: readonly Waypoint[]
+  /** A transient message — SAVED, RESTORED, NO SAVE. */
+  note: string
+}
+
+/**
+ * The cue as one line of text.
+ *
+ * Deliberately loud when it matters. On the roll it is a target that lights up when
+ * reached; on final it is how far off you are, because "+82" is a much more useful
+ * thing to read at 250 kt than "250".
+ */
+function speedCueText(cue: SpeedCue): string {
+  if (cue.kind === 'none') return ''
+
+  if (cue.kind === 'rotate') {
+    return cue.ready
+      ? `<b>&#9650; ROTATE &#9650;</b>`
+      : `<span style="opacity:.6">ROTATE AT ${cue.targetKt.toFixed(0)} KT</span>`
+  }
+
+  const delta = cue.deltaKt
+  const sign = delta >= 0 ? '+' : '&minus;'
+  const magnitude = Math.abs(delta).toFixed(0)
+  // Comfortably fast is worth a shout: above about 30 kt over, this aircraft floats
+  // rather than lands, and above 80 it will not come down at all.
+  const hot = delta > 30
+  return hot
+    ? `<b>APPROACH ${cue.targetKt.toFixed(0)} KT &nbsp; ${sign}${magnitude} FAST</b>`
+    : `<span style="opacity:.75">APPROACH ${cue.targetKt.toFixed(0)} KT &nbsp; ${sign}${magnitude}</span>`
+}
+
+const clock = (seconds: number): string => {
+  const m = Math.floor(seconds / 60)
+  const s = seconds - m * 60
+  return `${m}:${s.toFixed(1).padStart(4, '0')}`
+}
 
 const ASSIST_LABELS = [
   ['pitchRateCommand', 'PITCH CMD'],
@@ -61,6 +141,7 @@ export class Overlay {
     paused: boolean,
     ticks: number,
     throttle: number,
+    ground: GroundStatus,
   ): void {
     this.frames++
     const now = performance.now()
@@ -80,12 +161,17 @@ export class Overlay {
       pad('ALT', `${state.altFt.toFixed(0)} ft`),
       pad('VS', `${(state.climbFpm >= 0 ? '+' : '')}${Math.round(state.climbFpm)} fpm`),
       pad('AOA', `${state.alphaDeg.toFixed(1)}°`),
+      // Pitch attitude next to flight path, deliberately adjacent: the gap between
+      // them is angle of attack, and seeing the two diverge under a pull is the
+      // intuition §9.1's flight path marker exists to build.
+      pad('PITCH', `${state.pitchDeg.toFixed(1)}°`),
       // Where it is actually going, as opposed to where it is pointed. This is the
       // gap the §9.1 flight path marker exists to show, and without some form of it
       // a hard pull looks like nothing is happening: the nose reaches sixty degrees
       // nose-up several seconds before the aircraft is meaningfully climbing.
       pad('PATH', `${state.gammaDeg.toFixed(1)}°`),
       pad('BETA', `${state.betaDeg.toFixed(1)}°`),
+      pad('HDG', `${state.headingDeg.toFixed(0).padStart(3, '0')}°`),
       pad('G', nz.toFixed(2)),
       pad('ROLL RT', `${state.rates[0].toFixed(0)}°/s`),
       pad('THROTTLE', `${Math.round(throttle * 100)}%`),
@@ -93,7 +179,23 @@ export class Overlay {
       '',
       telemetry?.aoaLimiting ? '<b>AOA LIMIT</b>' : '',
       telemetry?.gLimiting ? '<b>G LIMIT</b>' : '',
-      paused ? '<b>PAUSED</b>' : '',
+      ground.bottomed ? '<b>GEAR BOTTOMED</b>' : '',
+      ground.slewing ? '<b>SLEW</b>' : paused ? '<b>PAUSED</b>' : '',
+      '',
+      // Gear state, always visible: knowing whether the wheels are down and whether
+      // they are carrying anything is most of what a takeoff or a landing is about.
+      `GEAR ${ground.gearDown ? 'DN' : 'UP'}${ground.onGround ? ' &middot; WOW' : ''}${
+        ground.brakes ? ' &middot; BRK' : ''
+      }${ground.parkingBrake ? ' &middot; <b>PARK</b>' : ''}`,
+      speedCueText(
+        speedCue({
+          kt: state.kt,
+          targetKt: ground.referenceKt,
+          onGround: ground.onGround,
+          gearDown: ground.gearDown,
+        }),
+      ),
+      ground.note ? `<b>${ground.note}</b>` : '',
     ]
       .filter(Boolean)
       .join('<br>')
@@ -104,7 +206,32 @@ export class Overlay {
       return `<span style="opacity:${on ? 1 : 0.32}">${label}</span>`
     }).join('<br>')
 
+    const c = ground.course
+    const next = ground.waypoints[c.index]
+
+    const courseLines =
+      c.status === 'complete'
+        ? [
+            '<b>COURSE COMPLETE</b>',
+            `time ${clock(c.elapsed)}`,
+            ...c.splits.map((t, i) => `${(ground.waypoints[i]?.name ?? '').padEnd(6)} ${clock(t)}`),
+          ]
+        : c.status === 'ready'
+          ? ['<span style="opacity:.55">COURSE &mdash; take off to start</span>']
+          : [
+              `COURSE ${clock(c.elapsed)}`,
+              next
+                ? `next ${next.name} &nbsp;${(c.distanceM / 1852).toFixed(1)} nm` +
+                  `<br><span style="opacity:${c.altitudeOk ? 1 : 0.45}">` +
+                  `${next.minAltFt}-${next.maxAltFt} ft ${c.altitudeOk ? '&check;' : ''}</span>` +
+                  `<br><span style="opacity:.55">${next.hint}</span>`
+                : 'land at Ridgeview',
+              ...c.splits.map((t, i) => `${(ground.waypoints[i]?.name ?? '').padEnd(6)} ${clock(t)}`),
+            ]
+
     this.right.innerHTML = [
+      ...courseLines,
+      '',
       `${this.fps.toFixed(0)} fps`,
       `${ticks} ticks`,
       `cam ${mode}`,
@@ -117,6 +244,8 @@ export class Overlay {
       '<span style="opacity:.55">Q / E &nbsp;rudder &middot; I &nbsp;invert pitch</span>',
       '<span style="opacity:.55">C cam &middot; B preset &middot; P pause &middot; R reset</span>',
       '<span style="opacity:.55">1-6 assists &middot; 0 none &middot; 9 all</span>',
+      '<span style="opacity:.55">space brakes &middot; K park &middot; G gear &middot; T next field</span>',
+      '<span style="opacity:.55">V slew &middot; F5 save &middot; F9 load &middot; N course</span>',
     ].join('<br>')
   }
 }

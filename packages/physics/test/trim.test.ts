@@ -24,7 +24,7 @@ import { S, derivative } from '../src/dynamics.js'
 import { REFERENCE_IMPL_MASS, computeMassProperties } from '../src/massProperties.js'
 import { trim, trimControls } from '../src/trim.js'
 import { PHYSICS_HZ, step } from '../src/integrator.js'
-import { Q, fromStateVector, toQuatVector } from '../src/state.js'
+import { aeroAngles, fromStateVector, Q, toQuatVector } from '../src/state.js'
 
 interface TrimCase {
   in: { alt: number; vt: number }
@@ -94,8 +94,10 @@ describe('a trim solution is actually an equilibrium', () => {
     const u = trimControls(r)
 
     let v = toQuatVector(fromStateVector(r.state))
+    const vtOf = (a: number[]): number =>
+      aeroAngles(a[Q.U] as number, a[Q.V] as number, a[Q.W] as number).vt
     const alt0 = v[Q.ALT] as number
-    const vt0 = v[Q.VT] as number
+    const vt0 = vtOf(v)
 
     for (let i = 0; i < 10 * PHYSICS_HZ; i++) {
       v = step(v, u)
@@ -104,7 +106,7 @@ describe('a trim solution is actually an equilibrium', () => {
     // Loose bounds because trim is neutrally stable in the phugoid, which drifts
     // slowly by nature. What is being ruled out is a solution that departs.
     expect(Math.abs((v[Q.ALT] as number) - alt0)).toBeLessThan(200)
-    expect(Math.abs((v[Q.VT] as number) - vt0)).toBeLessThan(20)
+    expect(Math.abs(vtOf(v) - vt0)).toBeLessThan(20)
   })
 
   it('has near-zero accelerations at the solution point', () => {

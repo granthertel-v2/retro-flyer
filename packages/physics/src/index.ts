@@ -31,6 +31,8 @@ export {
   ALPHA_MAX_DEG,
   ALPHA_MIN_DEG,
   BETA_LIMIT_DEG,
+  MIN_AIRSPEED_FPS,
+  clamp,
   guardAngles,
   insideEnvelope,
   type GuardedAngles,
@@ -59,13 +61,18 @@ export {
 } from './massProperties.js'
 
 export {
+  NO_EXTERNAL_LOADS,
   S,
   STATE_SIZE,
   derivative,
+  forcesAndMoments,
   stateDerivative,
   type Controls,
+  type Core,
+  type CoreInputs,
   type Derivative,
   type DerivativeOptions,
+  type ExternalLoads,
   type LoadFactors,
 } from './dynamics.js'
 
@@ -73,6 +80,8 @@ export {
   IDENTITY_QUATERNION,
   Q,
   QUAT_STATE_SIZE,
+  aeroAngles,
+  bodyVelocity,
   eulerFromQuaternion,
   fromQuatVector,
   fromStateVector,
@@ -81,11 +90,15 @@ export {
   quaternionDerivative,
   quaternionFromEuler,
   renormalizeQuat,
+  rotateBodyToNed,
+  rotateNedToBody,
   toQuatVector,
   toStateVector,
+  type AeroAngles,
   type AircraftState,
   type EulerAngles,
   type Quaternion,
+  type QuatDerivative,
 } from './state.js'
 
 export {
@@ -96,7 +109,50 @@ export {
   simulate,
   specificEnergy,
   step,
+  type LoadsFn,
 } from './integrator.js'
+
+export {
+  AIRFRAME_CONTACTS,
+  BELLY,
+  DEFAULT_GEAR,
+  LEFT_WINGTIP,
+  RIGHT_WINGTIP,
+  TAIL_SKID,
+  GEAR_DOWN,
+  GEAR_UP,
+  LEFT_MAIN,
+  NOSE_GEAR,
+  RIGHT_MAIN,
+  gearLoads,
+  restingAttitude,
+  staticCompression,
+  type GearInput,
+  type GearState,
+  type RestingAttitude,
+  type Strut,
+} from './gear.js'
+
+export {
+  FlatGround,
+  NoGround,
+  PAVED,
+  SOFT,
+  WATER,
+  type GroundSample,
+  type GroundSource,
+} from './ground.js'
+
+export {
+  ROTATION_ALPHA_DEG,
+  ROTATION_MARGIN,
+  approachSpeed,
+  liftCoefficient,
+  referenceSpeed,
+  rotationSpeed,
+  speedForLevelLift,
+  stallSpeed,
+} from './speeds.js'
 
 export { trim, trimControls, type TrimCondition, type TrimResult } from './trim.js'
 

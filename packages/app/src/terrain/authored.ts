@@ -35,6 +35,8 @@
  */
 
 import {
+  RUNWAY_RAMP_M,
+  RUNWAY_SURFACE_OFFSET_M,
   clamp,
   distanceToPolyline,
   fbm,
@@ -374,6 +376,35 @@ class AuthoredMap implements TerrainSource {
     if (pad.distance > PAD_APRON) return h
 
     return lerp(h, pad.elevation, smoothstep(PAD_APRON, 0, pad.distance))
+  }
+
+  /**
+   * The surface the wheels stand on: the landform, plus the runway strip's lift
+   * ramped smoothly away outside the strip.
+   *
+   * The ramp is the whole point. The lift has to exist because the strip z-fights
+   * with the flat ground it sits on and the logarithmic depth buffer makes
+   * `polygonOffset` useless; the ramp is what stops the lift becoming a step for the
+   * gear to hit at landing speed. See `RUNWAY_SURFACE_OFFSET_M`.
+   */
+  surfaceHeight(x: number, z: number): number {
+    const base = this.height(x, z)
+    let lift = 0
+
+    for (const f of this.airfields) {
+      const d = signedDistanceToRect(
+        x, z,
+        f.x, f.z,
+        f.lengthM / 2,
+        f.widthM / 2,
+        (f.headingDeg * Math.PI) / 180,
+      )
+      if (d >= RUNWAY_RAMP_M) continue
+      // Full lift on the strip (d <= 0), fading to nothing over the apron.
+      lift = Math.max(lift, RUNWAY_SURFACE_OFFSET_M * smoothstep(RUNWAY_RAMP_M, 0, d))
+    }
+
+    return base + lift
   }
 
   sample(x: number, z: number): TerrainSample {

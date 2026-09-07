@@ -46,11 +46,51 @@ export interface Airfield {
   widthM: number
 }
 
+/**
+ * How far the drawn runway sits above the terrain, metres.
+ *
+ * Small, and matched by the physics with a ramp — both halves matter, and each was
+ * learned by getting it wrong.
+ *
+ * The strip is a flat quad laid on flat ground at exactly the same height, so it
+ * z-fights badly. `polygonOffset` is the textbook answer and does nothing here: the
+ * renderer uses a **logarithmic depth buffer**, which writes depth from the fragment
+ * shader, and polygon offset only biases fixed-function depth. So a real geometric
+ * lift is needed.
+ *
+ * But a lift creates a step at the runway edge, and the step is what the gear hits.
+ * At 0.6 m that was a two-foot kerb taken at 160 kt — it showed up as a 4 ft/s
+ * landing bottoming the struts at 12 g while an 8 ft/s landing was fine, purely
+ * because the gentle one touched down short of the threshold and rolled onto it.
+ *
+ * So: 12 cm rather than 60, and `surfaceHeight` below ramps it out over the apron
+ * so the physics sees a 0.24% slope instead of a wall. The pad is dead flat for 150 m
+ * beyond every runway — measured at exactly zero spread — so there is room to ramp.
+ */
+export const RUNWAY_SURFACE_OFFSET_M = 0.12
+
+/**
+ * Distance over which the runway lift ramps away outside the strip, metres. `[A]`
+ *
+ * Long enough that 12 cm is spread across a slope nothing can feel, short enough to
+ * stay well inside the flattened apron.
+ *
+ */
+export const RUNWAY_RAMP_M = 60
+
 export interface TerrainSource {
   /** Half-width of the map, metres. The world spans [-extent, +extent] on X and Z. */
   readonly extent: number
-  /** Ground elevation at a world coordinate, metres. */
+  /** Landform elevation at a world coordinate, metres. What the terrain mesh draws. */
   height(x: number, z: number): number
+  /**
+   * Elevation of the surface you would stand on, metres.
+   *
+   * The same as `height` everywhere except on and around a runway, where it includes
+   * the strip's small lift, ramped out so there is no step to drive off. This is what
+   * the gear must use — see `RUNWAY_SURFACE_OFFSET_M`.
+   */
+  surfaceHeight(x: number, z: number): number
   /** Elevation and surface type at a world coordinate. */
   sample(x: number, z: number): TerrainSample
   readonly airfields: readonly Airfield[]

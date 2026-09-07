@@ -134,11 +134,11 @@ const MUTATIONS = [
     rationale:
       'Tests whether the suite can tell integration quality apart from model quality. The fourth-order-accuracy check must fail; the energy test may, since forward Euler pumps energy into oscillatory systems.',
     file: 'src/integrator.ts',
-    find: `  const k1 = quatDerivative(v, u, mass, opts).vd
-  const k2 = quatDerivative(add(v, k1, dt / 2), u, mass, opts).vd
-  const k3 = quatDerivative(add(v, k2, dt / 2), u, mass, opts).vd
-  const k4 = quatDerivative(add(v, k3, dt), u, mass, opts).vd`,
-    replace: `  const k1 = quatDerivative(v, u, mass, opts).vd
+    find: `  const k1 = d(v)
+  const k2 = d(add(v, k1, dt / 2))
+  const k3 = d(add(v, k2, dt / 2))
+  const k4 = d(add(v, k3, dt))`,
+    replace: `  const k1 = d(v)
   const k2 = k1
   const k3 = k1
   const k4 = k1`,
@@ -164,11 +164,160 @@ const MUTATIONS = [
     replace: '  const a = alphaDeg\n  const b = betaDeg',
     expect: ['boundary'],
   },
+
+  // --- Day 3: body-axis velocity, ground reaction -------------------------
+  {
+    id: 'swap-body-accelerations',
+    description: 'Swap the lateral and normal accelerations in the body-axis tail',
+    rationale:
+      'The body-axis tail replaced the reference wind-axis one, and the golden vectors do not cover it — they validate `derivative`, which is untouched. This is what does. Note which suites are NOT expected to catch it: `modes` linearises the 13-element Euler state through `derivative`, so it cannot see this tail at all, and `trim` holds a level condition where beta is zero and both accelerations are near zero, so swapping them is very nearly a no-op against bounds deliberately loosened for the phugoid.',
+    file: 'src/state.ts',
+    find: '      core.udot, core.vdot, core.wdot,',
+    replace: '      core.udot, core.wdot, core.vdot,',
+    expect: ['bodyAxis', 'quaternion', 'energy', 'boundary', 'gear'],
+  },
+  {
+    id: 'integrated-alpha',
+    description: 'Recover alpha with atan instead of atan2, losing the quadrant',
+    rationale:
+      'Alpha is derived from the body velocity rather than integrated, which is what makes the Day 2 tumble bug structurally impossible. Confirms something still checks that.',
+    file: 'src/state.ts',
+    find: '    alpha: Math.atan2(w, u),',
+    replace: '    alpha: Math.atan(w / u),',
+    expect: ['bodyAxis'],
+  },
+  {
+    id: 'external-loads-inert',
+    description: 'Drop the external force from the body-axis force equations',
+    rationale:
+      'The seam ground reaction arrives through. If nothing notices it vanishing, the gear is not connected to the flight model at all.',
+    file: 'src/dynamics.ts',
+    find: '  let az = rmqs * c.czt + rm * ext.fz',
+    replace: '  let az = rmqs * c.czt',
+    expect: ['bodyAxis', 'gear'],
+  },
+  {
+    id: 'strut-pulls-down',
+    description: 'Let a strut pull the aircraft down on rebound',
+    rationale:
+      'On the rebound the damper term goes strongly negative — measured -151,000 lb for a main leaving the ground at 50 ft/s. Unclamped, it sucks the aircraft back onto the runway.',
+    file: 'src/gear.ts',
+    find: `    if (N <= 0) {
+      compression.push(squash)
+      normal.push(0)
+      continue
+    }`,
+    replace: `    if (false) {
+      compression.push(squash)
+      normal.push(0)
+      continue
+    }`,
+    expect: ['gear'],
+  },
+  {
+    id: 'friction-sign-law',
+    description: 'Replace the tyre friction ramp with sign(), the chatter law',
+    rationale:
+      'A discontinuity at zero slip that a fixed-step integrator answers by flipping the friction force every tick. Shows up as a parked aircraft buzzing.',
+    file: 'src/gear.ts',
+    find: '      return peak * stribeck * clamp(slip / SLIP_REFERENCE_FPS, -1, 1)',
+    replace: '      return peak * stribeck * Math.sign(slip)',
+    expect: ['gear'],
+  },
+  {
+    id: 'no-static-friction',
+    description: 'Remove the static-to-dynamic friction falloff',
+    rationale:
+      'REQUIREMENTS §3 asks for static and dynamic friction as separate things. This survived the first break-check run because nothing asserted breakaway grip exceeds sliding grip.',
+    file: 'src/gear.ts',
+    find: '      const stribeck = 1 + (STATIC_FRICTION_BONUS - 1) * Math.exp(-speed / STRIBECK_FPS)',
+    replace: '      const stribeck = 1',
+    expect: ['gear'],
+  },
+  {
+    id: 'no-bottoming-stop',
+    description: 'Make a bottomed strut keep its linear spring rate',
+    rationale:
+      'Also survived the first run: bottoming set a flag but no test checked the force went stiff, so the aircraft could sink through the runway while a boolean said otherwise.',
+    file: 'src/gear.ts',
+    find: '    const spring = s.k * withinStroke + s.k * BOTTOMING_RATIO * overStroke',
+    replace: '    const spring = s.k * squash',
+    expect: ['gear'],
+  },
+  {
+    id: 'no-damping-fade',
+    description: 'Apply full strut damping at first contact',
+    rationale:
+      'Measured before this existed: 173,871 lb in a single tick on a 27 ft/s arrival, from a strut that had not yet moved. A step force where there should be a ramp.',
+    file: 'src/gear.ts',
+    find: '    const fade = Math.min(1, squash / DAMPING_FADE_FT)',
+    replace: '    const fade = 1',
+    expect: ['gear'],
+  },
+  {
+    id: 'symmetric-strut-damping',
+    description: 'Damp strut extension as softly as compression',
+    rationale:
+      'Without a stiffer recoil the strut returns the arrival energy: measured, airborne again 0.25 s after touchdown climbing at 1,100 fpm.',
+    file: 'src/gear.ts',
+    find: '    const damping = s.c * fade * (extending ? REBOUND_DAMPING_RATIO : 1)',
+    replace: '    const damping = s.c * fade',
+    expect: ['gear'],
+  },
+  {
+    id: 'gear-without-moments',
+    description: 'Let the gear produce forces but no moments about the CG',
+    rationale:
+      'Removes every r x F term. The aircraft would be held up but could not be pitched or rolled by its own wheels — no derotation, no load transfer under braking.',
+    file: 'src/gear.ts',
+    find: `    l += s.y * fBody[2] - s.z * fBody[1]
+    m += s.z * fBody[0] - s.x * fBody[2]
+    n += s.x * fBody[1] - s.y * fBody[0]`,
+    replace: `    l += 0
+    m += 0
+    n += 0`,
+    expect: ['gear'],
+  },
+  {
+    id: 'contact-ignores-rotation',
+    description: 'Compute contact-point velocity without the rotation about the CG',
+    rationale:
+      'Drops the omega x r term, so a wing-down landing loads both mains equally and a yaw rate meets no resistance.',
+    file: 'src/gear.ts',
+    find: `      vb[0] + (qRate * s.z - r * s.y),
+      vb[1] + (r * s.x - p * s.z),
+      vb[2] + (p * s.y - qRate * s.x),`,
+    replace: `      vb[0],
+      vb[1],
+      vb[2],`,
+    expect: ['gear'],
+  },
+  {
+    id: 'level-resting-attitude',
+    description: 'Assume the parked aircraft sits level',
+    rationale:
+      'The struts compress by different amounts, so it rests half a degree nose-up. Assuming level over-compresses the nose strut and starts every runway spawn carrying 109% of the aircraft weight.',
+    file: 'src/gear.ts',
+    find: '  const pitch = Math.atan2(zNose - zMain, xNose - xMain)',
+    replace: '  const pitch = 0',
+    expect: ['gear'],
+  },
+  {
+    id: 'supersonic-thrust-clamped',
+    description: 'Clamp the thrust interpolation weight at the table edge',
+    rationale:
+      'Not a defect being introduced — the opposite. `supersonicThrust` records what the reference model actually does above Mach 1, and this confirms those numbers describe the extrapolation rather than being incidental.',
+    file: 'src/aero/engine.ts',
+    find: '  const dm = rm - m',
+    replace: '  const dm = Math.min(rm - m, 1)',
+    expect: ['supersonicThrust'],
+  },
 ]
 
 const SUITES = [
   'massProperties', 'atmosphere', 'goldenCoefficients', 'goldenEngine',
   'goldenDerivatives', 'quaternion', 'trim', 'modes', 'boundary', 'energy',
+  'bodyAxis', 'gear', 'supersonicThrust',
 ]
 
 function git(...args) {

@@ -24,6 +24,17 @@ export interface InputCommands {
   invertPitch: boolean
   togglePause: boolean
   reset: boolean
+  /** Gear up/down. */
+  toggleGear: boolean
+  /** Slew mode on/off. */
+  toggleSlew: boolean
+  /** Move to the next airfield and start there, on the ground. */
+  nextField: boolean
+  saveSituation: boolean
+  loadSituation: boolean
+  resetCourse: boolean
+  /** Parking brake on/off. */
+  toggleParkingBrake: boolean
 }
 
 const NO_COMMANDS: InputCommands = {
@@ -35,6 +46,13 @@ const NO_COMMANDS: InputCommands = {
   invertPitch: false,
   togglePause: false,
   reset: false,
+  toggleGear: false,
+  toggleSlew: false,
+  nextField: false,
+  saveSituation: false,
+  loadSituation: false,
+  resetCourse: false,
+  toggleParkingBrake: false,
 }
 
 /** Keys that mean something, so the browser's own bindings can be suppressed. */
@@ -44,6 +62,7 @@ const CLAIMED = new Set([
   'KeyQ', 'KeyE',
   'ShiftLeft', 'ShiftRight', 'ControlLeft', 'ControlRight',
   'KeyC', 'KeyI', 'KeyP', 'KeyR', 'KeyB', 'KeyZ', 'KeyX',
+  'KeyG', 'KeyV', 'KeyT', 'KeyN', 'KeyK', 'Space', 'F5', 'F9',
   'Digit0', 'Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit9',
 ])
 
@@ -80,6 +99,13 @@ export class InputReader {
       case 'KeyP': this.pending.togglePause = true; break
       case 'KeyR': this.pending.reset = true; break
       case 'KeyB': this.pending.cyclePreset = true; break
+      case 'KeyG': this.pending.toggleGear = true; break
+      case 'KeyV': this.pending.toggleSlew = true; break
+      case 'KeyT': this.pending.nextField = true; break
+      case 'KeyN': this.pending.resetCourse = true; break
+      case 'KeyK': this.pending.toggleParkingBrake = true; break
+      case 'F5': this.pending.saveSituation = true; break
+      case 'F9': this.pending.loadSituation = true; break
       case 'Digit0': this.pending.allAssistsOff = true; break
       case 'Digit9': this.pending.allAssistsOn = true; break
       case 'Digit1': this.pending.toggleAssist = 0; break
@@ -151,6 +177,42 @@ export class InputReader {
       yaw,
       throttle: this.throttle,
     }
+  }
+
+  /**
+   * Wheel brakes, 0 or 1.
+   *
+   * Held rather than toggled, and read separately from `axes` because it is not one
+   * of the four things the §8.1 seam carries: the assist layer emits control surface
+   * deflections, and a brake is not a control surface. It goes to the gear model.
+   */
+  brakes(): number {
+    return this.held('Space') ? 1 : 0
+  }
+
+  /**
+   * Slew translation, from the same keys that fly the aircraft.
+   *
+   * Reusing WASD rather than inventing a second set: in slew there is nothing else
+   * for them to do, and a mode with its own keybindings is a mode nobody remembers
+   * how to leave.
+   */
+  slew(): { forward: number; right: number; up: number; turn: number } {
+    let forward = 0
+    let right = 0
+    let up = 0
+    let turn = 0
+
+    if (this.held('ArrowUp', 'KeyW')) forward += 1
+    if (this.held('ArrowDown', 'KeyS')) forward -= 1
+    if (this.held('ArrowRight', 'KeyD')) right += 1
+    if (this.held('ArrowLeft', 'KeyA')) right -= 1
+    if (this.held('ShiftLeft', 'ShiftRight', 'KeyX')) up += 1
+    if (this.held('ControlLeft', 'ControlRight', 'KeyZ')) up -= 1
+    if (this.held('KeyE')) turn += 1
+    if (this.held('KeyQ')) turn -= 1
+
+    return { forward, right, up, turn }
   }
 
   /** Drain the one-shot commands. Calling this twice in a frame gets them once. */

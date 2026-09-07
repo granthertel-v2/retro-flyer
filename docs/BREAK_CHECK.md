@@ -3,179 +3,133 @@
 > **A passing suite proves nothing until each test is confirmed able to fail.**
 > — `REQUIREMENTS.md` §4.3
 
-Run date: 2026-09-03. Suite at time of run: 197 tests, 10 files, all green.
-Reproduce with `node tools/break_check.mjs` from `packages/physics`.
+Run date: 2026-09-04, end of Day 3. Physics suite at time of run: **253 tests,
+13 files, all green.** Reproduce with `node tools/break_check.mjs` from
+`packages/physics` (add `--json` for machine-readable output).
 
-**Result: 12 of 12 mutations detected. No mutation went unnoticed.**
+**Result: 25 of 25 mutations detected. Nothing went unnoticed.**
 
-The first run was more useful than that headline suggests — it found two tests
-that stayed green through mutations they were specifically written to catch. Both
-are described below and both are fixed. That is the protocol working, and it is the
-reason §4.3 exists.
+Two mutations went undetected on the first run of this pass and both are described
+below. Both are now caught. That is the protocol working, and it is the reason §4.3
+exists — a suite that has never been shown to fail is a suite nobody has tested.
 
 ---
 
 ## Method
 
-Each mutation is one surgical edit to a source file: apply, run the entire suite,
-record which test files fail, revert. The tool refuses to start on a dirty working
-tree and restores the tree on any crash path — a corrupted model must never be able
-to survive the run.
+Each mutation is one surgical edit to a source file: apply it, run the entire physics
+suite, record which test files go red, revert. The working tree is restored before
+and after, and the script refuses to start on a dirty tree so that a crash mid-run
+cannot leave a corrupted model behind.
 
-Each mutation also carries an `expect` list naming the suites that *should* catch
-it. A mutation being caught by something is weak evidence; a mutation being caught
-by the test written to catch it is the actual claim.
+The tool also **refuses to run a mutation whose anchor text no longer exists**. This
+matters more than it sounds: a mutation that silently fails to apply reports a clean
+bill of health for a test that was never challenged. It fired for real during this
+pass, when the Day 3 integrator rewrite moved the RK4 stage lines out from under the
+`euler-integrator` mutation.
+
+Each mutation carries an `expect` list — a claim about which suites *should* notice.
+Where reality disagreed with the claim, the finding is recorded below rather than the
+claim being quietly edited to match.
 
 ---
 
 ## Results
 
-`Tier A` is port fidelity against the reference implementation at 1e-12
-(`goldenCoefficients`, `goldenEngine`, `goldenDerivatives`). `Tier B` is the
-physics validation of `REQUIREMENTS` §4.2.
-
-| Mutation | Tier A | Tier B | Caught by |
-|---|---|---|---|
-| Invert the lift coefficient sign | 2 | 5 | boundary, energy, goldenCoefficients, goldenDerivatives, modes, quaternion, trim |
-| Zero the pitching-moment table | 2 | 3 | goldenCoefficients, goldenDerivatives, modes, quaternion, trim |
-| Offset the reference CG by 0.05 c̄ | 0 | 2 | massProperties, modes |
-| Zero pitch damping (Cmq) | 1 | 3 | energy, goldenDerivatives, modes, quaternion |
-| Zero yaw damping (Cnr, Cnp) | 1 | 1 | goldenDerivatives, modes |
-| Swap the pitch/yaw damping indices | 1 | 3 | energy, goldenDerivatives, modes, quaternion |
-| **Change one coefficient by 10%** | **2** | **0** | **goldenCoefficients, goldenDerivatives** |
-| Off-by-one in the alpha table index | 2 | 5 | boundary, energy, goldenCoefficients, goldenDerivatives, modes, quaternion, trim |
-| Gravity 32.17 → 9.81 | 1 | 4 | energy, goldenDerivatives, modes, quaternion, trim |
-| RK4 → forward Euler | 0 | 1 | quaternion |
-| Skip quaternion renormalization | 0 | 1 | quaternion |
-| Disable the envelope guard | 0 | 2 | boundary, quaternion |
-
----
-
-## The row that justifies the whole design
-
-**Change one coefficient by 10%: Tier A catches it. Tier B does not — not one test
-out of seven files.**
-
-This is the transcription error that `REQUIREMENTS` §4.2 as originally written could
-not have detected. One number out of 852, altered by an amount well below every 5%
-and 10% tolerance in the spec. Trim still converges. The modes are still in range.
-Energy still decreases monotonically. Every physics test passes, and the aircraft is
-permanently, invisibly wrong.
-
-852 hand-entered coefficients against percentage-tolerance tests is a system where
-the most likely defect is also the least detectable one. Tier A exists for exactly
-this row, and this row is the evidence it was worth building.
-
-The converse also holds and is worth stating: **Tier A alone would be equally
-insufficient.** The CG offset, the integrator swap, the missing renormalization, and
-the envelope guard are all invisible to Tier A — they are not port errors, so a
-faithful port test has nothing to say about them. Neither tier subsumes the other.
-
----
-
-## Two holes the first run found
-
-Both were tests that passed through mutations they were written to catch. Neither
-would have been discovered by any amount of staring at green output.
-
-### 1. A tautological assertion in `massProperties.test.ts`
-
-The `offset-cg` mutation changes `XCG_REF` from 0.35 to 0.40. The mass-properties
-suite did not notice, because every assertion in it compared computed values against
-`XCG_REF` itself:
-
-```ts
-expect(mp.xcg).toBeCloseTo(XCG_REF, 12)   // both sides move together
-```
-
-Changing the constant changes both sides of the comparison. The test passes for any
-value whatsoever. This is precisely the failure mode §4.3 describes: *"a test aimed
-at the wrong state variable reports clean forever."*
-
-**Fixed** by adding assertions against literals traced to the source — `XCG_REF`
-must equal `0.35`, the inertia constants must equal NASA Table 1's figures — so that
-editing a sourced constant has to be a deliberate act that trips a test naming the
-source.
-
-### 2. A damping band too loose to test damping
-
-The `kill-yaw-damping` mutation zeroes Cnr and Cnp. The dutch roll damping ratio
-roughly halves as a result:
-
-| Condition | Intact | Yaw damping zeroed |
+| Mutation | What it breaks | Caught by |
 |---|---|---|
-| 10,000 ft / 500 ft/s | 0.124 | 0.065 |
-| 10,000 ft / 900 ft/s | 0.112 | 0.030 |
-| 30,000 ft / 700 ft/s | 0.091 | 0.050 |
-
-The test asserted `zeta > 0.02`, which 0.065 satisfies comfortably. A model with no
-yaw damping at all passed the yaw damping test.
-
-**Fixed** two ways. The physical band was tightened to `zeta > 0.08`, still justified
-independently — that is the low end for this class of aircraft. And per-condition
-regression pins were added at the 10% tolerance §4.2 specifies, labelled honestly as
-regression pins rather than validation: they cannot show the model is right, but they
-ensure any change to a damping ratio has to be deliberate and visible.
-
----
-
-## A bug in the break-check tool itself
-
-The first two runs reported inflated detection — `perturb-one-coefficient` appeared
-to be caught by all ten suites, including `atmosphere` and `massProperties`, which
-have no path to an axial-force coefficient.
-
-Cause: the tool ran vitest with `--reporter=json --outputFile=/dev/stdout`, so the
-JSON report interleaved with vitest's console output and sometimes failed to parse.
-The fallback for an unparseable report marks every suite as failed, on the reasoning
-that a compile error should not read as "undetected".
-
-That fallback is right, but combined with a flaky parse it inflates detection and
-**hides suite holes** — a mutation looks broadly caught when the run never produced
-readable results at all. It is a false negative for exactly the thing the tool
-exists to find, which makes it the one error this tool must not make.
-
-Fixed by writing the report to a real temp file, and by tagging any run that still
-fails to produce a report as `BUILD FAILED` in the output rather than silently
-folding it into the detection count.
-
-Worth recording plainly: for a while, this tool was reporting a cleaner bill of
-health than the suite deserved. The verification harness needs verifying too.
+| `invert-lift` | Lift acts downward | bodyAxis, boundary, energy, goldenCoefficients, goldenDerivatives, modes, quaternion, trim |
+| `zero-pitching-moment` | All pitch stiffness removed | bodyAxis, goldenCoefficients, goldenDerivatives, modes, quaternion, trim |
+| `offset-cg` | Reference CG moved 0.05 chord | massProperties, modes |
+| `kill-pitch-damping` | Cmq zeroed | bodyAxis, energy, goldenDerivatives, modes, quaternion |
+| `kill-yaw-damping` | Cnr and Cnp zeroed | bodyAxis, goldenDerivatives, modes |
+| `swap-damping-indices` | Pitch and yaw damping indices swapped | bodyAxis, energy, goldenDerivatives, modes, quaternion |
+| `perturb-one-coefficient` | One axial-force table entry off by 10% | goldenCoefficients, goldenDerivatives |
+| `break-alpha-index` | Off-by-one in the alpha table index | bodyAxis, boundary, energy, gear, goldenCoefficients, goldenDerivatives, modes, quaternion, trim |
+| `wrong-gravity` | 32.17 → 9.81, feet mistaken for metres | bodyAxis, energy, gear, goldenDerivatives, modes, quaternion, trim |
+| `euler-integrator` | RK4 replaced with forward Euler | bodyAxis, quaternion |
+| `skip-quaternion-normalize` | Quaternion drift left uncorrected | quaternion |
+| `disable-envelope-guard` | Envelope guard made a no-op | bodyAxis, boundary |
+| `swap-body-accelerations` | Lateral and normal accelerations swapped in the body-axis tail | bodyAxis, boundary, energy, gear, quaternion |
+| `integrated-alpha` | `atan2` → `atan`, losing the quadrant | bodyAxis |
+| `external-loads-inert` | External force dropped from the force equations | bodyAxis, gear |
+| `strut-pulls-down` | Strut allowed to pull the aircraft down on rebound | gear |
+| `friction-sign-law` | Tyre friction ramp replaced with `sign()` | gear |
+| `no-static-friction` | Static-to-dynamic friction falloff removed | gear |
+| `no-bottoming-stop` | Bottomed strut keeps its linear rate | gear |
+| `no-damping-fade` | Full strut damping applied at first contact | gear |
+| `symmetric-strut-damping` | Extension damped as softly as compression | gear |
+| `gear-without-moments` | Gear produces forces but no moments | gear |
+| `contact-ignores-rotation` | Contact velocity drops the omega × r term | gear |
+| `level-resting-attitude` | Parked aircraft assumed level | gear |
+| `supersonic-thrust-clamped` | Thrust interpolation weight clamped at the table edge | goldenEngine, supersonicThrust |
 
 ---
 
-## What this does not establish
+## The two that survived, and what they mean
 
-Stating the limits, since the point of the exercise is honesty about what is proven:
+Both were in the gear model, and both had the same shape: the behaviour *was* tested,
+but only from the **app** package, by the landing tests in `takeoff.test.ts`. The
+break-check runs the physics suite alone, so `gear.ts` — where the code lives — could
+have been changed without anything in its own package objecting.
 
-- **Twelve mutations is not exhaustive.** Real mutation testing enumerates thousands.
-  These twelve were chosen to cover the failure classes that matter here — sign
-  errors, zeroed terms, index errors, transcription errors, units errors, integration
-  errors — but a mutation not on the list is a mutation not tested.
-- **Detection is not localization.** Seven suites failing on inverted lift shows the
-  suite is sensitive, not that it would point a maintainer at the right line.
-- **Tier B validates against the model, not against a real F-16.** The strongest
-  external evidence available is the relaxed-stability behavior in `modes.test.ts`,
-  which reproduces a documented characteristic of the actual aircraft
-  (`REQUIREMENTS` §3) rather than merely of the reference implementation. Everything
-  else is internal consistency.
-- **The dutch roll regression pins are pins.** They come from our own converged
-  model, not from a published source, because no published modal values for this
-  model were located. They provide sensitivity, not validation, and are labelled that
-  way in the test file.
+That is a real gap and not a bookkeeping detail. A cross-package test is the right
+place to check that a landing feels like a landing; it is the wrong place to be the
+*only* check on a spring-damper's constitutive law.
+
+### `no-damping-fade`
+
+Damping is `c × closing speed`, and without the fade the damper is at full strength
+the instant the wheel touches, while the spring is still at zero. Measured before the
+fix: **173,871 lb in a single tick** on a 27 ft/s arrival — 8.5 times the aircraft's
+weight, from a strut that had not yet moved.
+
+Now caught by `the damper > does not answer first contact with a step force`, which
+asserts the force at 0.004 ft of squash is under a tenth of the undamped `c × v`, and
+that it still ramps up deeper in the stroke.
+
+### `symmetric-strut-damping`
+
+A strut that returns the energy it stored throws the aircraft off the runway it has
+just landed on. Measured: airborne again 0.25 s after touchdown, climbing at 1,100
+fpm.
+
+Now caught by `the damper > resists extension harder than compression`. Writing that
+test surfaced a second trap worth recording: at the obvious test rate of 6 ft/s the
+damper alone exceeds the spring force, the strut releases completely, and `N` clamps
+at zero — so the asymmetry saturates and reads as *0.68*, the wrong way round. The
+test measures at 1 ft/s, inside the regime where the strut is still pushing, and says
+so in a comment.
 
 ---
 
-## Re-running
+## Where an expectation was wrong rather than a test
 
-```bash
-cd packages/physics
-node tools/break_check.mjs          # human-readable summary
-node tools/break_check.mjs --json   # full detail
-```
+`swap-body-accelerations` was expected to be caught by `trim` and `modes`. It is
+caught by neither, and both are correct:
 
-Exit code is 0 if every mutation was detected, 2 if any went unnoticed.
+- **`modes` cannot see it.** Modal analysis linearises the 13-element Euler state
+  through `derivative()`, which the body-axis tail does not touch. This is by design —
+  `dynamics.ts` keeps the reference's wind-axis form precisely so the Tier A vectors
+  and the modal analysis validate the reference model rather than our replacement.
+- **`trim` is too loose to see it.** It holds a level condition where beta is zero
+  and both swapped accelerations are near zero, so the mutation is very nearly a
+  no-op — against bounds deliberately widened because trim is neutrally stable in the
+  phugoid.
 
-Re-run after any change to the aero tables, the lookup scheme, the integrator, or
-the tolerances in the test suite. A tolerance loosened for convenience is the most
-likely way for a hole to reappear, and this is the only thing that would notice.
+The `expect` list in the tool was corrected to the measured truth, with the reasoning
+recorded next to it. Editing the expectation is only honest when the expectation was
+the thing that was wrong; here it was.
+
+---
+
+## What this does not cover
+
+- **The control and app packages.** The break-check runs the physics suite only.
+  `@retro-flyer/control` is tunable by §4.4 and has no ground truth to mutate against;
+  the app package's assist and rendering tests have not been through this protocol.
+- **The renderer.** Four separate Day 2 and Day 3 defects were invisible to a fully
+  green suite and were found by flying the aircraft in a browser — no landing gear
+  drawn at all, wheels sitting 0.6 m under the runway surface, and the default spawn
+  flying with its gear down. Mutation testing would not have found any of them,
+  because there was no test to challenge.

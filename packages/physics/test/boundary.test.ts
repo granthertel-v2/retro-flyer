@@ -40,7 +40,7 @@ import {
   dndr,
 } from '../src/tables/coefficients.js'
 import { PHYSICS_HZ, step } from '../src/integrator.js'
-import { Q, quaternionFromEuler, toQuatVector } from '../src/state.js'
+import { Q, aeroAngles, quaternionFromEuler, toQuatVector } from '../src/state.js'
 import { RAD_PER_DEG } from '../src/units.js'
 
 /** Bound above which a dimensionless coefficient is not physical. */
@@ -342,28 +342,40 @@ describe('departure does not become divergence', () => {
     // so the simulation stays a simulation.
     const { v } = departed({ throttle: 1, elevator: -25, aileron: 21.5, rudder: 30 })
 
-    expect(Math.abs(v[Q.VT] as number)).toBeLessThan(5000)
+    expect(Math.abs(aeroAngles(v[Q.U] as number, v[Q.V] as number, v[Q.W] as number).vt))
+      .toBeLessThan(5000)
     expect(Math.abs(v[Q.P] as number)).toBeLessThan(50)
     expect(Math.abs(v[Q.Q_RATE] as number)).toBeLessThan(50)
     expect(Math.abs(v[Q.R] as number)).toBeLessThan(50)
   })
 
-  it('keeps alpha inside one turn, however long the tumble runs', () => {
-    // Alpha is an integrated state, not a value recovered from the body velocity
-    // each step, so nothing in the formulation stops it accumulating. A tumble makes
-    // it: held at full aft stick with the AoA limiter off, alpha reached 1,477
-    // degrees in 25 seconds and was still climbing, when the aircraft's actual
-    // incidence was 37.
+  it('reports the incidence the aircraft actually has, however long the tumble runs', () => {
+    // This test survives a change of formulation, and it is worth saying why rather
+    // than deleting it.
     //
-    // Which is not a cosmetic complaint. The tables clamp alpha to their +45 edge,
-    // and once alpha is four turns past that the clamp never releases, so the model
-    // computes forces for an aeroplane at 45 degrees that is really at 37 — forever.
-    // The aircraft stops being able to recover from a departure it should only have
-    // found difficult.
+    // Alpha used to be an integrated state, so nothing stopped it accumulating. A
+    // tumble made it: held at full aft stick with the AoA limiter off, alpha reached
+    // 1,477 degrees in 25 seconds and was still climbing, when the aircraft's actual
+    // incidence was 37. That is not a cosmetic complaint — the tables clamp alpha to
+    // their +45 edge, and once alpha is four turns past that the clamp never
+    // releases, so the model computes forces for an aeroplane at 45 degrees that is
+    // really at 37, forever. The aircraft stops being able to recover from a
+    // departure it should only have found difficult.
+    //
+    // Alpha is now derived from the body velocity (`state.ts`), so the divergence
+    // is structurally impossible rather than corrected. The assertion is therefore
+    // no longer about a wrapping guard; it is the property that guard was protecting:
+    // the incidence the model uses is the incidence the aircraft has. Reintroducing
+    // an integrated alpha would turn this red again, which is the point of keeping it.
     const { v } = departed({ throttle: 1, elevator: -25, aileron: 0, rudder: 0 })
-    const alphaDeg = (v[Q.ALPHA] as number) / RAD_PER_DEG
 
-    expect(Math.abs(alphaDeg), 'alpha left (-180, 180]').toBeLessThanOrEqual(180.000001)
+    const u = v[Q.U] as number
+    const w = v[Q.W] as number
+    const reported = aeroAngles(u, v[Q.V] as number, w).alpha / RAD_PER_DEG
+    const truth = Math.atan2(w, u) / RAD_PER_DEG
+
+    expect(Math.abs(reported), 'alpha left (-180, 180]').toBeLessThanOrEqual(180.000001)
+    expect(reported, 'model incidence differs from actual incidence').toBeCloseTo(truth, 9)
   })
 
   it('still departs — the guard bounds the model, it does not stabilize it', () => {

@@ -18,6 +18,8 @@
 
 import {
   FixedStepClock,
+  GEAR_DOWN,
+  DEFAULT_GEAR,
   PHYSICS_DT,
   Q,
   computeMassProperties,
@@ -25,13 +27,53 @@ import {
   fromStateVector,
   quatDerivative,
   toQuatVector,
+  gearLoads,
+  quaternionFromEuler,
+  restingAttitude,
   trim,
   type Controls,
+  type ExternalLoads,
+  type GearInput,
+  type GearState,
+  type GroundSource,
+  type Strut,
   type MassProperties,
 } from '@retro-flyer/physics'
-import { AssistLayer, BALANCED, type AssistPreset, type RawInput } from '@retro-flyer/control'
+import {
+  AssistLayer,
+  BALANCED,
+  RUDDER_LIMIT_DEG,
+  type AssistPreset,
+  type AssistSnapshot,
+  type RawInput,
+} from '@retro-flyer/control'
 import { lerpRenderState, toRenderState, type RenderState } from './seam.js'
+
+/**
+ * What the physics finds when no terrain has been supplied.
+ *
+ * A headless test of the flight loop should not have to build a world. Sea level and
+ * water, so the gear finds nothing to push against and the aircraft simply flies —
+ * which is Day 2's behaviour exactly, and what keeps those tests meaningful.
+ */
+const NO_TERRAIN = { elevation: 0, solid: false, rollingResistance: 0, friction: 0 }
 import { AX_REFERENCE_ACCEL } from './camera/accel.js'
+
+/** Everything needed to resume a flight exactly. See `Simulation.capture`. */
+export interface SimSnapshot {
+  state: number[]
+  controls: Controls
+  nz: number
+  layer: AssistSnapshot
+  /**
+   * Brakes, steering and gear position.
+   *
+   * Part of the situation because it is part of the aircraft: restoring onto short
+   * final with the gear up, having saved it down, is not the situation that was
+   * saved.
+   */
+  gear: GearInput
+}
 
 export interface SpawnCondition {
   alt: number
@@ -41,6 +83,14 @@ export interface SpawnCondition {
   /** Start position, world metres (X East, Z South). */
   x: number
   z: number
+  /**
+   * Start sitting on the gear rather than trimmed in flight.
+   *
+   * A ground start cannot be trimmed: trim solves for the controls that hold steady
+   * flight, and there is no steady flight at zero airspeed. `alt` is ignored — the
+   * terrain decides where the wheels are.
+   */
+  onGround?: boolean
 }
 
 /**
@@ -106,6 +156,22 @@ export class Simulation {
    */
   sustain = 0
 
+  /**
+   * Ground reaction from the last tick.
+   *
+   * Read by the assist layer (which flies a different aircraft on the ground), the
+   * overlay, and the course. Recomputed rather than cached from inside the
+   * integrator because the integrator evaluates it four times per tick at four
+   * different states, and none of those is the one that ended up being the answer.
+   */
+  gear: GearState
+
+  /** Brakes, steering and gear position. Written by the app each frame. */
+  gearInput: GearInput = { ...GEAR_DOWN }
+
+  /** Strut set. Overridable so gear geometry can be swept in a test. */
+  gearStruts: readonly Strut[] = DEFAULT_GEAR
+
   private readonly mass: MassProperties = computeMassProperties()
   private state: number[]
   private previous: number[]
@@ -114,14 +180,82 @@ export class Simulation {
 
   paused = false
 
-  constructor(spawn: SpawnCondition, preset: AssistPreset = BALANCED) {
+  constructor(
+    spawn: SpawnCondition,
+    preset: AssistPreset = BALANCED,
+    private readonly ground: GroundSource = { sample: () => NO_TERRAIN },
+  ) {
     this.spawn = spawn
     this.layer = new AssistLayer(preset)
 
-    const { state, controls } = this.trimAt(spawn)
+    const { state, controls } = this.place(spawn)
     this.state = state
     this.previous = [...state]
     this.controls = controls
+    this.gear = gearLoads(this.state, this.ground, this.gearInput, this.gearStruts)
+  }
+
+  /** Whether any wheel is on the ground. The assist layer's regime switch. */
+  get onGround(): boolean {
+    return this.gear.onGround
+  }
+
+  /**
+   * Nosewheel steering command, -1 to 1.
+   *
+   * Taken from the rudder deflection the assist layer just produced rather than from
+   * the raw pedal, so the nosewheel inherits the same conditioning the pedals have —
+   * deadband, smoothing, rate limit. Bang-bang keyboard input must never reach the
+   * model directly (§5), and a nosewheel is no different from a control surface in
+   * that respect even though it is not one.
+   *
+   * On the ground `yawCommand` runs with auto-coordination off, so this is the
+   * pilot's pedal and nothing else.
+   */
+  get steerCommand(): number {
+    return this.controls.rudder / RUDDER_LIMIT_DEG
+  }
+
+  private place(spawn: SpawnCondition): { state: number[]; controls: Controls } {
+    return spawn.onGround ? this.parkAt(spawn) : this.trimAt(spawn)
+  }
+
+  /**
+   * Put the aircraft on its wheels at a field.
+   *
+   * There is no trim solution here to find — trim solves for steady flight and there
+   * is no steady flight at rest — so the state is constructed directly: level, at
+   * rest, engine off, and at exactly the altitude that puts the mains at the static
+   * compression `staticCompression` predicts. Placing it there rather than dropping
+   * it means the first frame is already settled instead of showing a bounce.
+   */
+  private parkAt(spawn: SpawnCondition): { state: number[]; controls: Controls } {
+    const pn = -spawn.z / 0.3048
+    const pe = spawn.x / 0.3048
+    const elevation = this.ground.sample(pn, pe).elevation
+    const rest = restingAttitude(this.gearStruts)
+
+    const heading = (spawn.headingDeg * Math.PI) / 180
+
+    const state = toQuatVector({
+      vt: 0,
+      alpha: 0,
+      beta: 0,
+      // Settled, which is not level: see `restingAttitude`.
+      q: quaternionFromEuler(0, rest.pitch, heading),
+      p: 0,
+      qRate: 0,
+      r: 0,
+      pn,
+      pe,
+      alt: elevation + rest.cgHeight,
+      power: 0,
+    })
+
+    const controls: Controls = { throttle: 0, elevator: 0, aileron: 0, rudder: 0 }
+    this.layer.seed(fromQuatVector(state), controls)
+
+    return { state, controls }
   }
 
   private trimAt(spawn: SpawnCondition): { state: number[]; controls: Controls } {
@@ -170,6 +304,9 @@ export class Simulation {
   advance(elapsed: number, input: () => RawInput): void {
     if (this.paused) return
 
+    const loads = (v: readonly number[]): ExternalLoads =>
+      gearLoads(v, this.ground, this.gearInput, this.gearStruts).loads
+
     this.state = this.clock.advance(
       this.state,
       (_tick, v) => {
@@ -177,19 +314,37 @@ export class Simulation {
         // is two ticks, and running both from the frame's state means the control
         // law is really updating at 60 Hz however fast the physics runs.
         const aircraft = fromQuatVector(v)
-        this.controls = this.layer.update(aircraft, input(), PHYSICS_DT, this.nz)
+        this.gear = gearLoads(v, this.ground, this.gearInput, this.gearStruts)
+        this.controls = this.layer.update(
+          aircraft,
+          input(),
+          PHYSICS_DT,
+          this.nz,
+          this.gear.onGround,
+        )
 
-        // Load factor for the next tick's G limiter, and for the camera.
-        const { accel, vd } = quatDerivative(v, this.controls, this.mass, {
-          clampAeroAngles: true,
-        })
+        // Load factor for the next tick's G limiter, and for the camera. The gear
+        // loads go in: an accelerometer sitting on a runway reads 1 g, and it reads
+        // it because of the gear. Leaving them out would show 0 g while parked and
+        // would hand the G limiter a number that has nothing to do with the seat.
+        const { accel, vtDot } = quatDerivative(
+          v,
+          this.controls,
+          this.mass,
+          { clampAeroAngles: true },
+          this.gear.loads,
+        )
         this.nz = accel.nz + 1
 
         // Along-path acceleration, with a fast attack and a slow release. Raw
         // d(vt)/dt is clean enough at 120 Hz, but it steps when the afterburner
         // lights, and the cue should swell rather than snap — and having swelled,
         // should not vanish the instant the throttle moves.
-        const raw = vd[Q.VT] as number
+        //
+        // `vtDot` is returned by the derivative rather than read out of it: airspeed
+        // is no longer a state (see `state.ts` on body-axis velocity), so there is
+        // no `vd[VT]` to index. The quantity is identical.
+        const raw = vtDot
         const tau = Math.abs(raw) > Math.abs(this.ax) ? AX_ATTACK_TAU : AX_RELEASE_TAU
         this.ax += (raw - this.ax) * Math.min(1, PHYSICS_DT / tau)
 
@@ -202,6 +357,7 @@ export class Simulation {
       },
       elapsed,
       this.mass,
+      loads,
     )
 
     this.previous = this.clock.previous
@@ -216,15 +372,83 @@ export class Simulation {
     )
   }
 
-  reset(): void {
+  reset(spawn: SpawnCondition = this.spawn): void {
+    this.spawn = spawn
     this.ax = 0
     this.sustain = 0
-    const { state, controls } = this.trimAt(this.spawn)
+    this.gearInput = { ...GEAR_DOWN }
+    const { state, controls } = this.place(spawn)
     this.state = state
     this.previous = [...state]
     this.controls = controls
     this.nz = 1
+    this.gear = gearLoads(this.state, this.ground, this.gearInput, this.gearStruts)
     this.clock.reset()
+  }
+
+  /**
+   * The raw state vector, for slew and for anything that wants to read a position.
+   *
+   * A copy, because the caller must not be able to write to the state the integrator
+   * is holding — §8.3 says the renderer never writes to the model, and the same
+   * applies to anything else that asks.
+   *
+   * This is NOT enough to save a situation with. See `capture`.
+   */
+  snapshot(): number[] {
+    return [...this.state]
+  }
+
+  /**
+   * Everything needed to resume this flight exactly.
+   *
+   * More than the state vector, and the difference is not academic. The assist layer
+   * holds a pitch integrator, a filtered alpha rate and four rate-limited stick
+   * axes, all of which feed the aircraft on the next tick; `nz` from the last tick
+   * closes the G limiter's loop. Restoring the physics alone and re-seeding the law
+   * produces an aircraft that flies on differently from the one that was saved —
+   * measured at 5.6e-4 of airspeed after four seconds, and growing.
+   */
+  capture(): SimSnapshot {
+    return {
+      state: [...this.state],
+      controls: { ...this.controls },
+      nz: this.nz,
+      layer: this.layer.capture(),
+      gear: { ...this.gearInput },
+    }
+  }
+
+  /** Resume a captured situation. Exact: the replay is the same flight. */
+  restore(s: SimSnapshot): void {
+    this.state = [...s.state]
+    this.previous = [...s.state]
+    this.controls = { ...s.controls }
+    this.nz = s.nz
+    this.layer.restore(s.layer)
+    if (s.gear) this.gearInput = { ...s.gear }
+    this.ax = 0
+    this.sustain = 0
+    this.gear = gearLoads(this.state, this.ground, this.gearInput, this.gearStruts)
+    this.clock.reset()
+  }
+
+  /**
+   * Replace the state outright.
+   *
+   * Slew and situation restore both need this, and both are teleports: no
+   * integration connects the old state to the new one. `previous` is set to the same
+   * value so the renderer's interpolation has nothing to blend across — otherwise
+   * the aircraft is drawn streaking between the two positions for one frame.
+   */
+  setState(v: readonly number[]): void {
+    this.state = [...v]
+    this.previous = [...v]
+    this.ax = 0
+    this.sustain = 0
+    this.nz = 1
+    this.gear = gearLoads(this.state, this.ground, this.gearInput, this.gearStruts)
+    this.layer.seed(fromQuatVector(this.state), this.controls)
   }
 }
 

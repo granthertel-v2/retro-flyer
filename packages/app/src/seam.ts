@@ -46,6 +46,7 @@
 
 import {
   airData,
+  eulerFromQuaternion,
   fromQuatVector,
   radToDeg,
   ftToM,
@@ -193,6 +194,21 @@ export interface RenderState {
   climbFpm: number
   /** Flight path angle — where the aircraft is going, degrees. Positive is climbing. */
   gammaDeg: number
+  /**
+   * Pitch attitude — where the aircraft is *pointed*, degrees.
+   *
+   * The other half of `gammaDeg`, and the pair is the whole intuition §9.1 is built
+   * around: the gap between them is angle of attack, and a hard pull opens that gap
+   * long before the aircraft starts going anywhere. Day 4's flight path marker draws
+   * exactly this difference.
+   *
+   * It is also what a takeoff test needs to tell a rotation from a leap.
+   */
+  pitchDeg: number
+  /** Bank angle, degrees. Positive is right wing down. */
+  rollDeg: number
+  /** Heading, degrees true, 0 to 360. */
+  headingDeg: number
 }
 
 /**
@@ -237,6 +253,32 @@ export function toRenderState(v: readonly number[]): RenderState {
     power: s.power,
     climbFpm: threeVel[1] * 60,
     gammaDeg: radToDeg(Math.asin(Math.max(-1, Math.min(1, threeVel[1] / Math.max(s.vt, 1))))),
+    ...attitudeOf(s.q),
+  }
+}
+
+/**
+ * Pitch, roll and heading in degrees, from the attitude quaternion.
+ *
+ * Split out because `lerpRenderState` recomputes these from the *slerped*
+ * quaternion rather than interpolating them as numbers. Interpolating them
+ * separately would be wrong twice over: roll and heading wrap, so blending 359 and 1
+ * gives 180 — the aircraft's heading flicking to due south for one frame every time
+ * it passes north — and even away from the wrap, three independently lerped Euler
+ * angles do not describe the same rotation as the slerp the aircraft is drawn with.
+ */
+function attitudeOf(q: Quaternion): {
+  pitchDeg: number
+  rollDeg: number
+  headingDeg: number
+} {
+  const { phi, theta, psi } = eulerFromQuaternion(q)
+  const heading = radToDeg(psi)
+
+  return {
+    pitchDeg: radToDeg(theta),
+    rollDeg: radToDeg(phi),
+    headingDeg: (heading + 360) % 360,
   }
 }
 
@@ -259,9 +301,11 @@ export function lerpRenderState(a: RenderState, b: RenderState, t: number): Rend
     y: [number, number, number],
   ): [number, number, number] => [lerp(x[0], y[0]), lerp(x[1], y[1]), lerp(x[2], y[2])]
 
+  const blended = slerp(a.quaternion, b.quaternion, t)
+
   return {
     position: lerp3(a.position, b.position),
-    quaternion: slerp(a.quaternion, b.quaternion, t),
+    quaternion: blended,
     velocity: lerp3(a.velocity, b.velocity),
 
     kt: lerp(a.kt, b.kt),
@@ -274,7 +318,39 @@ export function lerpRenderState(a: RenderState, b: RenderState, t: number): Rend
     power: lerp(a.power, b.power),
     climbFpm: lerp(a.climbFpm, b.climbFpm),
     gammaDeg: lerp(a.gammaDeg, b.gammaDeg),
+    // From the slerped attitude, not lerped as numbers. See `attitudeOf`.
+    ...attitudeOf(nedQuaternionFromThree(blended)),
   }
+}
+
+/**
+ * Undo the render transform, recovering the body-to-NED quaternion.
+ *
+ * `toRenderState` composes the physics attitude with two fixed frame changes to get
+ * something three.js can use. To read pitch and heading back out of a blended render
+ * quaternion, both have to come off again.
+ */
+function nedQuaternionFromThree(
+  q: readonly [number, number, number, number],
+): Quaternion {
+  // Both conversions swap ordering and both directions have to be undone. three.js
+  // is [x, y, z, w]; `rotationFromQuaternion` and `eulerFromQuaternion` are Hamilton
+  // [w, x, y, z]. Feeding one to the other unchanged costs 180 degrees of heading
+  // while leaving pitch and roll looking perfectly correct, which is exactly the
+  // kind of wrong that survives a casual look at the screen.
+  const rThree = rotationFromQuaternion([q[3], q[0], q[1], q[2]])
+
+  // From rThree = A . rNb . B, recover rNb = A^T . rThree . B^T. Both A and B are
+  // proper rotations (determinant +1), so the transpose really is the inverse.
+  const rNb = multiplyMat3(multiplyMat3(transpose(NED_TO_THREE), rThree), transpose(MODEL_TO_BODY))
+
+  const [x, y, z, w] = quaternionFromMatrix(rNb)
+  return [w, x, y, z]
+}
+
+/** Transpose of a rotation matrix, which for a rotation is also its inverse. */
+function transpose(m: Mat3): Mat3 {
+  return [m[0], m[3], m[6], m[1], m[4], m[7], m[2], m[5], m[8]]
 }
 
 /**

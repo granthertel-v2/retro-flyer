@@ -32,6 +32,7 @@ import {
   ROLL_AXIS,
   THROTTLE_AXIS,
   YAW_AXIS,
+  type AxisSnapshot,
 } from './conditioning.js'
 import { scheduledGains, type GainSet } from './gains.js'
 import { AILERON_LIMIT_DEG, ELEVATOR_LIMIT_DEG, RUDDER_LIMIT_DEG } from './limits.js'
@@ -180,6 +181,17 @@ export const HONEST: AssistPreset = {
 export const PRESETS = [BALANCED, ACE, HONEST] as const
 
 /** What the assist layer did this tick — for the dev overlay and for the tests. */
+/** The assist layer's inter-tick state. See `AssistLayer.capture`. */
+export interface AssistSnapshot {
+  pitchIntegral: number
+  previousAlpha: number | null
+  alphaRate: number
+  pitch: AxisSnapshot
+  roll: AxisSnapshot
+  yaw: AxisSnapshot
+  throttle: AxisSnapshot
+}
+
 export interface AssistTelemetry {
   /** Commanded pitch rate after limiting, rad/s. */
   qCmd: number
@@ -245,9 +257,19 @@ export class AssistLayer {
    * Without this the integrator begins at zero and has to wind up to the trim
    * elevator before the aircraft holds altitude, so the first two seconds of every
    * flight are a pitch excursion that looks like the trim solver is wrong.
+   *
+   * Every filter in the layer is cleared, not only the pitch integrator. Seeding
+   * means "you are now flying this aircraft from this state", and Day 3's situation
+   * restore and slew both rely on that being literally true: a restored situation
+   * that carried over a half-smoothed stick from before the save would replay
+   * differently from the flight that produced it, and the whole point of a restore
+   * is that it does not.
    */
   seed(state: AircraftState, controls: Controls): void {
     this.throttleAxis.reset(controls.throttle)
+    this.pitchAxis.reset(0)
+    this.rollAxis.reset(0)
+    this.yawAxis.reset(0)
     this.previousAlpha = state.alpha
     this.alphaRate = 0
     this.pitch.seed(
@@ -266,9 +288,33 @@ export class AssistLayer {
    *   to get it: computing it here would mean evaluating the aerodynamics twice per
    *   step. At 120 Hz that lag is eight milliseconds.
    */
-  update(state: AircraftState, input: RawInput, dt: number, nz = 1): Controls {
+  update(
+    state: AircraftState,
+    input: RawInput,
+    dt: number,
+    nz = 1,
+    onGround = false,
+  ): Controls {
     const gains = scheduledGains(state.vt, state.alt)
     const { phi, theta } = eulerFromQuaternion(state.q)
+
+    // --- Ground mode ------------------------------------------------------
+    // Not a sixth assist and not toggleable: it is a different regime, and the
+    // right behaviour in it is the direct one whatever the toggles say.
+    //
+    // Every command law here closes a loop the ground has already closed. The pitch
+    // rate law asks for a pitch rate and gets none, because a strut is holding the
+    // nose down, so its integrator winds up against the runway — and unwinds the
+    // instant the wheels leave it, which is a leap off the ground rather than a
+    // rotation. Auto-coordination is worse: it drives beta to zero, but on a takeoff
+    // roll beta is whatever the nosewheel says it is, and the rudder it commands
+    // fights the steering.
+    //
+    // So on the ground the stick moves the surfaces and the pilot rotates the
+    // aircraft, which is also what actually happens.
+    const rateCommand = this.toggles.pitchRateCommand && !onGround
+    const rollRateCommand = this.toggles.rollRateCommand && !onGround
+    const coordinate = this.toggles.autoCoordination && !onGround
 
     // Alpha's rate, for the AoA limiter's lead. See `previousAlpha`.
     if (this.previousAlpha !== null && dt > 0) {
@@ -304,7 +350,7 @@ export class AssistLayer {
 
     const pCmd = rollStick * degToRad(BASE_ROLL_RATE_DEG * amplification) * authority
 
-    const aileron = this.toggles.rollRateCommand
+    const aileron = rollRateCommand
       ? rollCommand(pCmd, state.p, gains)
       : rollStick * AILERON_LIMIT_DEG * Math.sign(gains.kRoll || -1)
 
@@ -315,7 +361,7 @@ export class AssistLayer {
     let aoaLimiting = false
     let gLimiting = false
 
-    if (this.toggles.pitchRateCommand) {
+    if (rateCommand) {
       // The stick commands a pitch RATE, plus enough to hold one g against gravity
       // wherever the aircraft currently is. See `pitchRateCommand`.
       const maxRate = degToRad(this.preset.maxPitchRateDeg)
@@ -374,7 +420,7 @@ export class AssistLayer {
       state.vt,
       yawStick,
       gains,
-      this.toggles.autoCoordination,
+      coordinate,
     )
 
     this.telemetry = {
@@ -393,6 +439,41 @@ export class AssistLayer {
       aileron: Math.min(AILERON_LIMIT_DEG, Math.max(-AILERON_LIMIT_DEG, aileron)),
       rudder: Math.min(RUDDER_LIMIT_DEG, Math.max(-RUDDER_LIMIT_DEG, rudder)),
     }
+  }
+
+  /**
+   * Everything the layer carries between ticks.
+   *
+   * This exists because Day 3's situation restore proved it had to. The assist layer
+   * is not a stateless function of the aircraft state — it holds a pitch integrator,
+   * a filtered alpha rate, and four rate-limited stick axes, and all of them feed
+   * back into the aircraft on the next tick. Restoring only the physics vector and
+   * re-seeding the law gives an aircraft that flies on differently from the one that
+   * was saved: measured, 5.6e-4 of airspeed after four seconds and growing.
+   *
+   * A save that reproduces the situation approximately is worse than no save,
+   * because it looks like a repeat and is not.
+   */
+  capture(): AssistSnapshot {
+    return {
+      pitchIntegral: this.pitch.integral,
+      previousAlpha: this.previousAlpha,
+      alphaRate: this.alphaRate,
+      pitch: this.pitchAxis.capture(),
+      roll: this.rollAxis.capture(),
+      yaw: this.yawAxis.capture(),
+      throttle: this.throttleAxis.capture(),
+    }
+  }
+
+  restore(s: AssistSnapshot): void {
+    this.pitch.integral = s.pitchIntegral
+    this.previousAlpha = s.previousAlpha
+    this.alphaRate = s.alphaRate
+    this.pitchAxis.restore(s.pitch)
+    this.rollAxis.restore(s.roll)
+    this.yawAxis.restore(s.yaw)
+    this.throttleAxis.restore(s.throttle)
   }
 
   /** What the layer did on the last `update`. Null before the first one. */

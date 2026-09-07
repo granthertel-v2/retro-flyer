@@ -21,6 +21,7 @@ import {
 } from 'three'
 import { PRESETS } from '@retro-flyer/control'
 import { buildAircraft } from './aircraft.js'
+import { GearModel } from './gear.js'
 import { Afterburner } from './afterburner.js'
 import { CAMERA_MODES, ChaseCamera, type CameraMode } from './camera/chase.js'
 import { FovController } from './camera/fov.js'
@@ -29,10 +30,38 @@ import { Simulation } from './loop.js'
 import { Overlay } from './overlay.js'
 import { Clouds, SUN_DIRECTION, buildSun, positionSun } from './sky.js'
 import { MAP_EXTENT, authoredMap } from './terrain/authored.js'
-import { SPAWN } from './spawn.js'
+import { AuthoredGroundSource } from './terrain/groundSource.js'
+import { SPAWN, runwayStart } from './spawn.js'
+import { buildCourse } from './course.js'
+import { buildGates } from './terrain/gates.js'
+import { captureSituation, parseSituation, applySlew, speedOf } from './situation.js'
+import { fpsToKt, mToFt, referenceSpeed } from '@retro-flyer/physics'
 import { buildCity, buildRunways } from './terrain/city.js'
 import { TerrainMesh } from './terrain/mesh.js'
 import { Scatter } from './terrain/scatter.js'
+
+/**
+ * Field elevation for the speed cue, ft.
+ *
+ * The nearest airfield's, not the terrain directly underneath: on an approach across
+ * the bay the ground below is at sea level or under it, and a rotation speed
+ * computed there would be for the wrong altitude. The field you are going to is the
+ * one whose air you will be landing in.
+ */
+function nearestFieldElevationFt(x: number, z: number): number {
+  let best = authoredMap.airfields[0]
+  let bestDistance = Infinity
+
+  for (const field of authoredMap.airfields) {
+    const d = Math.hypot(field.x - x, field.z - z)
+    if (d < bestDistance) {
+      bestDistance = d
+      best = field
+    }
+  }
+
+  return best ? mToFt(best.elevation) : 0
+}
 
 /** How far you can see, metres. The outer LOD ring goes further; fog hides its edge. */
 const VIEW_DISTANCE = 34_000
@@ -102,11 +131,28 @@ function main(): void {
   // Parented to the aeroplane, so it inherits attitude and needs no frame work.
   const burner = new Afterburner()
   aircraft.add(burner.object)
+
+  // Likewise the gear, which is placed from the flight model's own strut geometry.
+  const gearModel = new GearModel()
+  aircraft.add(gearModel.object)
+
   scene.add(aircraft)
 
-  const simulation = new Simulation(SPAWN)
+  // §8.2 says the renderer asks the terrain for height. The physics now asks too,
+  // and in different units — this adapter is the whole cost of keeping them apart.
+  const groundSource = new AuthoredGroundSource(authoredMap)
+
+  const simulation = new Simulation(SPAWN, undefined, groundSource)
   const input = new InputReader()
   input.setThrottle(simulation.trimThrottle)
+
+  const course = buildCourse(authoredMap.airfields)
+  scene.add(buildGates())
+
+  let slewing = false
+  let fieldIndex = 0
+
+  const SAVE_KEY = 'retro-flyer.situation'
 
   const chase = new ChaseCamera()
   const fov = new FovController()
@@ -114,6 +160,18 @@ function main(): void {
 
   let mode: CameraMode = 'chase'
   let presetIndex = 0
+  // Down for a runway start, up for an airborne one. Starting the Day 2 spawn with
+  // the wheels hanging out is not a small thing to get wrong: it is the first thing
+  // anyone sees, and it says the aircraft has just taken off when it has not.
+  let gearDown = SPAWN.onGround === true
+  let parkingBrake = false
+  let wasSlewing = false
+  let saveNote = ''
+  let saveNoteUntil = 0
+  let courseProgress = course.update(
+    { x: SPAWN.x, z: SPAWN.z, altFt: SPAWN.alt, onGround: false, speedFps: SPAWN.vt },
+    0,
+  )
 
   const resize = (): void => {
     const width = window.innerWidth
@@ -147,9 +205,93 @@ function main(): void {
     if (commands.togglePause) simulation.paused = !simulation.paused
     if (commands.reset) {
       simulation.reset()
+      course.reset()
       input.setThrottle(simulation.trimThrottle)
       chase.reset()
     }
+    if (commands.resetCourse) course.reset()
+    if (commands.toggleParkingBrake) parkingBrake = !parkingBrake
+
+    // --- Day 3 -----------------------------------------------------------
+    if (commands.toggleGear) gearDown = !gearDown
+    if (commands.toggleSlew) slewing = !slewing
+
+    if (commands.nextField) {
+      parkingBrake = false
+      // Cycle the airfields, starting on the runway at each. This is how a takeoff
+      // gets flown without first flying to the field.
+      fieldIndex = (fieldIndex + 1) % authoredMap.airfields.length
+      simulation.reset(runwayStart(authoredMap.airfields[fieldIndex]!))
+      course.reset()
+      gearDown = true
+      input.setThrottle(0)
+      chase.reset()
+      slewing = false
+    }
+
+    if (commands.saveSituation) {
+      try {
+        localStorage.setItem(
+          SAVE_KEY,
+          JSON.stringify(
+            captureSituation(simulation.capture(), { ...simulation.layer.toggles }, presetIndex),
+          ),
+        )
+        saveNote = 'SAVED'
+      } catch {
+        // A private window, or storage disabled. Losing a save is not worth a crash.
+        saveNote = 'SAVE FAILED'
+      }
+      saveNoteUntil = performance.now() + 2000
+    }
+
+    if (commands.loadSituation) {
+      let stored: string | null = null
+      try {
+        stored = localStorage.getItem(SAVE_KEY)
+      } catch {
+        stored = null
+      }
+      const situation = parseSituation(stored)
+
+      if (situation) {
+        simulation.restore(situation.sim)
+        gearDown = situation.sim.gear.down
+        Object.assign(simulation.layer.toggles, situation.toggles)
+        presetIndex = Math.min(PRESETS.length - 1, Math.max(0, situation.preset))
+        simulation.layer.preset = PRESETS[presetIndex]!
+        input.setThrottle(situation.sim.controls.throttle)
+        course.reset()
+        chase.reset()
+        slewing = false
+        saveNote = 'RESTORED'
+      } else {
+        saveNote = 'NO SAVE'
+      }
+      saveNoteUntil = performance.now() + 2000
+    }
+
+    // Brakes and steering reach the gear directly. A brake is not a control surface,
+    // so it does not belong on the §8.1 seam; steering reuses the conditioned rudder
+    // command so the nosewheel gets the same smoothing the pedals do.
+    simulation.gearInput = {
+      // A held key is a poor way to park an aeroplane that taxis on its own at idle,
+      // which this one does — 1,041 lb of idle thrust against 410 lb of rolling
+      // resistance. The parking brake is the fix; the held key stays for the rollout.
+      brake: Math.max(input.brakes(), parkingBrake ? 1 : 0),
+      steer: simulation.steerCommand,
+      down: gearDown,
+    }
+
+    if (slewing) {
+      // Slew is a teleport, so the physics does not run. Feeding it dt would have
+      // the aircraft accelerating under gravity while the pilot repositions it.
+      simulation.setState(applySlew(simulation.snapshot(), input.slew(), dt))
+      simulation.paused = true
+    } else if (simulation.paused && wasSlewing) {
+      simulation.paused = false
+    }
+    wasSlewing = slewing
     if (commands.cyclePreset) {
       presetIndex = (presetIndex + 1) % PRESETS.length
       simulation.layer.preset = PRESETS[presetIndex]!
@@ -165,6 +307,17 @@ function main(): void {
     simulation.advance(dt, () => input.axes(dt))
 
     const state = simulation.render()
+
+    courseProgress = course.update(
+      {
+        x: state.position[0],
+        z: state.position[2],
+        altFt: state.altFt,
+        onGround: simulation.onGround,
+        speedFps: speedOf(simulation.snapshot()),
+      },
+      simulation.paused ? 0 : dt,
+    )
 
     aircraft.position.set(state.position[0], state.position[1], state.position[2])
     aircraft.quaternion.set(
@@ -187,6 +340,7 @@ function main(): void {
     camera.updateProjectionMatrix()
 
     burner.update(state.power, dt)
+    gearModel.update(gearDown, simulation.gear.compression)
 
     // In the cockpit the aircraft is the thing you are inside of.
     aircraft.visible = mode !== 'cockpit'
@@ -199,6 +353,21 @@ function main(): void {
       simulation.paused,
       simulation.clock.ticks,
       input.axes(0).throttle,
+      {
+        onGround: simulation.onGround,
+        gearDown,
+        brakes: input.brakes() > 0,
+        parkingBrake,
+        // Derived from the aero tables at the nearest field's elevation, so it
+        // follows weight and altitude rather than being a constant that goes quietly
+        // wrong. See `speeds.ts`.
+        referenceKt: fpsToKt(referenceSpeed(nearestFieldElevationFt(state.position[0], state.position[2]))),
+        bottomed: simulation.gear.bottomed,
+        slewing,
+        course: courseProgress,
+        waypoints: course.waypoints,
+        note: performance.now() < saveNoteUntil ? saveNote : '',
+      },
     )
     renderer.render(scene, camera)
   }
@@ -228,7 +397,20 @@ function main(): void {
       terrain,
       input,
       map: authoredMap,
+      course,
+      groundSource,
       step,
+      startAt: (name: string) => {
+        const i = authoredMap.airfields.findIndex((a) => a.name === name)
+        if (i < 0) return false
+        fieldIndex = i
+        simulation.reset(runwayStart(authoredMap.airfields[i]!))
+        course.reset()
+        gearDown = true
+        input.setThrottle(0)
+        chase.reset()
+        return true
+      },
       setCamera: (next: CameraMode) => {
         mode = next
         chase.reset()
