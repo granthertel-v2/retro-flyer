@@ -3,14 +3,49 @@
 A browser flight simulator with an honest flight model and a deliberately crude
 world. Polygon-era visuals; a real 6DOF aerodynamic model underneath.
 
-**Status: Day 1 of 4 complete.** The flight model exists and is validated. There is
-nothing to look at yet — no renderer, no terrain, no HUD. Those are Days 2 through 4.
+**[Fly it →](https://granthertel-v2.github.io/retro-flyer/)**
+
+**Status: complete.** Four days, four milestones: a validated flight model, a world
+to fly it over, a full runway-to-runway cycle, and a HUD to fly it on.
+
+---
+
+## Flying it
+
+Nothing to install — it is a web page. It opens with a card listing the controls;
+press any key to dismiss it, `/` to bring it back.
+
+The short version:
+
+| | |
+|---|---|
+| `X` `Z` | throttle up and down — the afterburner lights above 50% |
+| `↑ ↓` or `W S` | pitch. Pull to climb |
+| `← →` or `A D` | roll |
+| `Q` `E` | rudder |
+| `Space` | wheel brakes &nbsp;·&nbsp; `K` parking brake &nbsp;·&nbsp; `G` gear |
+| `T` | jump to the next airfield, lined up on the runway |
+| `C` | camera: chase, cockpit, orbit &nbsp;·&nbsp; `H` HUD &nbsp;·&nbsp; `O` developer readout |
+| `B` | assist preset &nbsp;·&nbsp; `1`–`6` individual assists &nbsp;·&nbsp; `0` / `9` all off / all on |
+| `V` | slew &nbsp;·&nbsp; `F5` / `F9` save and restore &nbsp;·&nbsp; `N` restart the course |
+
+**A first flight.** Press `T` to line up on a runway. Hold `Space`, push the throttle
+to full with `X`, wait for `PWR` to climb — the engine takes several seconds — then
+release the brakes. At the `ROTATE` cue, pull. Raise the gear with `G`. The heading
+strip has a diamond on it pointing at the first gate of the timed course.
+
+**The instrument worth understanding** is the small winged circle on the HUD: the
+flight path marker. It sits on the part of the world the aircraft is actually going
+to arrive at. The cross above it is where the nose is pointed. The gap between them
+is angle of attack, drawn to scale — pull hard and watch it open several seconds
+before the aeroplane starts going anywhere. That gap is what makes an aircraft feel
+like an aircraft rather than a car, and it is the reason the HUD exists here at all.
 
 ---
 
 ## The idea
 
-Crude on purpose everywhere except the flight model. Terrain and lighting will be
+Crude on purpose everywhere except the flight model. Terrain and lighting are
 low-poly and flat-shaded by choice. The aerodynamics are not: they come from the
 open academic F-16 dataset published by NASA, with a validation suite that holds
 them to it.
@@ -24,25 +59,34 @@ Full specification: [`REQUIREMENTS.md`](REQUIREMENTS.md).
 
 ---
 
-## What Day 1 shipped
+## What is in it
 
-A headless 6DOF flight model in TypeScript with no runtime dependencies.
+A headless 6DOF flight model in TypeScript with no runtime dependencies, and a
+renderer that consumes it through one narrow seam.
 
 - **Aerodynamics** — 852 coefficients across 12 tables, ported from the reference
   implementation, plus the engine model, ISA atmosphere, and the source's own
   simplified atmosphere the tables are referenced to.
 - **Rigid body dynamics** — quaternion attitude, RK4 at a fixed 120 Hz decoupled
-  from rendering.
+  from rendering, with body-axis velocity state.
 - **Trim solver** — Nelder-Mead over the equilibrium residuals; level, climbing, and
   coordinated-turn conditions.
 - **Linearization and modal analysis** — finite-difference Jacobian and a QR
   eigensolver, both written out rather than pulled in as dependencies.
-- **197 tests** across two tiers, plus the break-check protocol that verifies the
+- **Ground reaction** — spring-damper struts, tyre friction, brakes and nosewheel
+  steering, reaching the flight model only as external forces and moments.
+- **An assist layer** — rate command, angle-of-attack and g limiting, automatic
+  coordination, in three presets. The aircraft is genuinely unflyable without it;
+  see below.
+- **A HUD** — tapes, pitch ladder, heading strip and flight path marker, with the
+  world-referenced half projected through the same camera matrix as the terrain.
+- **557 tests** across two tiers, plus the break-check protocol that verifies the
   tests can actually fail.
 
 ```bash
 npm install
-npm test          # headless, no browser
+npm test                      # headless, no browser
+cd packages/app && npx vite   # http://localhost:5173
 ```
 
 ---
@@ -83,8 +127,8 @@ the source wind tunnel study is titled for it — and it is why the real aircraf
 by wire. Moving the CG forward restores conventional stability; the neutral point
 sits between 0.33 and 0.35 c̄. The modal tests pin all of this.
 
-The practical consequence for Day 2: the assist layer is not a nicety. Without pitch
-augmentation this aircraft genuinely is not flyable by a human for long.
+The practical consequence is that the assist layer is not a nicety. Turn the assists
+off with `0` and the aircraft is genuinely not flyable by a human for long.
 
 **Trim reproduces the reference solutions to 0.00%**, against a 5% allowance. The
 low-speed end shows the back side of the drag curve — flying slower needs more
@@ -127,10 +171,18 @@ not, and were corrected against the sources.
 packages/physics/          the flight model — no rendering dependency
   src/tables/              aero coefficient data and the lookup scheme
   src/aero/                coefficient build-up and the engine model
-  src/                     dynamics, state, integrator, trim, linearization
+  src/                     dynamics, state, integrator, trim, linearization,
+                           ground reaction, reference speeds
   test/                    Tier A and Tier B
   fixtures/                committed golden vectors
   tools/                   fixture generation and the break-check (dev only)
+packages/control/          input conditioning and the assist layer
+  src/laws/                pitch, roll and yaw command laws; limiters
+  test/                    handling qualities, stability, departure resistance
+packages/app/              renderer, terrain, cameras, HUD
+  src/seam.ts              the one place units and frames convert
+  src/hud/symbology.ts     HUD geometry, pure and headlessly tested
+  src/terrain/             the authored map and the height source behind it
 docs/SOURCES.md            provenance for every number
 docs/BREAK_CHECK.md        proof the tests can fail
 ```
@@ -148,15 +200,24 @@ None of that is needed to run the tests.
 
 ---
 
-## Roadmap
+## What was built, and when
 
-- **Day 1 — Physics, headless.** Done.
+- **Day 1 — Physics, headless.** Source verification, the 6DOF integrator, the aero
+  tables, the trim solver, the two-tier suite and the break-check protocol. No
+  graphics at all.
 - **Day 2 — Flight.** Renderer, authored heightmap, cameras, input conditioning and
   the assist layer, speed sensation.
-- **Day 3 — Full cycle.** Ground reaction, takeoff and landing, slew mode, situation
-  save/restore, a timed waypoint course.
-- **Day 4 — HUD and ship.** Fighter HUD with a flight path marker, GitHub Pages
-  deploy.
+- **Day 3 — Full cycle.** Ground reaction, takeoff and landing from a runway, slew
+  mode, situation save/restore, a timed waypoint course.
+- **Day 4 — HUD and ship.** The §9.1 HUD, the controls card, and this deploy.
+
+Known and deliberately unfixed: thrust above Mach 1 is over-predicted by about 19%
+and was left alone rather than corrected with invented data (§4.4); there is no
+damage model, so a gear-up landing is survivable; and the Balanced preset's 11 g
+limit is above the real aircraft's structural limit.
+
+Not in scope, with the seams left for them: navaids and an ILS approach, real
+elevation data for one bounded region, a high-fidelity aero mode.
 
 ---
 
