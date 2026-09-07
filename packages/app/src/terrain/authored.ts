@@ -35,8 +35,7 @@
  */
 
 import {
-  RUNWAY_RAMP_M,
-  RUNWAY_SURFACE_OFFSET_M,
+  runwayLift,
   clamp,
   distanceToPolyline,
   fbm,
@@ -388,23 +387,7 @@ class AuthoredMap implements TerrainSource {
    * gear to hit at landing speed. See `RUNWAY_SURFACE_OFFSET_M`.
    */
   surfaceHeight(x: number, z: number): number {
-    const base = this.height(x, z)
-    let lift = 0
-
-    for (const f of this.airfields) {
-      const d = signedDistanceToRect(
-        x, z,
-        f.x, f.z,
-        f.lengthM / 2,
-        f.widthM / 2,
-        (f.headingDeg * Math.PI) / 180,
-      )
-      if (d >= RUNWAY_RAMP_M) continue
-      // Full lift on the strip (d <= 0), fading to nothing over the apron.
-      lift = Math.max(lift, RUNWAY_SURFACE_OFFSET_M * smoothstep(RUNWAY_RAMP_M, 0, d))
-    }
-
-    return base + lift
+    return this.height(x, z) + runwayLift(x, z, this.airfields)
   }
 
   sample(x: number, z: number): TerrainSample {

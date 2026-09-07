@@ -78,6 +78,53 @@ export const RUNWAY_SURFACE_OFFSET_M = 0.12
  */
 export const RUNWAY_RAMP_M = 60
 
+/**
+ * How much a runway lifts the surface at a point, metres.
+ *
+ * Shared rather than reimplemented per source. Every `TerrainSource` owes callers the
+ * same answer here, because the number it produces is what the landing gear stands on
+ * — and the ramp is the reason there is no step at the runway edge for a wheel to hit
+ * at 160 kt. Two implementations of this would eventually be two different ramps, and
+ * only one of them would have been flown.
+ */
+export function runwayLift(
+  x: number,
+  z: number,
+  airfields: readonly Airfield[],
+): number {
+  let lift = 0
+
+  for (const f of airfields) {
+    const d = signedDistanceToRect(
+      x, z,
+      f.x, f.z,
+      f.lengthM / 2,
+      f.widthM / 2,
+      (f.headingDeg * Math.PI) / 180,
+    )
+    if (d >= RUNWAY_RAMP_M) continue
+    // Full lift on the strip (d <= 0), fading to nothing over the apron.
+    lift = Math.max(lift, RUNWAY_SURFACE_OFFSET_M * smoothstep(RUNWAY_RAMP_M, 0, d))
+  }
+
+  return lift
+}
+
+/** Whether a point is on a runway strip. The same rectangle `runwayLift` uses. */
+export function onRunway(x: number, z: number, airfields: readonly Airfield[]): boolean {
+  for (const f of airfields) {
+    const d = signedDistanceToRect(
+      x, z,
+      f.x, f.z,
+      f.lengthM / 2,
+      f.widthM / 2,
+      (f.headingDeg * Math.PI) / 180,
+    )
+    if (d < 0) return true
+  }
+  return false
+}
+
 export interface TerrainSource {
   /** Half-width of the map, metres. The world spans [-extent, +extent] on X and Z. */
   readonly extent: number
