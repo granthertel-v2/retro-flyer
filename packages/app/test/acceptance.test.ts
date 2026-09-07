@@ -73,6 +73,29 @@ const APPROACH_KT = 165
 /** Glideslope, radians. Three degrees, as everywhere. */
 const SLOPE_RAD = (3 * Math.PI) / 180
 
+/**
+ * The flare, as three numbers. All `[A]` — this is a test instrument, not the model.
+ *
+ * There is deliberately no time constant here. A fixed `sink = agl / tau` needs tau
+ * to match the sink the aircraft actually arrives with, and guessing it wrong makes
+ * the flare command *more* descent than the aircraft already had: tau of 6 s against
+ * a measured 5.2 ft/s entry at 80 ft asked for 13.3 ft/s and drove the touchdown from
+ * 7.0 ft/s to 8.6. The law below decays from the measured entry instead, so it cannot
+ * be wrong about it.
+ */
+const FLARE_START_FT = 50
+const FLARE_MIN_SINK_FPS = 2
+const FLARE_PITCH_GAIN = 0.16
+
+/** Pitch-rate damping on the path loops, per degree per second. `[A]` */
+const PATH_DAMPING = 0.03
+
+/** How far past the threshold the glideslope aims, metres. `[A]` */
+const AIM_POINT_M = 300
+
+/** Throttle per knot of speed error on final. `[A]` */
+const APPROACH_SPEED_GAIN = 0.035
+
 type Phase = 'roll' | 'rotate' | 'climb' | 'gate' | 'transit' | 'approach' | 'flare' | 'rollout' | 'stopped'
 
 interface Sample {
@@ -122,12 +145,13 @@ interface Flight {
 // The flight
 // ---------------------------------------------------------------------------
 
-function flyAcceptanceRun(): Flight {
+function flyAcceptanceRun(startNudgeM = 0): Flight {
   const ground = new AuthoredGroundSource(authoredMap)
   const bayside = authoredMap.airfields.find((a) => a.name === 'Bayside')!
   const ridgeview = authoredMap.airfields.find((a) => a.name === 'Ridgeview')!
 
-  const sim = new Simulation(runwayStart(bayside), undefined, ground)
+  const spawn = runwayStart(bayside)
+  const sim = new Simulation({ ...spawn, x: spawn.x + startNudgeM }, undefined, ground)
   const course = buildCourse(authoredMap.airfields)
 
   const fieldFt = mToFt(ridgeview.elevation)
@@ -175,6 +199,8 @@ function flyAcceptanceRun(): Flight {
   let lastSinkFps = 0
   let peakTouchdownG = 0
   let touchdownPoint: [number, number] = [0, 0]
+  let flareEntryAgl = FLARE_START_FT
+  let flareEntrySink = FLARE_MIN_SINK_FPS
   let rolloutM = 0
   let stoppedAt: number | null = null
   let maxRolloutCross = 0
@@ -351,8 +377,18 @@ function flyAcceptanceRun(): Flight {
       // pitch, touching down at 45 ft/s. Backside control needs rate damping this
       // instrument does not have, so the speed is simply accepted as high and the
       // flare below is what deals with it.
+      // The slope aims at a touchdown point PAST the threshold, and keeps descending
+      // through it. That is what a glideslope is, and the previous form was not one:
+      // `max(0, alongTrack)` meant that beyond the threshold the target collapsed to
+      // a constant 25 ft above the field — an altitude hold. So the aircraft levelled
+      // at 60 ft and floated, chasing 25 ft asymptotically with a gain of 0.006,
+      // 1,750 m down a 2,600 m runway before the wheels came near it.
+      //
+      // Aiming 300 m in puts the aircraft over the threshold at about 50 ft, which is
+      // where a real approach crosses it, and leaves the flare something to arrest
+      // rather than something to prolong.
       const gs = Math.min(
-        fieldFt + 25 + (Math.max(0, alongTrack) * Math.tan(SLOPE_RAD)) / 0.3048,
+        fieldFt + ((alongTrack + AIM_POINT_M) * Math.tan(SLOPE_RAD)) / 0.3048,
         fieldFt + 4_500,
       )
 
@@ -367,28 +403,87 @@ function flyAcceptanceRun(): Flight {
       //
       // Commanding the slope as a feedforward and using the altitude error only to
       // correct removes the lag by construction.
-      const slopeFeedforward = alongTrack > 0 ? -(SLOPE_RAD * 180) / Math.PI : 0
+      // No conditional. `alongTrack > 0 ? -slope : 0` put a three-degree STEP in the
+      // commanded path at the instant the aircraft crossed the threshold — measured,
+      // the target went from -3.44 to -0.44 degrees in one tick, the aircraft
+      // ballooned from 15.6 ft/s of sink to 6.5 ft/s of CLIMB, and then floated
+      // 1,700 m down a 2,600 m runway before the wheels touched.
+      //
+      // A glideslope does not stop at the threshold; the flare is what ends it. The
+      // aim point is already 300 m in, so holding the feedforward all the way through
+      // the approach phase is both simpler and what an approach actually is.
+      const slopeFeedforward = -(SLOPE_RAD * 180) / Math.PI
       const targetGamma = clamp(slopeFeedforward + (gs - s.altFt) * 0.006, -8, 6)
       // A firmer inner loop than the cruise one. At 0.05 the aircraft tracked the
       // feedforward but could not add the correction on top of it, and sat 700 ft
       // high all the way down.
-      input.pitch = clamp((targetGamma - s.gammaDeg) * 0.14, -0.45, 0.55)
-      input.throttle = clamp(0.5 + (APPROACH_KT - s.kt) * 0.015, 0, 1)
+      // Proportional on flight path, damped on pitch RATE. The damping term is the
+      // whole reason this approach is stable enough to flare from.
+      //
+      // Without it the loop is second order with almost nothing opposing it, and it
+      // porpoises: measured, the aircraft passed 80 ft sinking 5.2 ft/s and 39 ft
+      // sinking 21.5, on the same approach. Which of those the flare inherited was
+      // then decided by where the oscillation happened to be — so the touchdown was
+      // a sample of a limit cycle rather than a landing, and that is precisely the
+      // quantity that diverged between x86-64 and arm64.
+      input.pitch = clamp(
+        (targetGamma - s.gammaDeg) * 0.14 - (s.rates[1] as number) * PATH_DAMPING,
+        -0.45,
+        0.55,
+      )
+      // Firmer than it was. At a gain of 0.015 the loop still carried 15% throttle
+      // while 23 kt fast — it could not reach idle until 198 kt — so the aircraft
+      // arrived hot and floated. This aircraft has no speedbrake, so idle is the only
+      // deceleration available on final and the loop has to actually ask for it.
+      input.throttle = clamp(0.5 + (APPROACH_KT - s.kt) * APPROACH_SPEED_GAIN, 0, 1)
 
       input.yaw = 0
 
-      if (aglField < 60) {
+      if (aglField < FLARE_START_FT) {
         phase = 'flare'
+        flareEntryAgl = aglField
+        flareEntrySink = Math.max(FLARE_MIN_SINK_FPS, -s.climbFpm / 60)
         events.push(`flare at ${aglField.toFixed(0)} ft AGL, ${s.kt.toFixed(0)} kt, sink ${(-s.climbFpm / 60).toFixed(1)} ft/s`)
       }
     } else if (phase === 'flare') {
       const headingError = wrap(landingHeading - s.headingDeg)
       input.throttle = 0
-      // Hold a small sink rate rather than a fixed attitude. Commanding 7 degrees
-      // nose-up at approach speed does not flare, it balloons — the aircraft has
-      // plenty of lift left and simply stops descending.
-      const targetGamma = -0.6
-      input.pitch = clamp((targetGamma - s.gammaDeg) * 0.09, -0.25, 0.45)
+
+      // An exponential flare: command a sink rate **proportional to height**, so the
+      // trajectory asymptotes onto the runway instead of aiming at it.
+      //
+      // The previous law held a constant -0.6 degree path. Commanding a fixed number
+      // and hoping to reach it before the wheels arrive is a race, and the aircraft
+      // was still converging at touchdown — which made the sink rate a function of
+      // whatever state the flare happened to begin in. That is exactly the wrong
+      // property for a test: it turns the assertion into a measurement of the entry
+      // condition rather than of the landing.
+      //
+      // It also made this suite fail on CI and pass here. The two machines fly the
+      // first thirteen seconds identically to the digit, but `Math.sin` is not
+      // bit-identical across libm implementations, and eight hundred seconds of
+      // closed-loop flight amplifies the last bit into 7.0 ft/s of sink on arm64
+      // against 12.1 on x86-64 — 4.047 g against a limit of 4. The model is fine.
+      // The instrument was measuring chaos.
+      //
+      // `sink = agl / tau` has no such race. Wherever it starts, the command decays
+      // with height and the aircraft is driven onto the same trajectory, so touchdown
+      // is set by the law rather than by the entry. The floor is what stops it
+      // floating down the runway forever.
+      // Decay from the sink the aircraft actually entered with, not from a guessed
+      // one. At entry the command equals the current sink, so the handover from the
+      // glideslope is smooth by construction; at the ground it is the floor.
+      const decay = clamp(aglField / Math.max(flareEntryAgl, 1), 0, 1)
+      const targetSinkFps = Math.max(FLARE_MIN_SINK_FPS, flareEntrySink * decay)
+      const vtFps = Math.max(speedOf(sim.snapshot()), 1)
+      const targetGamma =
+        -(Math.asin(clamp(targetSinkFps / vtFps, -1, 1)) * 180) / Math.PI
+
+      input.pitch = clamp(
+        (targetGamma - s.gammaDeg) * FLARE_PITCH_GAIN - (s.rates[1] as number) * PATH_DAMPING,
+        -0.25,
+        0.55,
+      )
       input.roll = clamp((clamp(headingError * 1.5, -8, 8) - s.rollDeg) * 0.05, -0.4, 0.4)
       input.yaw = clamp(headingError * 0.05, -0.5, 0.5)
     } else if (phase === 'rollout') {
@@ -537,6 +632,87 @@ function flyAcceptanceRun(): Flight {
 
 const flight = flyAcceptanceRun()
 
+/**
+ * The landing must be governed by the flare, not by whatever state it inherits.
+ *
+ * This is the test that would have caught the failure that sat on `main` for two
+ * days. The suite was green here and red on CI with the *same* commit, because the
+ * two machines fly the first thirteen seconds bit-identically and then diverge: libm
+ * is not required to be correctly rounded, `Math.sin` differs in the last place
+ * between arm64 and x86-64, and eight hundred seconds of closed-loop flight amplifies
+ * that into 7.0 ft/s of touchdown sink here against 12.1 on the runner — 4.047 g
+ * against a limit of 4.
+ *
+ * The model was never wrong. The instrument was: it asserted a hard threshold on the
+ * single most divergence-sensitive scalar in the whole flight, at the end of a
+ * chaotic trajectory, and so it was really measuring which machine it ran on.
+ *
+ * Nudging the start position by a few metres reproduces that divergence deliberately
+ * and cheaply — a different starting point is a far larger perturbation than a
+ * last-bit difference in a sine. If the landing is insensitive to *this*, it is
+ * insensitive to the platform. If it ever stops being insensitive, this goes red
+ * here rather than only on someone else's architecture.
+ */
+describe('the landing is set by the flare, not by the entry', () => {
+  // Deliberately coarse and asymmetric, so the three runs share nothing but the law.
+  const runs = [-3, 1.5, 7].map((nudge) => ({ nudge, flight: flyAcceptanceRun(nudge) }))
+
+  it('reports the three landings', () => {
+    // Printed on every run, like the flight profile. These three numbers are the
+    // evidence that the landing is a law rather than a coincidence, and the margin
+    // they leave is the thing to watch.
+    // eslint-disable-next-line no-console
+    console.log(
+      `\n  landing spread over start nudges:\n` +
+        runs
+          .map(
+            (r) =>
+              `    ${String(r.nudge).padStart(5)} m -> touchdown ${r.flight.touchdownSinkFps.toFixed(1)} ft/s, ` +
+              `${r.flight.peakTouchdownG.toFixed(2)} g, ${r.flight.rolloutM.toFixed(0)} m rollout`,
+          )
+          .join('\n') +
+        `\n`,
+    )
+    expect(runs.length).toBe(3)
+  })
+
+  it('touches down gently from every one of them', () => {
+    for (const { nudge, flight } of runs) {
+      expect(
+        flight.touchdownAt,
+        `never touched down after a ${nudge} m nudge\n${flight.summary()}`,
+      ).not.toBeNull()
+      expect(
+        flight.peakTouchdownG,
+        `${flight.peakTouchdownG.toFixed(2)} g after a ${nudge} m nudge`,
+      ).toBeLessThan(4)
+      expect(
+        flight.samples.some((p) => p.bottomed),
+        `bottomed a strut after a ${nudge} m nudge`,
+      ).toBe(false)
+    }
+  })
+
+  it('lands them all within a knot-scale spread, not a limit-cycle one', () => {
+    // The real assertion. A spread here means the flare is still a race against the
+    // ground rather than a law, and the threshold above is being passed by luck.
+    const sinks = runs.map((r) => r.flight.touchdownSinkFps)
+    const spread = Math.max(...sinks) - Math.min(...sinks)
+    expect(
+      spread,
+      `touchdown sink spread ${spread.toFixed(1)} ft/s across nudges of a few metres: ` +
+        `${sinks.map((v) => v.toFixed(1)).join(', ')}`,
+    ).toBeLessThan(3)
+  })
+
+  it('still gets all of them onto the runway', () => {
+    for (const { nudge, flight } of runs) {
+      expect(flight.courseStatus, `did not complete after a ${nudge} m nudge`).toBe('complete')
+      expect(flight.finishedOnPavement, `ended off the pavement after ${nudge} m`).toBe(true)
+    }
+  })
+})
+
 describe('Day 3 acceptance: a runway-to-runway flight through the course', () => {
   it('reports the flight', () => {
     // Printed on every run, pass or fail. This is the milestone; what it did is
@@ -591,7 +767,11 @@ describe('Day 3 acceptance: a runway-to-runway flight through the course', () =>
   it('lands rather than arrives', () => {
     expect(flight.touchdownAt, `never touched down\n${flight.summary()}`).not.toBeNull()
     expect(flight.touchdownSinkFps, `came down far too hard\n${flight.summary()}`).toBeLessThan(15)
-    expect(flight.peakTouchdownG, 'touchdown was an impact, not a landing').toBeLessThan(4)
+    expect(
+      flight.peakTouchdownG,
+      `touchdown was an impact, not a landing (${flight.peakTouchdownG.toFixed(2)} g, ` +
+        `${flight.touchdownSinkFps.toFixed(1)} ft/s)`,
+    ).toBeLessThan(4)
     expect(flight.samples.some((p) => p.bottomed), 'bottomed a strut').toBe(false)
   })
 

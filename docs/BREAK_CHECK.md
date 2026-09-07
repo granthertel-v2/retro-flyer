@@ -183,6 +183,57 @@ the thing that was wrong; here it was.
 
 ---
 
+# Determinism, and where it runs out
+
+Found while shipping Day 4, when CI was red on a commit whose suite was green locally.
+
+The flight model is deterministic — fixed-step RK4, no randomness anywhere, and the
+terrain hash is seedless on purpose so the world cannot move between machines. But
+determinism is not portability. IEEE 754 pins `+`, `-`, `*`, `/` and `sqrt` to a
+correctly-rounded result; it says nothing about `sin`, `cos`, `atan2`, `exp` or `pow`.
+Those come from the platform's libm, and the last place differs between
+implementations.
+
+Measured, arm64 macOS against x86-64 Linux, same commit:
+
+| | local | CI |
+|---|---|---|
+| Liftoff | t=13.0 s, 187 kt, 497 m | t=13.0 s, 187 kt, 497 m |
+| Touchdown | t=798.4 s, sink 7.0 ft/s | t=797.4 s, sink 12.1 ft/s |
+| Peak touchdown load | passing | **4.047 g** against a limit of 4 |
+
+The first thirteen seconds are identical to the digit. Eight hundred seconds of
+closed-loop flight are not. Nothing is broken in between — that is simply what a
+feedback-controlled trajectory does with a last-bit difference, and no amount of care
+in the model will change it.
+
+**What follows for the tests.** A long integrated flight is fine to assert on; a
+*terminal scalar* of one is not, unless the controller that produces it converges.
+The touchdown assertion was failing because the flare was still a race against the
+ground when the wheels arrived, so the number it produced was a sample of the entry
+state rather than a property of the landing.
+
+Three defects in the test autopilot came out of chasing this, all of them real:
+
+- **A three-degree step in the commanded flight path at the threshold.** The
+  glideslope feedforward was written `alongTrack > 0 ? -slope : 0`, so it switched off
+  the moment the aircraft crossed the threshold. Measured, the commanded path went
+  from -3.44 to -0.44 degrees in one tick, the aircraft ballooned from 15.6 ft/s of
+  sink into 6.5 ft/s of climb, and floated 1,700 m down a 2,600 m runway.
+- **A glideslope that became an altitude hold.** `max(0, alongTrack)` meant that past
+  the threshold the target collapsed to a constant 25 ft above the field, which the
+  aircraft then chased asymptotically instead of landing.
+- **No damping on the path loop.** Proportional-only on flight path angle porpoised:
+  the same approach passed 80 ft sinking 5.2 ft/s and 39 ft sinking 21.5.
+
+With those fixed the landing is set by the flare law rather than by what it inherited.
+`the landing is set by the flare, not by the entry` pins that directly: three runs
+whose start positions differ by metres — a far larger perturbation than a sine's last
+bit — land at 4.0 ft/s and 1.9 to 2.1 g, against the limit of 4. The margin went from
+1% on the wrong side to a factor of two.
+
+---
+
 # HUD geometry — Day 4
 
 Run date: 2026-09-07. `packages/app` at time of run: **171 tests, 11 files, green**,
