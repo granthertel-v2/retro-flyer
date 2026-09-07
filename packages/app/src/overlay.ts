@@ -32,12 +32,23 @@ export function speedCue(o: {
   targetKt: number
   onGround: boolean
   gearDown: boolean
+  /**
+   * True from touchdown until the aircraft stops, false otherwise.
+   *
+   * Without it, being on the ground with the gear down is read as a takeoff roll —
+   * so the HUD told the pilot to ROTATE for the whole landing rollout, at the one
+   * moment the aircraft must stay on the runway. Day 4 QA caught it: the cue is
+   * aimed at someone who does not know better, which makes a confidently wrong
+   * instruction worse than none.
+   */
+  rollingOut: boolean
 }): SpeedCue {
   // Gear up is neither a takeoff nor a landing, and a cue that is always on is
   // wallpaper.
   if (!o.gearDown) return { kind: 'none' }
 
   if (o.onGround) {
+    if (o.rollingOut) return { kind: 'none' }
     return { kind: 'rotate', targetKt: o.targetKt, ready: o.kt >= o.targetKt }
   }
 
@@ -48,6 +59,8 @@ export function speedCue(o: {
 export interface GroundStatus {
   onGround: boolean
   gearDown: boolean
+  /** Rolling out after a landing rather than rolling for takeoff. */
+  rollingOut: boolean
   brakes: boolean
   parkingBrake: boolean
   /** Speed the aircraft rotates and approaches at, knots. */
@@ -103,6 +116,17 @@ const ASSIST_LABELS = [
 ] as const
 
 export class Overlay {
+  /**
+   * Whether the readout is drawn.
+   *
+   * Off by default from Day 4 on. The HUD is the instrument now, and a wall of
+   * debug text in both top corners is the fastest way to make a HUD unreadable —
+   * the point of a head-up display is that the eye stays out of the cockpit. `O`
+   * brings it back, and it is still the only place the assist toggles, tick count
+   * and frame rate are visible.
+   */
+  visible = false
+
   private readonly root: HTMLElement
   private readonly left: HTMLElement
   private readonly right: HTMLElement
@@ -143,6 +167,17 @@ export class Overlay {
     throttle: number,
     ground: GroundStatus,
   ): void {
+    if (!this.visible) {
+      this.root.style.display = 'none'
+      // Reset the frame counter rather than let it run cold. Otherwise the first
+      // reading after the readout comes back is averaged over however many minutes
+      // it was hidden for, and reads as roughly zero.
+      this.frames = 0
+      this.lastSample = performance.now()
+      return
+    }
+    this.root.style.display = 'flex'
+
     this.frames++
     const now = performance.now()
     if (now - this.lastSample > 500) {
@@ -193,6 +228,7 @@ export class Overlay {
           targetKt: ground.referenceKt,
           onGround: ground.onGround,
           gearDown: ground.gearDown,
+          rollingOut: ground.rollingOut,
         }),
       ),
       ground.note ? `<b>${ground.note}</b>` : '',
@@ -246,6 +282,7 @@ export class Overlay {
       '<span style="opacity:.55">1-6 assists &middot; 0 none &middot; 9 all</span>',
       '<span style="opacity:.55">space brakes &middot; K park &middot; G gear &middot; T next field</span>',
       '<span style="opacity:.55">V slew &middot; F5 save &middot; F9 load &middot; N course</span>',
+      '<span style="opacity:.55">H hud &middot; O this readout &middot; / controls</span>',
     ].join('<br>')
   }
 }

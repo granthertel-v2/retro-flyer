@@ -3,11 +3,22 @@
 > **A passing suite proves nothing until each test is confirmed able to fail.**
 > — `REQUIREMENTS.md` §4.3
 
-Run date: 2026-09-04, end of Day 3. Physics suite at time of run: **253 tests,
-13 files, all green.** Reproduce with `node tools/break_check.mjs` from
+Run date: 2026-09-07, Day 4 QA. Physics suite at time of run: **275 tests,
+14 files, all green.** Reproduce with `node tools/break_check.mjs` from
 `packages/physics` (add `--json` for machine-readable output).
 
 **Result: 25 of 25 mutations detected. Nothing went unnoticed.**
+
+> **Correction.** This document claimed the same result on 2026-09-04 and it was
+> not true at the time. The run it described stopped at mutation 14 of 25 on a
+> stale anchor, so eleven mutations never executed and the 25/25 was a count of
+> what was listed rather than of what ran. The Day 4 QA pass found it; the cause
+> and the fix are in [The anchor that went stale](#the-anchor-that-went-stale)
+> below. The figures above are from a complete run.
+
+Day 4 added a second, much smaller pass over the HUD geometry — `11 of 11
+detected`, run with `node tools/hud_break_check.mjs` from `packages/app`. It has
+its own section at the end.
 
 Two mutations went undetected on the first run of this pass and both are described
 below. Both are now caught. That is the protocol working, and it is the reason §4.3
@@ -27,6 +38,13 @@ matters more than it sounds: a mutation that silently fails to apply reports a c
 bill of health for a test that was never challenged. It fired for real during this
 pass, when the Day 3 integrator rewrite moved the RK4 stage lines out from under the
 `euler-integrator` mutation.
+
+Since Day 4 the tool **validates every anchor before running anything**, rather than
+discovering a stale one partway through. That ordering is not a detail: throwing at
+mutation 14 leaves mutations 15 to 25 unrun, and a tool that reports "stopped early"
+in the same breath as a list of twenty-five mutation names is one glance away from
+being read as a pass. Checking up front costs nothing and reports every stale anchor
+at once.
 
 Each mutation carries an `expect` list — a claim about which suites *should* notice.
 Where reality disagreed with the claim, the finding is recorded below rather than the
@@ -103,6 +121,34 @@ so in a comment.
 
 ---
 
+## The anchor that went stale
+
+`strut-pulls-down` anchored on this, in `src/gear.ts`:
+
+```
+if (N <= 0) {
+  compression.push(squash)
+  normal.push(0)
+  continue
+}
+```
+
+Day 3's airframe-contact work replaced that push-based accumulation with indexed
+assignment — `if (N <= 0) continue`, with `compression[gearIndex] = squash` moved
+above it — **in the same commit that refreshed this document**. So the mutation
+stopped applying at the moment the results here were written down, and the tool did
+what it is built to do: it refused to run a mutation it could not apply, and threw.
+
+It threw at number 14 of 25. The eleven behind it — every gear and contact mutation
+except the first two, plus the supersonic thrust case — did not run again until Day 4.
+Nothing was actually wrong with them; a complete run detects all eleven. But for two
+days this file asserted a result nobody had measured.
+
+The lesson is not "update your anchors". It is that a guard which fires *during* a
+run only protects the part of the run that has already happened, and that a tool
+whose job is to catch silent failure is exactly the tool that must not fail
+silently itself. Hence the pre-flight check described above, in both break-checks.
+
 ## Where an expectation was wrong rather than a test
 
 `swap-body-accelerations` was expected to be caught by `trim` and `modes`. It is
@@ -125,11 +171,76 @@ the thing that was wrong; here it was.
 
 ## What this does not cover
 
-- **The control and app packages.** The break-check runs the physics suite only.
-  `@retro-flyer/control` is tunable by §4.4 and has no ground truth to mutate against;
-  the app package's assist and rendering tests have not been through this protocol.
-- **The renderer.** Four separate Day 2 and Day 3 defects were invisible to a fully
-  green suite and were found by flying the aircraft in a browser — no landing gear
-  drawn at all, wheels sitting 0.6 m under the runway surface, and the default spawn
-  flying with its gear down. Mutation testing would not have found any of them,
-  because there was no test to challenge.
+- **The control package.** `@retro-flyer/control` is tunable by §4.4 and has no
+  ground truth to mutate against.
+- **The renderer, except its geometry.** Four separate Day 2 and Day 3 defects were
+  invisible to a fully green suite and were found by flying the aircraft in a browser
+  — no landing gear drawn at all, wheels sitting 0.6 m under the runway surface, and
+  the default spawn flying with its gear down. Six more came out of Day 4's HUD the
+  same way. Mutation testing would not have found any of the ten, because there was
+  no test to challenge. Flying it remains the only check on whether the picture is
+  right; the section below covers only whether the *numbers behind* the picture are.
+
+---
+
+# HUD geometry — Day 4
+
+Run date: 2026-09-07. `packages/app` at time of run: **171 tests, 11 files, green**,
+32 of them in `test/hud.test.ts`.
+Reproduce with `node tools/hud_break_check.mjs` from `packages/app`.
+
+**Result: 11 of 11 mutations detected.** One went undetected on the first run and is
+described below.
+
+## Why this one part of the app gets the protocol
+
+Most of the renderer cannot be mutation-tested, because there is no assertion to
+break: nothing in the suite claims the sky is the right blue. `hud/symbology.ts` is
+different. It is pure geometry with exact right answers, and it is the part of the
+renderer whose defects are least visible — a pitch ladder at the wrong scale, or a
+flight path marker reflected through the centre of the screen, looks entirely
+plausible. Since the developer has no flying experience, "looks plausible" is the
+whole failure mode this project is built to survive.
+
+| Mutation | What it breaks | Suite |
+|---|---|---|
+| `flip-screen-y` | Screen Y measured upward instead of downward | hud |
+| `ignore-behind` | Directions behind the camera projected anyway | hud |
+| `flat-ladder` | Cosine of pitch dropped from the ladder direction | hud |
+| `quat-conjugate` | One sign flipped in the quaternion rotation | hud |
+| `ticks-off-grid` | Tape graduations start at the current value | hud |
+| `no-min-clamp` | Negative airspeeds emitted on the tape | hud |
+| `no-wrap` | Heading strip stops wrapping at north | hud |
+| `no-short-way` | Steering cue takes the long way round the compass | hud |
+| `bearing-swap` | Bearing arguments to `atan2` exchanged | hud |
+| `never-caged` | A clamped flight path marker stops saying it is clamped | hud |
+| `ladder-eats-horizon` | The zero rung drawn as an ordinary rung | hud |
+
+## The one that got through
+
+`quat-conjugate` flips the sign of a single term in `applyQuat`, and the first run of
+the suite did not notice. The reason is a coverage hole rather than a weak assertion:
+every quaternion in the tests was a *pure pitch rotation*, and for a pure pitch
+rotation acting on the nose vector the mutated term is identically zero. Half the
+rotation formula could have been deleted with the suite still green — and the
+consequence in flight would have been a boresight drawn in the wrong place on any
+heading but north, which is precisely the kind of wrong that survives a look at the
+screen.
+
+Two tests closed it: a 90-degree yaw, the smallest rotation that gives the term
+weight, and a general attitude with no zero component checked against an
+independently written rotation matrix.
+
+## A claim that was removed rather than tested
+
+A twelfth mutation was tried and is not in the list. `tapeTicks` carried a guard
+against floating-point drift in the tick values, with a comment about accumulation
+producing `250.00000000000003` and dropping a labelled graduation at random. Removing
+the guard broke nothing, so the guard was suspected of being dead code — and a sweep
+over every step size across the whole altitude and airspeed envelope found the worst
+deviation from an integer to be exactly zero. `first` comes out of `Math.ceil`, so it
+is exact, and adding an integer step to it stays exact at these magnitudes.
+
+The guard and the test that pretended to cover it were both deleted. A test that
+cannot fail is not a test, and a comment describing a hazard that does not exist is
+worse than no comment: the next person budgets around it.
