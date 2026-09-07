@@ -16,9 +16,9 @@ Run date: 2026-09-07, Day 4 QA. Physics suite at time of run: **275 tests,
 > and the fix are in [The anchor that went stale](#the-anchor-that-went-stale)
 > below. The figures above are from a complete run.
 
-Day 4 added a second, much smaller pass over the HUD geometry — `11 of 11
-detected`, run with `node tools/hud_break_check.mjs` from `packages/app`. It has
-its own section at the end.
+There is a second, smaller pass over the app's pure geometry — `17 of 17 detected`,
+run with `node tools/break_check.mjs` from `packages/app`. It has its own section at
+the end.
 
 Two mutations went undetected on the first run of this pass and both are described
 below. Both are now caught. That is the protocol working, and it is the reason §4.3
@@ -234,24 +234,32 @@ bit — land at 4.0 ft/s and 1.9 to 2.1 g, against the limit of 4. The margin we
 
 ---
 
-# HUD geometry — Day 4
+# App geometry — the HUD and the projection
 
-Run date: 2026-09-07. `packages/app` at time of run: **171 tests, 11 files, green**,
-32 of them in `test/hud.test.ts`.
-Reproduce with `node tools/hud_break_check.mjs` from `packages/app`.
+Run date: 2026-09-07. `packages/app` at time of run: **186 tests, 12 files, green** —
+32 in `test/hud.test.ts` and 11 in `test/geo.test.ts`.
+Reproduce with `node tools/break_check.mjs` from `packages/app`.
 
-**Result: 11 of 11 mutations detected.** One went undetected on the first run and is
+**Result: 17 of 17 mutations detected.** One went undetected on the first run and is
 described below.
 
-## Why this one part of the app gets the protocol
+## Why these two parts of the app get the protocol
 
 Most of the renderer cannot be mutation-tested, because there is no assertion to
-break: nothing in the suite claims the sky is the right blue. `hud/symbology.ts` is
-different. It is pure geometry with exact right answers, and it is the part of the
-renderer whose defects are least visible — a pitch ladder at the wrong scale, or a
+break: nothing in the suite claims the sky is the right blue. Two files are different,
+for the same reason.
+
+`hud/symbology.ts` is pure geometry with exact right answers, and it is the part of
+the renderer whose defects are least visible — a pitch ladder at the wrong scale, or a
 flight path marker reflected through the centre of the screen, looks entirely
-plausible. Since the developer has no flying experience, "looks plausible" is the
-whole failure mode this project is built to survive.
+plausible.
+
+`terrain/geo.ts` is the same argument at a larger scale. Every coordinate in a
+real-world region passes through it, so an error moves a whole city consistently
+enough to look deliberate, and a runway 400 m from where it belongs is still a runway.
+
+Since the developer has no flying experience, "looks plausible" is the whole failure
+mode this project is built to survive.
 
 | Mutation | What it breaks | Suite |
 |---|---|---|
@@ -266,6 +274,12 @@ whole failure mode this project is built to survive.
 | `bearing-swap` | Bearing arguments to `atan2` exchanged | hud |
 | `never-caged` | A clamped flight path marker stops saying it is clamped | hud |
 | `ladder-eats-horizon` | The zero rung drawn as an ordinary rung | hud |
+| `north-sign` | North drawn at +Z instead of -Z | geo |
+| `spherical-earth` | One radius used for both axes | geo |
+| `longitude-without-cosine` | Longitude spacing not shortened by latitude | geo |
+| `flattening-ignored` | The ellipsoid made a sphere in ECEF | geo |
+| `inverse-single-pass` | The Newton inverse cut to its seed | geo |
+| `convergence-unscaled` | Convergence not scaled by sin(latitude) | geo |
 
 ## The one that got through
 
