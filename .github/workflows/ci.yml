@@ -53,6 +53,13 @@ jobs:
         working-directory: packages/app
         run: npx vite build
 
+      # §4.3 for the one part of the renderer that has right answers. Eleven runs of
+      # a single fast test file, so unlike the physics break-check it is cheap enough
+      # to sit in the PR path rather than only on main.
+      - name: HUD break-check
+        working-directory: packages/app
+        run: node tools/hud_break_check.mjs
+
   break-check:
     # REQUIREMENTS §4.3: a passing suite proves nothing until each test is confirmed
     # able to fail. This deliberately corrupts the model and asserts the right tests
