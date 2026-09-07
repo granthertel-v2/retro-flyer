@@ -8,6 +8,7 @@
 
 import { describe, expect, it } from 'vitest'
 import {
+  BELLY,
   DEFAULT_GEAR,
   GEAR_DOWN,
   GEAR_UP,
@@ -18,7 +19,7 @@ import {
   staticCompression,
 } from '../src/gear.js'
 import { FlatGround, NoGround, PAVED, SOFT } from '../src/ground.js'
-import { IDENTITY_QUATERNION, Q, aeroAngles, toQuatVector } from '../src/state.js'
+import { IDENTITY_QUATERNION, Q, aeroAngles, eulerFromQuaternion, toQuatVector } from '../src/state.js'
 import { PHYSICS_HZ, step } from '../src/integrator.js'
 import { REFERENCE_WEIGHT_LB, computeMassProperties } from '../src/massProperties.js'
 import { quaternionFromEuler } from '../src/state.js'
@@ -260,12 +261,139 @@ describe('the strut', () => {
   })
 })
 
-describe('contact', () => {
-  it('is silent when the gear is up', () => {
+describe('the world is solid whether or not the wheels are down', () => {
+  // The gap this closes: ground reaction lived entirely inside the landing gear, so
+  // retracting the wheels retracted the planet. A flight test flew straight through
+  // a runway on a gear-up approach, and the ridge would have been no different.
+
+  /** The aircraft at `aglFt` above the ground, wings level, doing `speed` ft/s. */
+  const at = (aglFt: number, speed = 0, input = GEAR_UP) => {
+    const v = parked(speed, { alt: FIELD_ELEV + aglFt })
+    return { v, g: gearLoads(v, paved, input) }
+  }
+
+  it('lets the airframe touch the ground with the gear up', () => {
+    // Belly on the deck. Something has to push back.
+    const { g } = at(BELLY.z - 0.2)
+
+    expect(g.onGround, 'gear up and on the ground, but nothing is touching').toBe(true)
+    expect(g.airframeContact).toBe(true)
+    expect(g.airframeNormal).toBeGreaterThan(0)
+    expect(g.loads.fz, 'the ground should push up').toBeLessThan(0)
+  })
+
+  it('still reports no landing gear load when the gear is up', () => {
+    const { g } = at(BELLY.z - 0.2)
+
+    // The wheels are not out; they cannot be carrying anything.
+    for (const n of g.normal) expect(n).toBe(0)
+    expect(g.normal, 'gear slots must keep their shape and order').toHaveLength(3)
+  })
+
+  it('is silent when nothing is near the ground', () => {
+    const { g } = at(200, 0, GEAR_UP)
+
+    expect(g.onGround).toBe(false)
+    expect(g.airframeContact).toBe(false)
+    expect(g.loads).toEqual({ fx: 0, fy: 0, fz: 0, l: 0, m: 0, n: 0 })
+  })
+
+  it('is silent when the gear is up and the aircraft is on its wheels’ height', () => {
+    // The old assertion, kept: at wheel height with the gear retracted the belly is
+    // still several feet clear, so nothing touches.
     const g = gearLoads(parked(), paved, GEAR_UP)
 
     expect(g.onGround).toBe(false)
     expect(g.loads).toEqual({ fx: 0, fy: 0, fz: 0, l: 0, m: 0, n: 0 })
+  })
+
+  it('parks on its wheels, not on its belly', () => {
+    const g = gearLoads(roll(parked(), IDLE, 3, HELD), paved, HELD)
+
+    expect(g.onGround).toBe(true)
+    expect(g.airframeContact, 'sitting on the fuselage with the gear down').toBe(false)
+    expect(g.airframeNormal).toBe(0)
+    expect(g.totalNormal / REFERENCE_WEIGHT_LB).toBeCloseTo(1, 2)
+  })
+
+  it('drags rather than rolls — a belly is not a wheel', () => {
+    // The difference that gives a gear-up landing its character. A tyre meets the
+    // ground with a couple of percent of rolling resistance; a fuselage meets it
+    // with the full sliding friction of the surface, thirty times more.
+    const speed = 150
+
+    const onWheels = gearLoads(parked(speed), paved, GEAR_DOWN)
+    const onBelly = gearLoads(
+      parked(speed, { alt: FIELD_ELEV + BELLY.z - 0.2 }),
+      paved,
+      GEAR_UP,
+    )
+
+    const dragPerLb = (g: typeof onWheels) => Math.abs(g.loads.fx) / Math.max(1, g.totalNormal)
+
+    expect(dragPerLb(onBelly), 'a belly should drag far harder than a wheel rolls')
+      .toBeGreaterThan(5 * dragPerLb(onWheels))
+  })
+
+  it('stops a gear-up arrival, and stops it faster than a wheeled rollout', () => {
+    // The behaviour a pilot would actually notice. Both start at the same speed on
+    // the same surface; the belly has no brakes and still wins, because it is
+    // scraping rather than rolling.
+    const bellyStart = parked(200, { alt: FIELD_ELEV + BELLY.z - 0.1 })
+    const belly = roll(bellyStart, IDLE, 14, GEAR_UP)
+    const wheels = roll(parked(200), IDLE, 14, GEAR_DOWN)
+
+    expect(speedOf(belly), 'a gear-up arrival did not slow down').toBeLessThan(60)
+    expect(speedOf(belly)).toBeLessThan(speedOf(wheels))
+    for (const value of belly) expect(Number.isFinite(value)).toBe(true)
+  })
+
+  it('catches the rotation instead of cartwheeling', () => {
+    // The scrape acts below the CG, so it drives the nose down. With nothing forward
+    // of the belly there was nothing to stop that: measured, past 78 degrees
+    // nose-down and into NEGATIVE forward speed. `NOSE_UNDERSIDE` is what catches it,
+    // and the force limit is what stops the friction that drives it being unbounded.
+    let v = parked(300, { alt: FIELD_ELEV + 40 })
+    v[Q.W] = 25
+    const mass = computeMassProperties()
+
+    let worstPitchDeg = 0
+    for (let i = 0; i < 8 * PHYSICS_HZ; i++) {
+      v = step(v, IDLE, undefined, mass, undefined, (sv) => gearLoads(sv, paved, GEAR_UP).loads)
+      const e = eulerFromQuaternion([
+        v[Q.QW] as number,
+        v[Q.QX] as number,
+        v[Q.QY] as number,
+        v[Q.QZ] as number,
+      ])
+      worstPitchDeg = Math.max(worstPitchDeg, Math.abs((e.theta * 180) / Math.PI))
+      expect(v[Q.U] as number, 'forward speed went negative — it cartwheeled')
+        .toBeGreaterThan(-1)
+    }
+
+    expect(worstPitchDeg, 'pitched over onto its nose').toBeLessThan(30)
+    // Still sliding forward, and slowing down.
+    expect(v[Q.U] as number).toBeGreaterThan(50)
+    expect(v[Q.U] as number).toBeLessThan(250)
+  })
+
+  it('does not let the aircraft sink through the ground', () => {
+    // The failure mode in plain terms: fly at the dirt with the wheels up and stay
+    // above it.
+    let v = parked(300, { alt: FIELD_ELEV + 40 })
+    v[Q.W] = 25 // descending hard
+    const mass = computeMassProperties()
+
+    for (let i = 0; i < 6 * PHYSICS_HZ; i++) {
+      v = step(v, IDLE, undefined, mass, undefined, (sv) => gearLoads(sv, paved, GEAR_UP).loads)
+    }
+
+    for (const value of v) expect(Number.isFinite(value)).toBe(true)
+    // The lowest point of the aircraft may compress into the surface, never through.
+    expect(
+      (v[Q.ALT] as number) - FIELD_ELEV,
+      'the aircraft ended up below the ground',
+    ).toBeGreaterThan(0)
   })
 
   it('is silent well above the ground', () => {

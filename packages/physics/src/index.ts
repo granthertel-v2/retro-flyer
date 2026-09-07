@@ -113,7 +113,12 @@ export {
 } from './integrator.js'
 
 export {
+  AIRFRAME_CONTACTS,
+  BELLY,
   DEFAULT_GEAR,
+  LEFT_WINGTIP,
+  RIGHT_WINGTIP,
+  TAIL_SKID,
   GEAR_DOWN,
   GEAR_UP,
   LEFT_MAIN,

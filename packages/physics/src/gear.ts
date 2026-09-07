@@ -53,6 +53,15 @@ export interface Strut {
   braked: boolean
   /** Full steering deflection, radians. Zero for the mains. */
   steerMax: number
+  /**
+   * True for a contact point that drags rather than rolls.
+   *
+   * A wheel meets the ground with rolling resistance, a couple of percent of the
+   * load. A fuselage meets it with the full sliding friction of the surface, which
+   * is thirty times more. That difference is the whole character of a gear-up
+   * landing, so it is a property of the contact point rather than of the ground.
+   */
+  scrapes?: boolean
 }
 
 /**
@@ -123,6 +132,81 @@ export const LEFT_MAIN: Strut = {
 export const RIGHT_MAIN: Strut = { ...LEFT_MAIN, name: 'right main', y: 4 }
 
 export const DEFAULT_GEAR: readonly Strut[] = [NOSE_GEAR, LEFT_MAIN, RIGHT_MAIN]
+
+/**
+ * The parts of the aircraft that are not wheels but can still touch the ground.
+ *
+ * These exist because the world was intangible without them. Ground reaction was
+ * built entirely inside the gear, so retracting the wheels retracted the planet:
+ * a flight test flew straight through a runway on a gear-up approach, and would have
+ * flown through the ridge just as easily.
+ *
+ * REQUIREMENTS §1 puts damage out of scope, so hitting the ground is not modelled as
+ * a crash — it is modelled as *contact*. The airframe gets contact points with the
+ * same spring-damper treatment as a strut, and the differences are the ones that
+ * matter: no shock absorber, so an order of magnitude stiffer and almost no travel;
+ * no wheel, so `scrapes` is set and it drags at the full friction of the surface
+ * instead of rolling; no brake and no steering. A gear-up arrival becomes a belly
+ * landing that stops very fast and hurts, which is roughly the truth.
+ *
+ * Positions are `[A]`, scaled off the airframe: the belly a little under the CG, the
+ * tail sixteen feet back where a tail strike happens, and the wingtips at the span.
+ * They are deliberately few — this is a ground-contact model, not a collision mesh.
+ */
+export const BELLY: Strut = {
+  name: 'belly',
+  x: 0,
+  y: 0,
+  z: 2.6,
+  // Stiff and heavily damped: structure, not an oleo. Short travel before it
+  // bottoms, because there is nothing designed to compress.
+  k: 90_000,
+  c: 14_000,
+  stroke: 0.35,
+  braked: false,
+  steerMax: 0,
+  scrapes: true,
+}
+
+/**
+ * The underside of the nose.
+ *
+ * Not decoration. Without something forward of the belly, a gear-up arrival has
+ * nothing to stop it rotating: the scrape acts two and a half feet below the CG, so
+ * it drives the nose down, and with no contact point ahead of the CG the aircraft
+ * kept going — measured, past 78 degrees nose-down and into negative forward speed,
+ * which is a cartwheel rather than a landing.
+ */
+export const NOSE_UNDERSIDE: Strut = { ...BELLY, name: 'nose underside', x: 18, z: 1.8 }
+
+export const TAIL_SKID: Strut = { ...BELLY, name: 'tail', x: -16, z: 1.4 }
+export const LEFT_WINGTIP: Strut = { ...BELLY, name: 'left wingtip', x: -1, y: -15, z: 1.2 }
+export const RIGHT_WINGTIP: Strut = { ...LEFT_WINGTIP, name: 'right wingtip', y: 15 }
+
+/** Contact points that are part of the aircraft, so they are never retracted. */
+export const AIRFRAME_CONTACTS: readonly Strut[] = [
+  NOSE_UNDERSIDE,
+  BELLY,
+  TAIL_SKID,
+  LEFT_WINGTIP,
+  RIGHT_WINGTIP,
+]
+
+/**
+ * Largest force one contact point may produce, as a multiple of the aircraft's
+ * weight. `[A]`
+ *
+ * Past this the real structure fails, and REQUIREMENTS §1 puts damage out of scope —
+ * so the honest simplification is to stop the force growing rather than to pretend
+ * an airframe can generate three million pounds and stay in one piece. Measured
+ * without it: a bottomed contact produced 3e5 lb, the friction that came with it
+ * produced half a million ft-lb of pitching moment, and the aircraft cartwheeled.
+ *
+ * Twelve is chosen to sit well above any survivable landing — the hardest arrival
+ * the gear tests fly peaks near 5 g — while low enough to keep the integrator's feet
+ * on the ground.
+ */
+const CONTACT_FORCE_LIMIT_G = 12
 
 /**
  * Stiffness once a strut is out of stroke, as a multiple of its spring rate. `[A]`
@@ -241,16 +325,27 @@ export const GEAR_DOWN: GearInput = { brake: 0, steer: 0, down: true }
 export interface GearState {
   /** Body-axis force and moment for `ExternalLoads`. */
   loads: ExternalLoads
-  /** Any strut touching solid ground. */
+  /** Anything — wheel or airframe — touching solid ground. */
   onGround: boolean
-  /** Compression of each strut, ft, in `struts` order. Zero when not in contact. */
+  /**
+   * Compression of each **landing gear** strut, ft, in `struts` order.
+   *
+   * Always the same length and the same order, so `normal[0]` is the nosewheel
+   * whatever else is happening. Airframe contact is reported separately rather than
+   * appended here, because an array whose indices shift when the gear retracts is a
+   * trap for every caller that reads one.
+   */
   compression: number[]
-  /** Normal force on each strut, lb. */
+  /** Normal force on each landing gear strut, lb. Zero when retracted. */
   normal: number[]
-  /** True if any strut is past the end of its stroke. */
+  /** True if any contact point is past the end of its travel. */
   bottomed: boolean
-  /** Total vertical force the gear is carrying, lb. */
+  /** Total vertical force being carried, lb — gear and airframe together. */
   totalNormal: number
+  /** True if part of the aircraft that is not a wheel is touching the ground. */
+  airframeContact: boolean
+  /** Vertical force being carried by the airframe rather than the gear, lb. */
+  airframeNormal: number
 }
 
 const AIRBORNE: GearState = {
@@ -260,6 +355,8 @@ const AIRBORNE: GearState = {
   normal: [0, 0, 0],
   bottomed: false,
   totalNormal: 0,
+  airframeContact: false,
+  airframeNormal: 0,
 }
 
 /**
@@ -274,8 +371,14 @@ export function gearLoads(
   ground: GroundSource,
   input: GearInput = GEAR_DOWN,
   struts: readonly Strut[] = DEFAULT_GEAR,
+  airframe: readonly Strut[] = AIRFRAME_CONTACTS,
 ): GearState {
-  if (!input.down) return AIRBORNE
+  // The gear retracts; the aeroplane does not. Everything that can touch the ground
+  // is considered every tick, and only the wheels come and go.
+  const contacts: { strut: Strut; gearIndex: number }[] = [
+    ...(input.down ? struts.map((strut, gearIndex) => ({ strut, gearIndex })) : []),
+    ...airframe.map((strut) => ({ strut, gearIndex: -1 })),
+  ]
 
   const q: Quaternion = [
     v[Q.QW] as number,
@@ -307,8 +410,12 @@ export function gearLoads(
   let bottomed = false
   let totalNormal = 0
 
-  const compression: number[] = []
-  const normal: number[] = []
+  // Fixed length, fixed order: one slot per landing gear strut, zero when retracted
+  // or out of contact.
+  const compression: number[] = struts.map(() => 0)
+  const normal: number[] = struts.map(() => 0)
+  let airframeNormal = 0
+  let airframeContact = false
 
   // --- Drag from having the gear out ---------------------------------------
   // Applied whether or not a wheel is touching anything: this is the air, not the
@@ -316,7 +423,7 @@ export function gearLoads(
   // CG, so it also pitches the nose down slightly — which is what a real aircraft
   // does when the gear comes out.
   const vt = Math.hypot(vb[0], vb[1], vb[2])
-  if (vt > 1) {
+  if (input.down && vt > 1) {
     const { qbar } = airData(vt, alt)
     const dragLb = qbar * WING_AREA * GEAR_DOWN_DELTA_CD
 
@@ -343,7 +450,7 @@ export function gearLoads(
     n += mx * dy - my * dx
   }
 
-  for (const s of struts) {
+  for (const { strut: s, gearIndex } of contacts) {
     const rBody: [number, number, number] = [s.x, s.y, s.z]
     const rNed = rotateBodyToNed(q, rBody)
 
@@ -351,18 +458,10 @@ export function gearLoads(
     const contactAlt = alt - rNed[2]
     const g = ground.sample(pn + rNed[0], pe + rNed[1])
 
-    if (!g.solid) {
-      compression.push(0)
-      normal.push(0)
-      continue
-    }
+    if (!g.solid) continue
 
     const squash = g.elevation - contactAlt
-    if (squash <= 0) {
-      compression.push(0)
-      normal.push(0)
-      continue
-    }
+    if (squash <= 0) continue
 
     // Velocity of this contact point: the CG's velocity plus the rotation about it.
     // The cross-product term is what makes a wing-down landing put the load on one
@@ -391,21 +490,30 @@ export function gearLoads(
     const extending = squashRate < 0
     const damping = s.c * fade * (extending ? REBOUND_DAMPING_RATIO : 1)
 
-    const N = spring + damping * squashRate
+    // Saturated: see CONTACT_FORCE_LIMIT_G. Structure that would be failing is
+    // modelled as structure that stops pushing harder.
+    const N = Math.min(
+      spring + damping * squashRate,
+      CONTACT_FORCE_LIMIT_G * REFERENCE_WEIGHT_LB,
+    )
 
     // A strut pushes; it never pulls. On the rebound the damper term goes strongly
     // negative — a main leaving the ground at 50 ft/s computes -151,000 lb — and
     // left alone that would suck the aircraft back onto a runway it is trying to
     // leave. This is the only guard: do not add a second `max(0, ...)` above, which
     // would make this branch unreachable and untestable.
-    if (N <= 0) {
-      compression.push(squash)
-      normal.push(0)
-      continue
-    }
+    if (gearIndex >= 0) compression[gearIndex] = squash
+
+    if (N <= 0) continue
 
     onGround = true
     totalNormal += N
+    if (gearIndex >= 0) {
+      normal[gearIndex] = N
+    } else {
+      airframeNormal += N
+      airframeContact = true
+    }
 
     // --- Friction ---------------------------------------------------------
     // The wheel rolls along its own heading, which for the nosewheel is steered.
@@ -428,7 +536,9 @@ export function gearLoads(
     }
 
     const brakeMu = s.braked ? clamp(input.brake, 0, 1) * g.friction : 0
-    const rollForce = -N * mu(vRoll, g.rollingResistance + brakeMu)
+    // A wheel rolls; a fuselage drags.
+    const alongMu = s.scrapes ? g.friction : g.rollingResistance + brakeMu
+    const rollForce = -N * mu(vRoll, alongMu)
     const sideForce = -N * mu(vSide, g.friction)
 
     // Assemble in NED: normal is up (negative down), friction is horizontal.
@@ -448,9 +558,6 @@ export function gearLoads(
     l += s.y * fBody[2] - s.z * fBody[1]
     m += s.z * fBody[0] - s.x * fBody[2]
     n += s.x * fBody[1] - s.y * fBody[0]
-
-    compression.push(squash)
-    normal.push(N)
   }
 
   return {
@@ -460,6 +567,8 @@ export function gearLoads(
     normal,
     bottomed,
     totalNormal,
+    airframeContact,
+    airframeNormal,
   }
 }
 
