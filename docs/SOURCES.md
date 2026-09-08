@@ -292,6 +292,11 @@ Public domain. The authority for every runway number in a region manifest.
   thing with water under it, and the surface grid already knows where the water is,
   which means the filter agrees with the coastline by construction and needs no
   extra query. All eleven crossings anyone could name in New York survive it.
+- **The frame cost of the denser regions was flown, not inferred.** Triangle count
+  was the only proxy available from automation — a background tab throttles
+  animation and GPU submission is asynchronous, so neither a timing loop nor a
+  frame counter measures anything real. 700,000 triangles was confirmed at the
+  controls instead.
 - **The builder was tested on a second region, and that is what found the worst
   bug.** New York is bounded by `natural=coastline`; Chicago has none at all, because
   the tag is for the sea and the Great Lakes are ordinary water polygons. Building
@@ -353,7 +358,7 @@ These are not measurements. Each is a judgement, and each is recorded because th
 | Water a bridge must span | 100 m continuous | Not "mostly over water": the Brooklyn Bridge's longest way is 2,165 m of which only the main span crosses the river, and a fraction test threw it away while keeping viaducts running along a shoreline. |
 | Bridge clearance at mid-span | length x 0.055, capped at 60 m | The Verrazzano gives 69 m and a bascule about five; span length is the only signal that separates them. |
 | Shortest landmark drawn as a marker | 15 m | Below that it is a plinth, invisible from an aeroplane. |
-| Region bundle budget | ~3.7-4.0 MB, ~1.6 MB gzipped | New York 3.65 MB, Chicago 3.98 MB. About 700,000 triangles a frame, of which the buildings are roughly 450-500,000. |
+| Region bundle budget | ~3.7-4.0 MB, ~1.6 MB gzipped | New York 3.65 MB, Chicago 3.98 MB. About 700,000 triangles a frame, of which the buildings are roughly 450-500,000. Flown at that size with no frame-rate dip; the previous figure was 414,000. |
 
 ## Why the buildings are budgeted rather than thresholded
 
