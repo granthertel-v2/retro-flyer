@@ -359,6 +359,27 @@ out geom;"""
     return [e for e in data.get("elements", []) if e.get("geometry")]
 
 
+def fetch_untagged_notable_buildings(
+    south: float, west: float, north: float, east: float
+) -> list[dict]:
+    """
+    Buildings with a Wikidata entity but no height OpenStreetMap can offer.
+
+    Deliberately narrow: a Wikidata tag *and* no `height` *and* no `building:levels`.
+    That is a few hundred per region rather than the tens of thousands an untagged
+    building query would return, and it is exactly the set whose heights are worth
+    going somewhere else for.
+    """
+    box = f"({south},{west},{north},{east})"
+    body = f"""[out:json][timeout:900];
+(
+  way["building"]["wikidata"]["name"][!"height"][!"building:levels"]{box};
+);
+out geom;"""
+    data = query(body, "notable buildings without heights")
+    return [e for e in data.get("elements", []) if e.get("geometry")]
+
+
 def _convex_hull(points: list[Point]) -> list[Point]:
     """Andrew's monotone chain. Returns the hull counter-clockwise."""
     pts = sorted(set(points))
@@ -516,3 +537,225 @@ out;"""   # `out tags` omits coordinates; a place without a position is not a pl
         kept.append(place)
 
     return kept
+
+
+# ---------------------------------------------------------------------------
+# Landmarks and bridges
+# ---------------------------------------------------------------------------
+
+#: What counts as a landmark, and how it is labelled.
+#:
+#: The filter is `wikidata`, not the tag itself, and that is the whole trick. New
+#: York has 969 things tagged as attractions, monuments or memorials, and 506 of them
+#: are plaques screwed to walls. Requiring a Wikidata entity cuts it to a couple of
+#: hundred and keeps the ones a person would name — because somebody wrote an
+#: encyclopaedia article about them, which is a better test of fame than any tag.
+#:
+#: Stadiums are exempt: they are enormous, unmistakable from the air, and a stadium
+#: nobody has written about is still the thing you are looking at.
+LANDMARK_SELECTORS = (
+    'node["tourism"~"^(attraction|artwork|museum)$"]["name"]["wikidata"]',
+    'way["tourism"~"^(attraction|artwork|museum)$"]["name"]["wikidata"]',
+    'rel["tourism"~"^(attraction|artwork|museum)$"]["name"]["wikidata"]',
+    'node["historic"="monument"]["name"]["wikidata"]',
+    'way["historic"="monument"]["name"]["wikidata"]',
+    'way["leisure"="stadium"]["name"]',
+    'rel["leisure"="stadium"]["name"]',
+    'node["man_made"~"^(lighthouse|obelisk|tower)$"]["name"]["wikidata"]',
+    'way["man_made"~"^(lighthouse|obelisk|tower)$"]["name"]["wikidata"]',
+)
+
+#: Named buildings with an encyclopaedia entry. Matched against the tall buildings the
+#: region already draws rather than kept wholesale — see `build_region.py`. Wikidata
+#: alone would admit 1,287 named office blocks in New York; the tallest hundred of
+#: them are the skyline, and the skyline is what wants labelling.
+NAMED_BUILDING_SELECTORS = (
+    'way["building"]["name"]["wikidata"]',
+    'rel["building"]["name"]["wikidata"]',
+)
+
+
+def fetch_landmarks(south: float, west: float, north: float, east: float) -> list[dict]:
+    """Notable named features, as points."""
+    box = f"({south},{west},{north},{east})"
+    selectors = "".join(f"  {sel}{box};\n" for sel in LANDMARK_SELECTORS)
+    data = query(f"[out:json][timeout:600];\n(\n{selectors});\nout center tags;", "landmarks")
+
+    out: list[dict] = []
+    for element in data.get("elements", []):
+        tags = element.get("tags", {})
+        centre = element.get("center") or (
+            {"lat": element.get("lat"), "lon": element.get("lon")}
+        )
+        if centre.get("lat") is None or centre.get("lon") is None:
+            continue
+        kind = (
+            "stadium" if tags.get("leisure") == "stadium"
+            else tags.get("man_made") or tags.get("historic") or tags.get("tourism") or "landmark"
+        )
+        out.append(
+            {
+                "name": tags["name"],
+                "lat": centre["lat"],
+                "lon": centre["lon"],
+                "kind": kind,
+                # A Wikipedia *article*, not just a Wikidata item. It is the sharper
+                # of the two signals — 12 of Chicago's 42 mapped stadiums have one,
+                # and they are the twelve anyone could name.
+                "notable": bool(tags.get("wikipedia")),
+            }
+        )
+    return out
+
+
+def fetch_named_buildings(south: float, west: float, north: float, east: float) -> list[dict]:
+    """Named buildings with a Wikidata entity, for matching against tall footprints."""
+    box = f"({south},{west},{north},{east})"
+    selectors = "".join(f"  {sel}{box};\n" for sel in NAMED_BUILDING_SELECTORS)
+    data = query(
+        f"[out:json][timeout:600];\n(\n{selectors});\nout center tags;", "named buildings"
+    )
+
+    out: list[dict] = []
+    for element in data.get("elements", []):
+        tags = element.get("tags", {})
+        centre = element.get("center") or {"lat": element.get("lat"), "lon": element.get("lon")}
+        if centre.get("lat") is None or centre.get("lon") is None:
+            continue
+        # `name:en` because Willis Tower carries its name only there.
+        name = tags.get("name:en") or tags.get("name")
+        if name:
+            out.append(
+                {
+                    "name": name,
+                    "lat": centre["lat"],
+                    "lon": centre["lon"],
+                    "notable": bool(tags.get("wikipedia")),
+                }
+            )
+    return out
+
+
+#: Shortest bridge worth drawing, metres. `[A]`
+#:
+#: Below this a bridge is a road over a road. Low enough to keep the Chicago River
+#: bascules, which are about seventy metres and are the character of that riverfront.
+MIN_BRIDGE_M = 60.0
+
+#: Spacing along a bridge centreline, metres. Anything finer is detail the renderer
+#: cannot show and manifest bytes nobody reads.
+BRIDGE_STEP_M = 25.0
+
+#: Highway kinds that are not the bridge. A big crossing has a footpath and a cycle
+#: path alongside it, each a separate way with its own name — "Brooklyn Bridge
+#: Bicycle Path", "Manhattan Bridge Pedestrian Path" — and they beat the roadway on
+#: length, so the first pass produced a map of bike paths.
+PATH_HIGHWAYS = {"footway", "cycleway", "path", "steps", "pedestrian", "corridor"}
+
+
+def _metres_between(a: Point, b: Point) -> float:
+    mid = math.radians((a[1] + b[1]) / 2)
+    return math.hypot((b[0] - a[0]) * 111_320 * math.cos(mid), (b[1] - a[1]) * 111_320)
+
+
+def _polyline_length(points: list[Point]) -> float:
+    return sum(_metres_between(a, b) for a, b in zip(points, points[1:]))
+
+
+def _simplify(points: list[Point], step: float = BRIDGE_STEP_M) -> list[Point]:
+    """Thin a polyline to roughly `step` spacing, always keeping both ends."""
+    if len(points) < 3:
+        return points
+    out = [points[0]]
+    for p in points[1:-1]:
+        if _metres_between(out[-1], p) >= step:
+            out.append(p)
+    out.append(points[-1])
+    return out
+
+
+def fetch_bridges(south: float, west: float, north: float, east: float) -> list[dict]:
+    """
+    Named bridges, as centrelines.
+
+    Two sources, because neither alone finds the bridges anyone means:
+
+    - **`man_made=bridge` areas** are the structure, and carry the structure's name.
+      This is the only place the George Washington Bridge is called that — its
+      carriageways are named after the road they carry, which is Interstate 95. The
+      polygon's long axis is the centreline; bridges are straight, so a box fit
+      through it is not an approximation worth apologising for.
+    - **`bridge=yes` ways** catch the ones with no mapped structure, which is most of
+      the smaller ones, including every bascule on the Chicago River.
+
+    Merged by name, longest kept. Paths are excluded outright — see `PATH_HIGHWAYS`.
+    """
+    box = f"({south},{west},{north},{east})"
+    best: dict[str, dict] = {}
+
+    def offer(name: str, points: list[Point], rail: bool, lanes: int) -> None:
+        if len(points) < 2:
+            return
+        length = _polyline_length(points)
+        if length < MIN_BRIDGE_M:
+            return
+        if name in best and best[name]["lengthM"] >= length:
+            return
+        best[name] = {
+            "name": name,
+            "points": _simplify(points),
+            "lengthM": length,
+            "lanes": lanes,
+            "rail": rail,
+        }
+
+    areas = query(
+        f'[out:json][timeout:900];(way["man_made"="bridge"]["name"]{box};'
+        f'rel["man_made"="bridge"]["name"]{box};);out geom;',
+        "bridge structures",
+    )
+    for element in areas.get("elements", []):
+        rings = _rings_of(element)
+        if not rings:
+            continue
+        outline = max(rings, key=len)
+        # Long axis of the structure, as a two-point centreline.
+        lat0 = sum(p[1] for p in outline) / len(outline)
+        k = 111_320 * math.cos(math.radians(lat0))
+        flat = [((p[0] - outline[0][0]) * k, (p[1] - outline[0][1]) * 111_320) for p in outline]
+        cx, cy, half_a, half_b, angle = oriented_box(flat)
+        if max(half_a, half_b) * 2 < MIN_BRIDGE_M:
+            continue
+        if half_b > half_a:
+            angle += math.pi / 2
+            half_a = half_b
+        ends = [
+            (cx - math.cos(angle) * half_a, cy - math.sin(angle) * half_a),
+            (cx + math.cos(angle) * half_a, cy + math.sin(angle) * half_a),
+        ]
+        points = [(outline[0][0] + ex / k, outline[0][1] + ey / 111_320) for ex, ey in ends]
+        tags = element.get("tags", {})
+        offer(tags["name"], points, "railway" in tags, 0)
+
+    ways = query(
+        f'[out:json][timeout:900];way["bridge"]["name"]{box};out geom;', "bridge ways"
+    )
+    for element in ways.get("elements", []):
+        geometry = element.get("geometry") or []
+        tags = element.get("tags", {})
+        if tags.get("highway") in PATH_HIGHWAYS:
+            continue
+        lanes = 0
+        raw = tags.get("lanes")
+        if raw:
+            match = _NUMBER.search(raw)
+            if match:
+                lanes = int(float(match.group()))
+        offer(
+            tags["name"],
+            [(n["lon"], n["lat"]) for n in geometry],
+            "railway" in tags,
+            lanes,
+        )
+
+    return sorted(best.values(), key=lambda b: -b["lengthM"])

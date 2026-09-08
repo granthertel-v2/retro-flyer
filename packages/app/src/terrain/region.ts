@@ -51,12 +51,14 @@ import {
   runwayLift,
   type Airfield,
   type BuildingInstance,
+  type Bridge,
+  type Landmark,
   type Place,
   type TerrainSample,
   type TerrainSource,
 } from './source.js'
 
-export type { BuildingInstance, Place }
+export type { Bridge, BuildingInstance, Landmark, Place }
 
 /** One elevation grid. Square, axis-aligned, centred anywhere in the region. */
 export interface TerrainTier {
@@ -128,6 +130,10 @@ export interface RegionManifest {
    * than a tenth of what one elevation tier does.
    */
   places?: { name: string; lat: number; lon: number; rank: number }[]
+  /** Notable named features. Points, in the terms a source names them. */
+  landmarks?: { name: string; lat: number; lon: number; kind: string; heightM?: number }[]
+  /** Bridges, as `[lat, lon]` centrelines. */
+  bridges?: { name: string; points: [number, number][]; widthM: number; lengthM: number }[]
   /** Licence and provenance lines, rendered wherever the region is. */
   attribution: string[]
 }
@@ -139,6 +145,8 @@ export class RegionSource implements TerrainSource {
   readonly extent: number
   readonly airfields: readonly Airfield[]
   readonly places: readonly Place[]
+  readonly landmarks: readonly Landmark[]
+  readonly bridges: readonly Bridge[]
   readonly frame: GeoFrame
 
   private readonly tiers: { tier: TerrainTier; data: Int16Array; half: number }[]
@@ -189,6 +197,24 @@ export class RegionSource implements TerrainSource {
       const w = this.frame.toWorld(p.lat, p.lon)
       return { name: p.name, x: w.x, z: w.z, rank: p.rank }
     })
+
+    this.landmarks = (manifest.landmarks ?? []).map((m) => {
+      const w = this.frame.toWorld(m.lat, m.lon)
+      return {
+        name: m.name,
+        x: w.x,
+        z: w.z,
+        kind: m.kind,
+        ...(m.heightM === undefined ? {} : { heightM: m.heightM }),
+      }
+    })
+
+    this.bridges = (manifest.bridges ?? []).map((b) => ({
+      name: b.name,
+      points: b.points.map(([lat, lon]) => this.frame.toWorld(lat, lon)),
+      widthM: b.widthM,
+      lengthM: b.lengthM,
+    }))
 
     // Airfields are quoted in latitude and longitude and used in metres. Converting
     // once, here, is what stops two callers projecting the same runway differently.

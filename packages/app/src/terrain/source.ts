@@ -264,6 +264,41 @@ export interface TerrainSource {
    * optional is what let real regions arrive without touching every caller.
    */
   readonly places?: readonly Place[]
+  /** Notable named features, for labelling. */
+  readonly landmarks?: readonly Landmark[]
+  /** Bridges, as centrelines in world metres. */
+  readonly bridges?: readonly Bridge[]
+}
+
+/**
+ * Something worth naming that is not a town: a bridge, a stadium, a statue, a tower.
+ *
+ * `kind` is OpenStreetMap's word for it, kept rather than mapped to an enum, because
+ * the renderer only uses it to pick a symbol and a new kind appearing is not an
+ * error. `heightM` is present only where the landmark was matched to a building the
+ * region already draws, and is that building's height.
+ */
+export interface Landmark {
+  name: string
+  x: number
+  z: number
+  kind: string
+  heightM?: number
+}
+
+/**
+ * A bridge, as a centreline and a width.
+ *
+ * Not a footprint. The renderer lays a deck along the line and arches it over the
+ * water, which is all a bridge needs to be from an aeroplane — and it means a
+ * structure mapped as a polygon and one mapped as a way arrive in the same shape.
+ */
+export interface Bridge {
+  name: string
+  /** World metres, in order along the span. */
+  points: readonly { x: number; z: number }[]
+  widthM: number
+  lengthM: number
 }
 
 /**

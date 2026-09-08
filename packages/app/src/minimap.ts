@@ -35,7 +35,7 @@
  * in the render loop and can be tested without a WebGL context.
  */
 
-import { Surface, type Place, type TerrainSource } from './terrain/source.js'
+import { Surface, type Landmark, type Place, type TerrainSource } from './terrain/source.js'
 
 /** Colours, matching `mesh.ts` closely enough that the map reads as the same world. */
 const COLOURS: Record<number, string> = {
@@ -61,6 +61,35 @@ const BITMAP = 768
 
 /** Zoom steps, as the half-width of the visible square in metres. */
 export const ZOOMS = [4_000, 12_000, 30_000, 60_000] as const
+
+/**
+ * Which landmarks are worth a label, and from how far out.
+ *
+ * The kind, not the name, decides — and the ordering is by what a person can pick
+ * out of a window. A stadium is a bowl visible from twenty miles; a plaque on a wall
+ * is not visible at all, and its label is a lie about what you can see.
+ *
+ * Without this the map filled with monuments. New York has 356 landmarks and the
+ * label thinning gave them all priority over towns, so the first pass showed
+ * "Prison Ship Martyrs Monument" and "Marquis de Lafayette Monument" while hiding
+ * Newark. A landmark earns its place by being findable from the air.
+ */
+const LANDMARK_REACH_M: Record<string, number> = {
+  stadium: 30_000,
+  tower: 30_000,
+  building: 12_000,
+  bridge: 30_000,
+  attraction: 12_000,
+  lighthouse: 12_000,
+  obelisk: 4_000,
+  monument: 4_000,
+  museum: 4_000,
+  artwork: 4_000,
+  memorial: 4_000,
+}
+
+/** Anything not named above. Close range only. */
+const LANDMARK_REACH_DEFAULT_M = 4_000
 
 const SIZE = 260
 const PADDING = 14
@@ -233,6 +262,21 @@ export class Minimap {
       ctx.stroke()
     }
 
+    // Bridges, under the labels: they are the one thing on the map you navigate by
+    // as much as fly over, and a bridge drawn over its own name is no use.
+    const bridges = this.source.bridges ?? []
+    if (bridges.length > 0 && half <= 30_000) {
+      ctx.strokeStyle = '#d8c48a'
+      ctx.lineWidth = 1.5
+      for (const bridge of bridges) {
+        ctx.beginPath()
+        bridge.points.forEach((p, i) =>
+          i === 0 ? ctx.moveTo(px(p.x), py(p.z)) : ctx.lineTo(px(p.x), py(p.z)),
+        )
+        ctx.stroke()
+      }
+    }
+
     this.drawLabels(ctx, px, py, half)
 
     // The aircraft, always at the centre, pointing where it is pointing.
@@ -311,12 +355,29 @@ export class Minimap {
 
     const taken: { x: number; y: number; w: number }[] = []
 
+    // Landmarks before towns, but only those big enough to see at this zoom. They
+    // are what a person actually looks for — the stadium, the tower, the bridge —
+    // so when the collision test runs out of room it should run out on a suburb,
+    // not on the Statue of Liberty. It must not run out on Newark for the sake of
+    // a plaque, though, which is what `LANDMARK_REACH_M` is for.
+    const landmarks: Landmark[] = (this.source.landmarks ?? []).filter(
+      (m) => half <= (LANDMARK_REACH_M[m.kind] ?? LANDMARK_REACH_DEFAULT_M),
+    )
+    // Tallest first among those, so a skyline label beats a low one for the space.
+    landmarks.sort((a, b) => (b.heightM ?? 0) - (a.heightM ?? 0))
+
     // Keep out of the caption strip at the top and the scale bar at the bottom.
     const TOP = 22
     const BOTTOM = SIZE - 24
 
-    for (const place of places) {
-      if (place.rank > maxRank) continue
+    const entries: { name: string; x: number; z: number; landmark: boolean }[] = [
+      ...landmarks.map((m) => ({ name: m.name, x: m.x, z: m.z, landmark: true })),
+      ...places
+        .filter((p) => p.rank <= maxRank)
+        .map((p) => ({ name: p.name, x: p.x, z: p.z, landmark: false })),
+    ]
+
+    for (const place of entries) {
 
       const cx = px(place.x)
       const cy = py(place.z) - 7
@@ -336,12 +397,12 @@ export class Minimap {
 
       // A dot at the place, the name above it. Drawing the name *on* the position
       // hides the thing it is naming, which matters once a runway is under it.
-      ctx.fillStyle = 'rgba(240,233,200,0.9)'
-      ctx.fillRect(px(place.x) - 1, py(place.z) - 1, 2, 2)
+      ctx.fillStyle = place.landmark ? '#f2b134' : 'rgba(240,233,200,0.9)'
+      ctx.fillRect(px(place.x) - 1.5, py(place.z) - 1.5, 3, 3)
 
-      ctx.fillStyle = 'rgba(4,10,8,0.75)'
+      ctx.fillStyle = 'rgba(4,10,8,0.78)'
       ctx.fillRect(cx - width / 2 - 2, cy - 6, width + 4, 12)
-      ctx.fillStyle = place.rank <= 1 ? '#f0e9c8' : '#c6d8c2'
+      ctx.fillStyle = place.landmark ? '#f2c76a' : '#c6d8c2'
       ctx.fillText(place.name, cx, cy)
     }
   }

@@ -36,10 +36,17 @@ the designed map needs no network and is what everything here was flown against
 first. If a region fails to load you get the designed map and a line in the console
 rather than a black screen.
 
+Landmarks are in: the bridges are real geometry, arched over the water and towered
+where the span earns it — the George Washington, the Brooklyn, the Verrazzano, the
+Chicago Skyway. Everything else notable is named on the map, from the Statue of
+Liberty to Wrigley Field, filtered to things with an encyclopaedia article so you get
+the ones people can name rather than 500 plaques on walls.
+
 Expect scenery, not a chart. Buildings are every OpenStreetMap footprint over twenty
 metres, fitted to a box; the ground is coloured by land cover at 120 m; there are no
-roads, no bridges and no modelled landmarks. It is enough to recognise where you are
-from the air, which is what it is for.
+roads, and no individually modelled monuments — the Statue of Liberty is a name on
+the map, not a statue. It is enough to recognise where you are from the air, which is
+what it is for.
 
 The short version:
 

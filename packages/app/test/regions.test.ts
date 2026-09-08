@@ -282,6 +282,64 @@ for (const spec of REGIONS) {
       })
     })
 
+    describe('landmarks and bridges', () => {
+      it('names things a person would look for', () => {
+        expect(region.landmarks.length).toBeGreaterThan(80)
+        for (const m of region.landmarks) {
+          expect(m.name.length).toBeGreaterThan(0)
+          expect(m.kind.length).toBeGreaterThan(0)
+          expect(Math.abs(m.x)).toBeLessThanOrEqual(region.extent)
+          expect(Math.abs(m.z)).toBeLessThanOrEqual(region.extent)
+        }
+      })
+
+      it('covers several kinds, not one', () => {
+        // A single-kind list would mean a quota swallowed everything else — which is
+        // what happened when 146 museums crowded out six visible landmarks.
+        const kinds = new Set(region.landmarks.map((m) => m.kind))
+        expect(kinds.size).toBeGreaterThanOrEqual(6)
+      })
+
+      it('gives every bridge a usable centreline', () => {
+        expect(region.bridges.length).toBeGreaterThan(10)
+        for (const b of region.bridges) {
+          expect(b.points.length).toBeGreaterThanOrEqual(2)
+          expect(b.lengthM).toBeGreaterThan(50)
+          expect(b.widthM).toBeGreaterThan(5)
+          expect(b.widthM).toBeLessThan(80)
+          for (const p of b.points) {
+            expect(Math.abs(p.x)).toBeLessThanOrEqual(region.extent)
+            expect(Math.abs(p.z)).toBeLessThanOrEqual(region.extent)
+          }
+        }
+      })
+
+      it('only keeps bridges that actually cross water', () => {
+        // The filter that makes these bridges rather than flyovers. Without it the
+        // longest "bridges" in both regions were elevated railway viaducts — four
+        // kilometres of the BMT Jamaica Line, and the Chicago L.
+        for (const b of region.bridges) {
+          // Sampled every 25 m, not at a fixed number of probes. The builder keeps a
+          // bridge on a hundred metres of continuous water, and twenty probes along
+          // the 3.7 km Gowanus Expressway is one every 188 m — which steps straight
+          // over the canal it crosses and calls correct data a failure.
+          const probes = Math.max(20, Math.ceil(b.lengthM / 25))
+          let wet = false
+          for (let k = 0; k <= probes && !wet; k++) {
+            const t = (k / probes) * (b.points.length - 1)
+            const i = Math.min(b.points.length - 2, Math.floor(t))
+            const f = t - i
+            const a = b.points[i]!
+            const c = b.points[i + 1]!
+            const x = a.x + (c.x - a.x) * f
+            const z = a.z + (c.z - a.z) * f
+            if (region.sample(x, z).surface === Surface.Water) wet = true
+          }
+          expect(wet, `${b.name} never crosses water`).toBe(true)
+        }
+      })
+    })
+
     describe('buildings', () => {
       const buildings = region.buildings()
 
@@ -318,6 +376,37 @@ for (const spec of REGIONS) {
 describe('New York, specifically', () => {
   const { manifest, region } = load('new-york')
   const byName = new Map(manifest.airfields.map((f) => [f.name, f]))
+
+  it('has the crossings everyone can name', () => {
+    // These are the point of the feature. A coastline with a city on both sides and
+    // nothing joining them reads as a mistake rather than as missing detail.
+    const bridges = new Set(region.bridges.map((b) => b.name))
+    for (const expected of [
+      'Brooklyn Bridge',
+      'George Washington Bridge',
+      'Manhattan Bridge',
+      'Williamsburg Bridge',
+      'Verrazzano-Narrows Bridge',
+    ]) {
+      expect(bridges).toContain(expected)
+    }
+  })
+
+  it('knows the Statue of Liberty and the Empire State Building', () => {
+    const names = new Set(region.landmarks.map((m) => m.name))
+    expect(names).toContain('Statue of Liberty')
+    expect(names).toContain('Empire State Building')
+  })
+
+  it('has no building taller than the tallest building in New York', () => {
+    // Wikidata fills the heights OpenStreetMap lacks, and records them in whatever
+    // unit the source used: the Empire State Building carries both 453 (metres) and
+    // 1500 (feet). Taking the larger raw number made it a 1,500 m tower and put a
+    // 749 m box on the skyline. Heights are read SI-normalised now.
+    const tallest = Math.max(...region.buildings().map((b) => b.heightM))
+    expect(tallest).toBeGreaterThan(400)
+    expect(tallest).toBeLessThan(560)
+  })
 
   it('agrees with the FAA on runways whose numbers are published', () => {
     // LaGuardia 13/31: 7,002 ft by 150 ft.
@@ -359,6 +448,16 @@ describe('Chicago, specifically', () => {
     // rings the lake rasterised to almost nothing and this was dry land.
     expect(region.sample(region.extent - 500, 0).surface).toBe(Surface.Water)
     expect(region.sample(region.extent - 500, -region.extent + 500).surface).toBe(Surface.Water)
+  })
+
+  it('found the Skyway and the tower that has no height tag', () => {
+    expect(new Set(region.bridges.map((b) => b.name))).toContain('Chicago Skyway Bridge')
+    // Willis Tower is the tallest thing in the region and carries no `height` and no
+    // `building:levels` in OpenStreetMap — 90 of the 392 named buildings in the Loop
+    // are in the same position. Its height comes from Wikidata, which the OSM object
+    // already points at, and without it Chicago's tallest drawn building was 340 m.
+    expect(new Set(region.landmarks.map((m) => m.name))).toContain('Willis Tower')
+    expect(Math.max(...region.buildings().map((b) => b.heightM))).toBeGreaterThan(430)
   })
 
   it('puts the lake surface at its real elevation', () => {

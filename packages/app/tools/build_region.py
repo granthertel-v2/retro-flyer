@@ -51,6 +51,7 @@ sys.path.insert(0, str(HERE))
 from regionlib import dem as dem_mod  # noqa: E402
 from regionlib import faa as faa_mod  # noqa: E402
 from regionlib import osm as osm_mod  # noqa: E402
+from regionlib import wikidata as wikidata_mod  # noqa: E402
 from regionlib.coastline import Rect, clip_chain, close_rings, join_ways  # noqa: E402
 from regionlib.geo import GeoFrame, LatLon  # noqa: E402
 from regionlib.raster import Grid  # noqa: E402
@@ -70,6 +71,36 @@ WATER, LAND, CITY, RUNWAY, FOREST, GRASS, SAND, SUBURB = range(8)
 #: Land classes, for `only_over`: what land cover is allowed to paint onto. Water is
 #: excluded so a sloppy park boundary cannot colour the harbour.
 LAND_CLASSES = {LAND, CITY, FOREST, GRASS, SAND, SUBURB}
+
+#: Continuous water a bridge must span before it counts as one. `[A]`
+#:
+#: A hundred metres of open water under it. Short enough for the Chicago River
+#: bascules, long enough that a road running along an embankment is not a bridge.
+MIN_WATER_SPAN_M = 100.0
+
+#: Most bridges to keep, longest first. `[A]` Fifty is every crossing anyone could
+#: name in either region and about 25 KB of manifest.
+MAX_BRIDGES = 50
+
+#: How many landmarks to keep of each kind. `[A]`
+#:
+#: Generous, and deliberately so. A tighter set was tried first and it was the wrong
+#: instinct: the map thins labels by collision when it draws them, so extra entries
+#: cost nothing on screen, and the only real budget is manifest bytes — which at
+#: these numbers is about 25 KB. Squeezing the quotas produced a steady trickle of
+#: absurd near-misses instead, most memorably a New York with no Statue of Liberty
+#: because it is five kilometres from downtown and lost a tie-break to Manhattan.
+#:
+#: The cap exists to stop 146 museums and 506 memorial plaques, not to curate.
+LANDMARK_QUOTAS = {
+    "stadium": 25, "tower": 70, "bridge": 12, "monument": 25, "obelisk": 6,
+    "lighthouse": 14, "attraction": 60, "museum": 25, "artwork": 30, "memorial": 8,
+    # Notable buildings with no height tag, so never drawn. Their own quota rather
+    # than competing with `tower`, where a missing height sorts them last by
+    # construction and they would never survive.
+    "building": 80,
+}
+LANDMARK_DEFAULT_QUOTA = 4
 
 #: Tall buildings in a three-by-three neighbourhood of surface cells before the
 #: ground under them counts as dense city rather than whatever the land-use tags
@@ -385,6 +416,35 @@ def build(spec_path: Path) -> None:
         instances.append((cx, -cy, half_a, half_b, heading, height))
         footprints.append(pts)
 
+    # Buildings OpenStreetMap knows the name of but not the height of. Willis Tower
+    # is one, so is Trump International, so is the Chrysler Building — the tallest
+    # things in their cities, absent from the skyline because a tag was never filled
+    # in. Their heights come from Wikidata, which the OSM object already points at.
+    untagged = osm_mod.fetch_untagged_notable_buildings(south, west, north, east)
+    qids = [e["tags"]["wikidata"] for e in untagged if e.get("tags", {}).get("wikidata")]
+    heights = wikidata_mod.heights_for(qids)
+
+    recovered = 0
+    for element in untagged:
+        qid = element.get("tags", {}).get("wikidata")
+        height = heights.get(qid or "")
+        if height is None or height < min_height:
+            continue
+
+        pts = [frame.to_world(n["lat"], n["lon"]) for n in element["geometry"]]
+        if len(pts) < 3:
+            continue
+        if max(abs(p[0]) for p in pts) > extent or max(abs(p[1]) for p in pts) > extent:
+            continue
+
+        cx, cy, half_a, half_b, angle = osm_mod.oriented_box([(x, -z) for x, z in pts])
+        instances.append(
+            (cx, -cy, half_a, half_b, (90.0 - math.degrees(angle)) % 360.0, height)
+        )
+        footprints.append(pts)
+        recovered += 1
+
+    print(f"  {recovered} more recovered from Wikidata heights")
     print(f"  {len(instances)} kept above {min_height:g} m")
     if instances:
         tall = sorted(i[5] for i in instances)
@@ -443,7 +503,156 @@ def build(spec_path: Path) -> None:
         print(f"    {names.get(value, value):8} {100 * count / total:5.1f}%")
 
     # -----------------------------------------------------------------------
-    # 6. Places, for labelling
+    # 6. Landmarks and bridges
+    # -----------------------------------------------------------------------
+    print("\nlandmarks")
+    raw_landmarks = osm_mod.fetch_landmarks(south, west, north, east)
+
+    # Name the buildings already being drawn, rather than keeping every named
+    # building there is. Wikidata alone admits 1,287 named office blocks in New York;
+    # matching against the tallest hundred footprints gives the skyline instead —
+    # Willis Tower and the Chrysler Building carry no height tag at all and would be
+    # missed by any threshold, but they are unmistakable in the geometry.
+    named_buildings = osm_mod.fetch_named_buildings(south, west, north, east)
+    matched_names: set[str] = set()
+    tallest = sorted(range(len(instances)), key=lambda i: -instances[i][5])[:150]
+
+    for index in tallest:
+        bx, bz, _, _, _, height = instances[index]
+        nearest = None
+        nearest_d = 70.0  # metres: a centroid this close is the same building
+        for candidate in named_buildings:
+            cx, cz = frame.to_world(candidate["lat"], candidate["lon"])
+            d = math.hypot(cx - bx, cz - bz)
+            if d < nearest_d:
+                nearest_d = d
+                nearest = candidate
+        if nearest is not None:
+            raw_landmarks.append(
+                {"name": nearest["name"], "lat": nearest["lat"], "lon": nearest["lon"],
+                 "kind": "tower", "heightM": round(height, 1),
+                 "notable": nearest.get("notable", False)}
+            )
+            matched_names.add(nearest["name"])
+
+    # Notable buildings that were never drawn, because OpenStreetMap has no height for
+    # them. Ninety of the 392 named buildings in the Loop are in this position,
+    # **Willis Tower among them** — the tallest building in the region, absent from
+    # the skyline because nobody filled in a tag. A height cannot be invented, so it
+    # stays undrawn; but it can still be named on the map, which is the difference
+    # between a gap and a lie.
+    for candidate in named_buildings:
+        if candidate["name"] in matched_names or not candidate.get("notable"):
+            continue
+        raw_landmarks.append(
+            {"name": candidate["name"], "lat": candidate["lat"], "lon": candidate["lon"],
+             "kind": "building", "notable": True}
+        )
+
+    # Notability first, then how central it is.
+    #
+    # Notability alone is not enough to order by: 71 of Chicago's 81 mapped artworks
+    # have a Wikipedia article, so the quota kept whichever twelve happened to sort
+    # first and Cloud Gate was not among them. What separates a famous landmark from
+    # a merely documented one, given no other signal, is *where it is* — the ones
+    # people can name cluster in the middle of the city, and the middle of the city
+    # is already known here as the centre of mass of the tall buildings.
+    if instances:
+        core = sorted(instances, key=lambda b: -b[5])[:50]
+        core_x = sum(b[0] for b in core) / len(core)
+        core_z = sum(b[1] for b in core) / len(core)
+    else:
+        core_x = core_z = 0.0
+
+    def centrality(mark: dict) -> float:
+        x, z = frame.to_world(mark["lat"], mark["lon"])
+        return math.hypot(x - core_x, z - core_z)
+
+    raw_landmarks.sort(key=lambda m: (not m.get("notable", False), centrality(m)))
+
+    seen: set[str] = set()
+    taken: dict[str, int] = {}
+    landmarks = []
+    for mark in raw_landmarks:
+        x, z = frame.to_world(mark["lat"], mark["lon"])
+        if abs(x) > extent or abs(z) > extent:
+            continue
+        if mark["name"] in seen:
+            continue
+        quota = LANDMARK_QUOTAS.get(mark["kind"], LANDMARK_DEFAULT_QUOTA)
+        if taken.get(mark["kind"], 0) >= quota:
+            continue
+        taken[mark["kind"]] = taken.get(mark["kind"], 0) + 1
+        seen.add(mark["name"])
+        landmarks.append(mark)
+
+    kinds: dict[str, int] = {}
+    for mark in landmarks:
+        kinds[mark["kind"]] = kinds.get(mark["kind"], 0) + 1
+    print(f"  {len(landmarks)} landmarks: " + ", ".join(f"{v} {k}" for k, v in sorted(kinds.items())))
+
+    print("\nbridges")
+    raw_bridges = osm_mod.fetch_bridges(south, west, north, east)
+
+    # Keep the ones that cross water, and let the region's own raster decide. Length
+    # alone does not work: New York's longest named "bridges" are elevated subway
+    # viaducts four kilometres long, and Chicago's are the L. A bridge over water is
+    # the kind anyone means by the word, and the surface grid already knows which is
+    # which — no extra query, and it agrees with the coastline by construction.
+    bridges = []
+    for bridge in raw_bridges:
+        world = [frame.to_world(lat, lon) for lon, lat in bridge["points"]]
+        if any(abs(x) > extent or abs(z) > extent for x, z in world):
+            continue
+
+        # Does it span water — not "is it mostly over water". The distinction is the
+        # Brooklyn Bridge, whose longest way is 2,165 m of which only the 490 m main
+        # span crosses the East River; a fraction-of-total test threw it away while
+        # keeping viaducts that happened to run along a shoreline. What makes a
+        # bridge a bridge is a continuous stretch of water underneath it, so that is
+        # what gets measured. The surface grid already knows where the water is, and
+        # agrees with the coastline by construction.
+        step = 20.0
+        total = sum(
+            math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(world, world[1:])
+        )
+        probes = max(4, int(total / step))
+        run = 0.0
+        longest_wet = 0.0
+        for k in range(probes + 1):
+            t = (k / probes) * (len(world) - 1)
+            i = min(len(world) - 2, int(t))
+            f = t - i
+            x = world[i][0] + (world[i + 1][0] - world[i][0]) * f
+            z = world[i][1] + (world[i + 1][1] - world[i][1]) * f
+            if grid.at_world(x, z) == WATER:
+                run += total / probes
+                longest_wet = max(longest_wet, run)
+            else:
+                run = 0.0
+
+        if longest_wet < MIN_WATER_SPAN_M:
+            continue
+
+        lanes = bridge["lanes"]
+        width = 12.0 if bridge["rail"] and not lanes else max(16.0, lanes * 3.65 + 4)
+        bridges.append(
+            {
+                "name": bridge["name"],
+                "points": [[round(lat, 6), round(lon, 6)] for lon, lat in bridge["points"]],
+                "widthM": round(width, 1),
+                "lengthM": round(bridge["lengthM"], 1),
+                "waterSpanM": round(longest_wet, 1),
+            }
+        )
+
+    bridges = bridges[:MAX_BRIDGES]
+    print(f"  {len(bridges)} of {len(raw_bridges)} named bridges span water")
+    for bridge in bridges[:8]:
+        print(f"    {bridge['name'][:42]:44} {bridge['lengthM']:7.0f} m, {bridge['waterSpanM']:6.0f} m over water")
+
+    # -----------------------------------------------------------------------
+    # 7. Places, for labelling
     # -----------------------------------------------------------------------
     print("\nplaces")
     places = [
@@ -462,7 +671,7 @@ def build(spec_path: Path) -> None:
     )
 
     # -----------------------------------------------------------------------
-    # 7. Write
+    # 8. Write
     # -----------------------------------------------------------------------
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     blob = bytearray()
@@ -525,6 +734,17 @@ def build(spec_path: Path) -> None:
             }
             for f, _, _ in inside
         ],
+        "landmarks": [
+            {
+                "name": m["name"],
+                "lat": round(m["lat"], 6),
+                "lon": round(m["lon"], 6),
+                "kind": m["kind"],
+                **({"heightM": m["heightM"]} if "heightM" in m else {}),
+            }
+            for m in landmarks
+        ],
+        "bridges": bridges,
         "places": [
             {
                 "name": p["name"],
@@ -534,7 +754,12 @@ def build(spec_path: Path) -> None:
             }
             for p in places
         ],
-        "attribution": [osm_mod.ATTRIBUTION, dem_mod.ATTRIBUTION, faa_mod.ATTRIBUTION],
+        "attribution": [
+            osm_mod.ATTRIBUTION,
+            dem_mod.ATTRIBUTION,
+            faa_mod.ATTRIBUTION,
+            wikidata_mod.ATTRIBUTION,
+        ],
     }
 
     manifest_path = OUT_DIR / f"{spec['id']}.json"

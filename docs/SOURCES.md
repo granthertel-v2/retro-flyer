@@ -234,6 +234,22 @@ Licensed **ODbL**. This is an obligation, not a courtesy, and it travels with de
 data — which is why the attribution strings live inside each region's manifest rather
 than in a README that a copied file would leave behind.
 
+**[WIKIDATA] Wikidata**, property P2048 (height). <https://www.wikidata.org/>
+
+CC0. Used for one thing: the heights of notable buildings OpenStreetMap has none for.
+Ninety of the 392 named buildings in Chicago's Loop carry neither `height` nor
+`building:levels`, and **Willis Tower is one of them** — the tallest thing in the
+city, absent from the skyline because a tag was never filled in. The buildings
+already carry a `wikidata` tag, so this is following an identifier OSM chose, not
+guessing.
+
+Read **SI-normalised** (`psn:`), not raw. Wikidata stores a height in whatever unit
+its source used and returns the bare number: the Empire State Building carries both
+453 (metres) and 1500 (feet), and taking the larger raw figure made it a 1,500 m
+building and put a 749 m box on the New York skyline. Where an entity gives several
+heights — roof, observation deck, spire — the largest is taken, which is the figure
+the building is known by.
+
 **[FAA] FAA Aeronautical Information Services**, `Runways` and `US_Airport` layers.
 <https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/ArcGIS/rest/services>
 
@@ -258,6 +274,12 @@ Public domain. The authority for every runway number in a region manifest.
 - **Runway dimensions cross-check between independent sources.** The FAA publishes
   LaGuardia 13/31 as 7,002 ft; its own runway polygon measures 2,134.3 m against a
   published 2,134.2 m, and OpenStreetMap, mapped by different people, says 2,135 m.
+- **Bridges are filtered by the region's own water raster.** OpenStreetMap's longest
+  named "bridges" are elevated railway viaducts — four kilometres of the BMT Jamaica
+  Line in New York, the L in Chicago — so length cannot be the test. A bridge is a
+  thing with water under it, and the surface grid already knows where the water is,
+  which means the filter agrees with the coastline by construction and needs no
+  extra query. All eleven crossings anyone could name in New York survive it.
 - **The builder was tested on a second region, and that is what found the worst
   bug.** New York is bounded by `natural=coastline`; Chicago has none at all, because
   the tag is for the sea and the Great Lakes are ordinary water polygons. Building
@@ -313,6 +335,11 @@ These are not measurements. Each is a judgement, and each is recorded because th
 | Tall buildings per 3×3 cell before ground counts as dense city | 3 | About 13 hectares, three or four Manhattan blocks. Counting per single cell left downtown speckled. |
 | Finest elevation cell | 60 m | Exactly the innermost LOD ring in `mesh.ts`. Finer cannot be drawn, only stored. |
 | Surface-class cell | 120 m | Land cover is flat colour and survives being coarser than the heightfield. A crisper coastline is worth more than a crisper park boundary. |
+| Landmark notability filter | a Wikipedia article | 506 of New York's 969 "landmarks" are plaques on walls. Requiring a Wikidata entity, and preferring a Wikipedia article, keeps the ones a person would name — somebody wrote an article about them, which beats any tag as a test of fame. |
+| Landmark ordering, after that | distance from the tall buildings | 71 of Chicago's 81 artworks have an article, so notability alone cannot order them. Famous things cluster downtown, and downtown is already known as the centre of mass of the skyline. |
+| Shortest bridge drawn | 60 m | Keeps the Chicago River bascules, which are the character of that riverfront. |
+| Water a bridge must span | 100 m continuous | Not "mostly over water": the Brooklyn Bridge's longest way is 2,165 m of which only the main span crosses the river, and a fraction test threw it away while keeping viaducts running along a shoreline. |
+| Bridge clearance at mid-span | length x 0.055, capped at 60 m | The Verrazzano gives 69 m and a bascule about five; span length is the only signal that separates them. |
 | Region bundle budget | ~3.0-3.3 MB, ~1.4 MB gzipped | New York is 3.33 MB (9 tiers, 24k buildings); Chicago is 3.02 MB (15 tiers, 2k buildings). Dominated by the rasters, not the buildings, so the figure is stable across cities. |
 
 ## A known limitation

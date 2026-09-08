@@ -81,7 +81,7 @@
     "byteOffset": 1891832
   },
   "buildings": {
-    "count": 24118,
+    "count": 24178,
     "byteOffset": 2751164
   },
   "airfields": [
@@ -324,6 +324,4447 @@
       "lengthM": 1057.96,
       "widthM": 18.29,
       "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport 4N1, runway 06/24. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    }
+  ],
+  "landmarks": [
+    {
+      "name": "The Ned",
+      "lat": 40.74494,
+      "lon": -73.988486,
+      "kind": "building"
+    },
+    {
+      "name": "Marble Collegiate Church",
+      "lat": 40.74568,
+      "lon": -73.987141,
+      "kind": "tower",
+      "heightM": 262.1
+    },
+    {
+      "name": "Museum of Sex",
+      "lat": 40.744037,
+      "lon": -73.987358,
+      "kind": "museum"
+    },
+    {
+      "name": "Cathedral of St. Sava",
+      "lat": 40.743765,
+      "lon": -73.989894,
+      "kind": "building"
+    },
+    {
+      "name": "The Grand Hotel",
+      "lat": 40.747163,
+      "lon": -73.987953,
+      "kind": "building"
+    },
+    {
+      "name": "Hotel Wolcott",
+      "lat": 40.746621,
+      "lon": -73.986705,
+      "kind": "building"
+    },
+    {
+      "name": "Church of the Transfiguration",
+      "lat": 40.745161,
+      "lon": -73.985825,
+      "kind": "tower",
+      "heightM": 201.0
+    },
+    {
+      "name": "Admiral David Glasgow Farragut",
+      "lat": 40.742764,
+      "lon": -73.987663,
+      "kind": "artwork"
+    },
+    {
+      "name": "Chester Alan Arthur",
+      "lat": 40.742784,
+      "lon": -73.987071,
+      "kind": "artwork"
+    },
+    {
+      "name": "The Redbury New York",
+      "lat": 40.744707,
+      "lon": -73.984457,
+      "kind": "building"
+    },
+    {
+      "name": "Masonic Hall",
+      "lat": 40.743034,
+      "lon": -73.992094,
+      "kind": "building"
+    },
+    {
+      "name": "The Epic",
+      "lat": 40.748738,
+      "lon": -73.990098,
+      "kind": "building"
+    },
+    {
+      "name": "New York Life Building",
+      "lat": 40.742747,
+      "lon": -73.985582,
+      "kind": "building"
+    },
+    {
+      "name": "Manhattan Mall",
+      "lat": 40.749151,
+      "lon": -73.98928,
+      "kind": "building"
+    },
+    {
+      "name": "William Henry Seward Monument",
+      "lat": 40.7415,
+      "lon": -73.988837,
+      "kind": "artwork"
+    },
+    {
+      "name": "WCBS-FM (New York)",
+      "lat": 40.748436,
+      "lon": -73.985693,
+      "kind": "tower"
+    },
+    {
+      "name": "Empire State Building",
+      "lat": 40.748442,
+      "lon": -73.985659,
+      "kind": "attraction"
+    },
+    {
+      "name": "Herald Towers",
+      "lat": 40.749241,
+      "lon": -73.987487,
+      "kind": "building"
+    },
+    {
+      "name": "St. Vincent de Paul Church",
+      "lat": 40.743602,
+      "lon": -73.993582,
+      "kind": "building"
+    },
+    {
+      "name": "Roscoe Conkling",
+      "lat": 40.74124,
+      "lon": -73.988202,
+      "kind": "artwork"
+    },
+    {
+      "name": "Metropolitan Life North Building",
+      "lat": 40.741511,
+      "lon": -73.986487,
+      "kind": "building"
+    },
+    {
+      "name": "Met Life Tower",
+      "lat": 40.741267,
+      "lon": -73.987359,
+      "kind": "building"
+    },
+    {
+      "name": "Flatiron Building",
+      "lat": 40.74103,
+      "lon": -73.989686,
+      "kind": "attraction"
+    },
+    {
+      "name": "Metropolitan Life Insurance Company Tower",
+      "lat": 40.740839,
+      "lon": -73.986931,
+      "kind": "building"
+    },
+    {
+      "name": "Church of St. John the Baptist",
+      "lat": 40.748983,
+      "lon": -73.992844,
+      "kind": "building"
+    },
+    {
+      "name": "Million Dollar Corner",
+      "lat": 40.750136,
+      "lon": -73.988157,
+      "kind": "building"
+    },
+    {
+      "name": "Spero Building",
+      "lat": 40.74102,
+      "lon": -73.991767,
+      "kind": "building"
+    },
+    {
+      "name": "One Madison",
+      "lat": 40.740479,
+      "lon": -73.98808,
+      "kind": "tower",
+      "heightM": 188.0
+    },
+    {
+      "name": "CUNY Graduate School and University Center",
+      "lat": 40.748519,
+      "lon": -73.983639,
+      "kind": "building"
+    },
+    {
+      "name": "69th Regiment Armory",
+      "lat": 40.741351,
+      "lon": -73.984239,
+      "kind": "building"
+    },
+    {
+      "name": "Macy's",
+      "lat": 40.750815,
+      "lon": -73.989168,
+      "kind": "building"
+    },
+    {
+      "name": "Church of the Holy Communion",
+      "lat": 40.74103,
+      "lon": -73.993709,
+      "kind": "building"
+    },
+    {
+      "name": "3 Park Avenue",
+      "lat": 40.746456,
+      "lon": -73.980995,
+      "kind": "tower",
+      "heightM": 169.5
+    },
+    {
+      "name": "Church of the Incarnation",
+      "lat": 40.748441,
+      "lon": -73.981969,
+      "kind": "building"
+    },
+    {
+      "name": "400 Fifth Avenue",
+      "lat": 40.750111,
+      "lon": -73.983813,
+      "kind": "building"
+    },
+    {
+      "name": "Gramercy Theatre",
+      "lat": 40.739908,
+      "lon": -73.984929,
+      "kind": "building"
+    },
+    {
+      "name": "Haier Building",
+      "lat": 40.751472,
+      "lon": -73.98712,
+      "kind": "building"
+    },
+    {
+      "name": "Madison Square Garden",
+      "lat": 40.750518,
+      "lon": -73.993506,
+      "kind": "stadium"
+    },
+    {
+      "name": "Nelson Tower",
+      "lat": 40.751506,
+      "lon": -73.990767,
+      "kind": "building"
+    },
+    {
+      "name": "PENN 1",
+      "lat": 40.751156,
+      "lon": -73.992229,
+      "kind": "tower",
+      "heightM": 229.0
+    },
+    {
+      "name": "Calvary Church",
+      "lat": 40.738928,
+      "lon": -73.98676,
+      "kind": "building"
+    },
+    {
+      "name": "The Morgan Library & Museum",
+      "lat": 40.749268,
+      "lon": -73.981465,
+      "kind": "museum"
+    },
+    {
+      "name": "Madison Square Station New York Post Office",
+      "lat": 40.73954,
+      "lon": -73.983553,
+      "kind": "building"
+    },
+    {
+      "name": "Joseph Raphael De Lamar House",
+      "lat": 40.749687,
+      "lon": -73.981216,
+      "kind": "building"
+    },
+    {
+      "name": "Moynihan Train Hall",
+      "lat": 40.751299,
+      "lon": -73.995338,
+      "kind": "attraction"
+    },
+    {
+      "name": "Women\u2019s Liberation Center",
+      "lat": 40.743151,
+      "lon": -73.998724,
+      "kind": "building"
+    },
+    {
+      "name": "Engineering Societies' Building",
+      "lat": 40.752475,
+      "lon": -73.983856,
+      "kind": "building"
+    },
+    {
+      "name": "James A. Farley Building",
+      "lat": 40.751529,
+      "lon": -73.995886,
+      "kind": "building"
+    },
+    {
+      "name": "Our Saviour Catholic Church",
+      "lat": 40.749234,
+      "lon": -73.979234,
+      "kind": "building"
+    },
+    {
+      "name": "Yeshiva University Museum",
+      "lat": 40.737978,
+      "lon": -73.993831,
+      "kind": "museum"
+    },
+    {
+      "name": "Bryant Park Hotel",
+      "lat": 40.752833,
+      "lon": -73.983941,
+      "kind": "building"
+    },
+    {
+      "name": "Bryant Park Place",
+      "lat": 40.752672,
+      "lon": -73.983529,
+      "kind": "building"
+    },
+    {
+      "name": "Springs Building",
+      "lat": 40.753448,
+      "lon": -73.985933,
+      "kind": "building"
+    },
+    {
+      "name": "Stavros Niarchos Foundation Library",
+      "lat": 40.751704,
+      "lon": -73.981532,
+      "kind": "building"
+    },
+    {
+      "name": "Needle Threading A Button",
+      "lat": 40.753682,
+      "lon": -73.986969,
+      "kind": "artwork"
+    },
+    {
+      "name": "Soldiers\u2019, Sailors\u2019, Marines\u2019, Coast Guard and Airmen\u2019s Club",
+      "lat": 40.747937,
+      "lon": -73.978239,
+      "kind": "building"
+    },
+    {
+      "name": "Mercantile Building",
+      "lat": 40.751539,
+      "lon": -73.981212,
+      "kind": "tower",
+      "heightM": 192.0
+    },
+    {
+      "name": "Church of the Holy Apostles",
+      "lat": 40.749225,
+      "lon": -73.998787,
+      "kind": "building"
+    },
+    {
+      "name": "Rubin Museum of Art",
+      "lat": 40.740096,
+      "lon": -73.997738,
+      "kind": "museum"
+    },
+    {
+      "name": "Golda Meir",
+      "lat": 40.75388,
+      "lon": -73.98741,
+      "kind": "artwork"
+    },
+    {
+      "name": "Decker Building",
+      "lat": 40.736845,
+      "lon": -73.990934,
+      "kind": "building"
+    },
+    {
+      "name": "W Hotels",
+      "lat": 40.73658,
+      "lon": -73.98854,
+      "kind": "building"
+    },
+    {
+      "name": "Church of Saint Francis Xavier",
+      "lat": 40.73806,
+      "lon": -73.995289,
+      "kind": "building"
+    },
+    {
+      "name": "The Garment Worker",
+      "lat": 40.754235,
+      "lon": -73.988081,
+      "kind": "artwork"
+    },
+    {
+      "name": "461 Fifth Avenue",
+      "lat": 40.752251,
+      "lon": -73.981339,
+      "kind": "building"
+    },
+    {
+      "name": "Judge Building",
+      "lat": 40.737042,
+      "lon": -73.993328,
+      "kind": "building"
+    },
+    {
+      "name": "44 Union Square",
+      "lat": 40.736224,
+      "lon": -73.988731,
+      "kind": "building"
+    },
+    {
+      "name": "West Side Jewish Center",
+      "lat": 40.753215,
+      "lon": -73.995188,
+      "kind": "building"
+    },
+    {
+      "name": "Patience",
+      "lat": 40.752897,
+      "lon": -73.981749,
+      "kind": "artwork"
+    },
+    {
+      "name": "Bryant Park",
+      "lat": 40.753751,
+      "lon": -73.983538,
+      "kind": "attraction"
+    },
+    {
+      "name": "Stephen A. Schwarzman Building",
+      "lat": 40.753218,
+      "lon": -73.982245,
+      "kind": "attraction"
+    },
+    {
+      "name": "Fortitude",
+      "lat": 40.753051,
+      "lon": -73.981642,
+      "kind": "artwork"
+    },
+    {
+      "name": "Union Square Drinking Fountain",
+      "lat": 40.736003,
+      "lon": -73.99073,
+      "kind": "artwork"
+    },
+    {
+      "name": "Independence Flagstaff",
+      "lat": 40.735925,
+      "lon": -73.9903,
+      "kind": "artwork"
+    },
+    {
+      "name": "Lefcourt Colonial Building",
+      "lat": 40.751786,
+      "lon": -73.979454,
+      "kind": "building"
+    },
+    {
+      "name": "Estonian House",
+      "lat": 40.745197,
+      "lon": -73.976147,
+      "kind": "building"
+    },
+    {
+      "name": "Church of the Epiphany",
+      "lat": 40.737114,
+      "lon": -73.982012,
+      "kind": "building"
+    },
+    {
+      "name": "Salesforce Tower",
+      "lat": 40.754662,
+      "lon": -73.984801,
+      "kind": "tower",
+      "heightM": 192.0
+    },
+    {
+      "name": "Bush Tower",
+      "lat": 40.754984,
+      "lon": -73.985624,
+      "kind": "building"
+    },
+    {
+      "name": "One Manhattan West",
+      "lat": 40.752735,
+      "lon": -73.997691,
+      "kind": "tower",
+      "heightM": 303.0
+    },
+    {
+      "name": "Saint Peter's Church",
+      "lat": 40.74395,
+      "lon": -74.001848,
+      "kind": "building"
+    },
+    {
+      "name": "The Knickerbocker Hotel",
+      "lat": 40.755243,
+      "lon": -73.986027,
+      "kind": "building"
+    },
+    {
+      "name": "Lincoln Building",
+      "lat": 40.735498,
+      "lon": -73.991881,
+      "kind": "building"
+    },
+    {
+      "name": "Kips Bay Tower North",
+      "lat": 40.743229,
+      "lon": -73.975774,
+      "kind": "building"
+    },
+    {
+      "name": "One Grand Central Place",
+      "lat": 40.752117,
+      "lon": -73.97887,
+      "kind": "building"
+    },
+    {
+      "name": "Nederlander Theatre",
+      "lat": 40.755497,
+      "lon": -73.988302,
+      "kind": "building"
+    },
+    {
+      "name": "Pod 39",
+      "lat": 40.749405,
+      "lon": -73.976574,
+      "kind": "building"
+    },
+    {
+      "name": "Times Square Tower",
+      "lat": 40.755511,
+      "lon": -73.986914,
+      "kind": "tower",
+      "heightM": 209.6
+    },
+    {
+      "name": "Saint Michael Catholic Church",
+      "lat": 40.753349,
+      "lon": -73.997337,
+      "kind": "building"
+    },
+    {
+      "name": "St. Vartan Cathedral",
+      "lat": 40.745146,
+      "lon": -73.975224,
+      "kind": "building"
+    },
+    {
+      "name": "Kips Bay Tower South",
+      "lat": 40.742088,
+      "lon": -73.975834,
+      "kind": "building"
+    },
+    {
+      "name": "Salmon Tower",
+      "lat": 40.754309,
+      "lon": -73.981814,
+      "kind": "building"
+    },
+    {
+      "name": "W. R. Grace Building",
+      "lat": 40.754689,
+      "lon": -73.982676,
+      "kind": "tower",
+      "heightM": 192.0
+    },
+    {
+      "name": "SUNY State College of Optometry",
+      "lat": 40.754488,
+      "lon": -73.982168,
+      "kind": "building"
+    },
+    {
+      "name": "Maison Rogue",
+      "lat": 40.749577,
+      "lon": -73.976208,
+      "kind": "building"
+    },
+    {
+      "name": "5 Times Square",
+      "lat": 40.755828,
+      "lon": -73.987571,
+      "kind": "building"
+    },
+    {
+      "name": "The New York Times Building",
+      "lat": 40.755897,
+      "lon": -73.989714,
+      "kind": "building"
+    },
+    {
+      "name": "Chapel of the Sacred Hearts of Jesus & Mary",
+      "lat": 40.743831,
+      "lon": -73.975036,
+      "kind": "building"
+    },
+    {
+      "name": "Pershing Square Building",
+      "lat": 40.751587,
+      "lon": -73.977503,
+      "kind": "building"
+    },
+    {
+      "name": "New Amsterdam Theatre",
+      "lat": 40.755968,
+      "lon": -73.988035,
+      "kind": "building"
+    },
+    {
+      "name": "Bank of America Tower",
+      "lat": 40.755558,
+      "lon": -73.984715,
+      "kind": "tower",
+      "heightM": 366.0
+    },
+    {
+      "name": "Zeckendorf Towers",
+      "lat": 40.734665,
+      "lon": -73.989146,
+      "kind": "building"
+    },
+    {
+      "name": "Candler Building",
+      "lat": 40.756138,
+      "lon": -73.988188,
+      "kind": "building"
+    },
+    {
+      "name": "Madame Tussauds New York",
+      "lat": 40.756212,
+      "lon": -73.98845,
+      "kind": "museum"
+    },
+    {
+      "name": "Times Square Ball",
+      "lat": 40.756132,
+      "lon": -73.986577,
+      "kind": "attraction"
+    },
+    {
+      "name": "4 Times Square",
+      "lat": 40.756011,
+      "lon": -73.985719,
+      "kind": "tower",
+      "heightM": 246.5
+    },
+    {
+      "name": "Chanin Building",
+      "lat": 40.751215,
+      "lon": -73.976705,
+      "kind": "tower",
+      "heightM": 205.0
+    },
+    {
+      "name": "One Vanderbilt",
+      "lat": 40.752979,
+      "lon": -73.97853,
+      "kind": "tower",
+      "heightM": 397.0
+    },
+    {
+      "name": "Times Square\u201342nd Street/Port Authority Bus Terminal",
+      "lat": 40.75629,
+      "lon": -73.98851,
+      "kind": "building"
+    },
+    {
+      "name": "One Times Square",
+      "lat": 40.756212,
+      "lon": -73.986554,
+      "kind": "building"
+    },
+    {
+      "name": "Metronome",
+      "lat": 40.734412,
+      "lon": -73.990329,
+      "kind": "artwork"
+    },
+    {
+      "name": "520 5th Avenue",
+      "lat": 40.754482,
+      "lon": -73.980624,
+      "kind": "tower",
+      "heightM": 304.8
+    },
+    {
+      "name": "Five Manhattan West",
+      "lat": 40.753066,
+      "lon": -73.999509,
+      "kind": "building"
+    },
+    {
+      "name": "New Victory Theater",
+      "lat": 40.756559,
+      "lon": -73.987453,
+      "kind": "building"
+    },
+    {
+      "name": "11 Times Square",
+      "lat": 40.756624,
+      "lon": -73.989535,
+      "kind": "building"
+    },
+    {
+      "name": "3 Times Square",
+      "lat": 40.756578,
+      "lon": -73.987049,
+      "kind": "tower",
+      "heightM": 169.2
+    },
+    {
+      "name": "The Penn Club",
+      "lat": 40.755308,
+      "lon": -73.981722,
+      "kind": "building"
+    },
+    {
+      "name": "Rutherford Place",
+      "lat": 40.734726,
+      "lon": -73.983646,
+      "kind": "building"
+    },
+    {
+      "name": "AMC Empire 25",
+      "lat": 40.756706,
+      "lon": -73.989259,
+      "kind": "building"
+    },
+    {
+      "name": "St. George's Church",
+      "lat": 40.734373,
+      "lon": -73.98497,
+      "kind": "building"
+    },
+    {
+      "name": "Times Square Theater",
+      "lat": 40.756702,
+      "lon": -73.987794,
+      "kind": "building"
+    },
+    {
+      "name": "Grand Central Terminal",
+      "lat": 40.752648,
+      "lon": -73.977275,
+      "kind": "attraction"
+    },
+    {
+      "name": "The High Line",
+      "lat": 40.747953,
+      "lon": -74.003954,
+      "kind": "bridge"
+    },
+    {
+      "name": "Chrysler Building",
+      "lat": 40.751622,
+      "lon": -73.975339,
+      "kind": "tower",
+      "heightM": 318.9
+    },
+    {
+      "name": "Life Underground",
+      "lat": 40.739728,
+      "lon": -74.002885,
+      "kind": "artwork"
+    },
+    {
+      "name": "Times Square",
+      "lat": 40.75726,
+      "lon": -73.986005,
+      "kind": "attraction"
+    },
+    {
+      "name": "10 Hudson Yards",
+      "lat": 40.752692,
+      "lon": -74.001553,
+      "kind": "tower",
+      "heightM": 272.8
+    },
+    {
+      "name": "MetLife Building",
+      "lat": 40.753518,
+      "lon": -73.97663,
+      "kind": "tower",
+      "heightM": 246.0
+    },
+    {
+      "name": "30 Hudson Yards",
+      "lat": 40.753949,
+      "lon": -74.000555,
+      "kind": "tower",
+      "heightM": 395.0
+    },
+    {
+      "name": "1166 Avenue of the Americas",
+      "lat": 40.756878,
+      "lon": -73.982004,
+      "kind": "tower",
+      "heightM": 175.0
+    },
+    {
+      "name": "The Spiral",
+      "lat": 40.75525,
+      "lon": -73.999582,
+      "kind": "tower",
+      "heightM": 317.3
+    },
+    {
+      "name": "Bertelsmann Building",
+      "lat": 40.758059,
+      "lon": -73.984813,
+      "kind": "tower",
+      "heightM": 223.0
+    },
+    {
+      "name": "Vessel",
+      "lat": 40.753806,
+      "lon": -74.002159,
+      "kind": "artwork"
+    },
+    {
+      "name": "Helmsley Building",
+      "lat": 40.754394,
+      "lon": -73.976103,
+      "kind": "tower",
+      "heightM": 172.0
+    },
+    {
+      "name": "Gagosian",
+      "lat": 40.749442,
+      "lon": -74.005944,
+      "kind": "museum"
+    },
+    {
+      "name": "15 Hudson Yards",
+      "lat": 40.753449,
+      "lon": -74.003285,
+      "kind": "tower",
+      "heightM": 278.6
+    },
+    {
+      "name": "George M. Cohan",
+      "lat": 40.758759,
+      "lon": -73.985146,
+      "kind": "artwork"
+    },
+    {
+      "name": "35 Hudson Yards",
+      "lat": 40.75465,
+      "lon": -74.002242,
+      "kind": "tower",
+      "heightM": 304.8
+    },
+    {
+      "name": "55 Hudson Yards",
+      "lat": 40.755231,
+      "lon": -74.001762,
+      "kind": "tower",
+      "heightM": 237.4
+    },
+    {
+      "name": "The Torch",
+      "lat": 40.75929,
+      "lon": -73.987714,
+      "kind": "tower",
+      "heightM": 325.1
+    },
+    {
+      "name": "Lunt-Fontanne Theatre",
+      "lat": 40.759183,
+      "lon": -73.985894,
+      "kind": "tower",
+      "heightM": 160.6
+    },
+    {
+      "name": "Francis P. Duffy",
+      "lat": 40.759057,
+      "lon": -73.984989,
+      "kind": "artwork"
+    },
+    {
+      "name": "New York Studio School of Drawing, Painting and Sculpture",
+      "lat": 40.732452,
+      "lon": -73.997198,
+      "kind": "attraction"
+    },
+    {
+      "name": "270 Park Avenue",
+      "lat": 40.755978,
+      "lon": -73.975968,
+      "kind": "tower",
+      "heightM": 423.0
+    },
+    {
+      "name": "601 West 29th Street",
+      "lat": 40.753168,
+      "lon": -74.004836,
+      "kind": "tower",
+      "heightM": 194.0
+    },
+    {
+      "name": "Gay Street",
+      "lat": 40.733611,
+      "lon": -74.000518,
+      "kind": "attraction"
+    },
+    {
+      "name": "Tower 49",
+      "lat": 40.757243,
+      "lon": -73.977007,
+      "kind": "tower",
+      "heightM": 187.0
+    },
+    {
+      "name": "Church of Saints Cyril & Methodius and Saint Raphael",
+      "lat": 40.759017,
+      "lon": -73.996747,
+      "kind": "tower",
+      "heightM": 186.0
+    },
+    {
+      "name": "The Lexington",
+      "lat": 40.754896,
+      "lon": -73.973022,
+      "kind": "tower",
+      "heightM": 183.2
+    },
+    {
+      "name": "Stonewall Inn",
+      "lat": 40.733816,
+      "lon": -74.002161,
+      "kind": "heritage"
+    },
+    {
+      "name": "Rockefeller Center",
+      "lat": 40.75924,
+      "lon": -73.980094,
+      "kind": "yes"
+    },
+    {
+      "name": "299 Park Avenue",
+      "lat": 40.756025,
+      "lon": -73.974183,
+      "kind": "tower",
+      "heightM": 175.0
+    },
+    {
+      "name": "Prometheus",
+      "lat": 40.758705,
+      "lon": -73.978578,
+      "kind": "artwork"
+    },
+    {
+      "name": "Washington Square Arch",
+      "lat": 40.731235,
+      "lon": -73.997102,
+      "kind": "monument"
+    },
+    {
+      "name": "Alamo",
+      "lat": 40.729885,
+      "lon": -73.991018,
+      "kind": "artwork"
+    },
+    {
+      "name": "Gay Liberation Monument",
+      "lat": 40.733607,
+      "lon": -74.002395,
+      "kind": "monument"
+    },
+    {
+      "name": "Exxon Building",
+      "lat": 40.760067,
+      "lon": -73.981823,
+      "kind": "tower",
+      "heightM": 229.0
+    },
+    {
+      "name": "Alexander Lyman Holley Monument",
+      "lat": 40.731282,
+      "lon": -73.998145,
+      "kind": "monument"
+    },
+    {
+      "name": "Greenwich Village",
+      "lat": 40.733584,
+      "lon": -74.002817,
+      "kind": "attraction"
+    },
+    {
+      "name": "Giuseppe Garibaldi",
+      "lat": 40.730592,
+      "lon": -73.996834,
+      "kind": "artwork"
+    },
+    {
+      "name": "Hess Triangle",
+      "lat": 40.733504,
+      "lon": -74.003064,
+      "kind": "monument"
+    },
+    {
+      "name": "Atlas",
+      "lat": 40.758948,
+      "lon": -73.97718,
+      "kind": "artwork"
+    },
+    {
+      "name": "Saint Patrick\u2019s Cathedral",
+      "lat": 40.758589,
+      "lon": -73.976296,
+      "kind": "yes"
+    },
+    {
+      "name": "Colonnade row",
+      "lat": 40.72928,
+      "lon": -73.992453,
+      "kind": "attraction"
+    },
+    {
+      "name": "Whitney Museum of American Art",
+      "lat": 40.739633,
+      "lon": -74.008938,
+      "kind": "museum"
+    },
+    {
+      "name": "Lotte New York Palace",
+      "lat": 40.757987,
+      "lon": -73.974918,
+      "kind": "tower",
+      "heightM": 167.8
+    },
+    {
+      "name": "Turkish House",
+      "lat": 40.751412,
+      "lon": -73.968519,
+      "kind": "tower",
+      "heightM": 171.0
+    },
+    {
+      "name": "United Nations Headquarters",
+      "lat": 40.749601,
+      "lon": -73.967551,
+      "kind": "attraction"
+    },
+    {
+      "name": "Olympic Tower",
+      "lat": 40.759201,
+      "lon": -73.976073,
+      "kind": "tower",
+      "heightM": 190.0
+    },
+    {
+      "name": "Little Island",
+      "lat": 40.742005,
+      "lon": -74.01061,
+      "kind": "pier"
+    },
+    {
+      "name": "One Worldwide Plaza",
+      "lat": 40.762235,
+      "lon": -73.98695,
+      "kind": "tower",
+      "heightM": 237.1
+    },
+    {
+      "name": "Lightship Frying Pan",
+      "lat": 40.752102,
+      "lon": -74.009275,
+      "kind": "ship"
+    },
+    {
+      "name": "Non-Violence",
+      "lat": 40.750689,
+      "lon": -73.967585,
+      "kind": "artwork"
+    },
+    {
+      "name": "Paramount Plaza",
+      "lat": 40.762082,
+      "lon": -73.984656,
+      "kind": "tower",
+      "heightM": 202.8
+    },
+    {
+      "name": "Sphere Within Sphere",
+      "lat": 40.750878,
+      "lon": -73.967571,
+      "kind": "artwork"
+    },
+    {
+      "name": "AXA Equitable Center",
+      "lat": 40.761694,
+      "lon": -73.981799,
+      "kind": "tower",
+      "heightM": 229.0
+    },
+    {
+      "name": "Fireboat John J. Harvey",
+      "lat": 40.752329,
+      "lon": -74.009803,
+      "kind": "ship"
+    },
+    {
+      "name": "Paley Center for Media",
+      "lat": 40.760591,
+      "lon": -73.977585,
+      "kind": "museum"
+    },
+    {
+      "name": "Trump World Tower",
+      "lat": 40.752551,
+      "lon": -73.967705,
+      "kind": "tower",
+      "heightM": 262.0
+    },
+    {
+      "name": "The Ukrainian Museum",
+      "lat": 40.727662,
+      "lon": -73.989765,
+      "kind": "museum"
+    },
+    {
+      "name": "100 United Nations Plaza Tower",
+      "lat": 40.753191,
+      "lon": -73.967784,
+      "kind": "tower",
+      "heightM": 170.0
+    },
+    {
+      "name": "Merchant's House Museum",
+      "lat": 40.727658,
+      "lon": -73.992344,
+      "kind": "museum"
+    },
+    {
+      "name": "Sky",
+      "lat": 40.761554,
+      "lon": -73.998837,
+      "kind": "tower",
+      "heightM": 206.0
+    },
+    {
+      "name": "53 West 53",
+      "lat": 40.761788,
+      "lon": -73.978153,
+      "kind": "tower",
+      "heightM": 320.0
+    },
+    {
+      "name": "MoMA",
+      "lat": 40.761612,
+      "lon": -73.977545,
+      "kind": "museum"
+    },
+    {
+      "name": "Burlington House",
+      "lat": 40.763,
+      "lon": -73.979054,
+      "kind": "tower",
+      "heightM": 191.0
+    },
+    {
+      "name": "Citigroup Center",
+      "lat": 40.758331,
+      "lon": -73.9699,
+      "kind": "tower",
+      "heightM": 279.0
+    },
+    {
+      "name": "Time Landscape",
+      "lat": 40.727231,
+      "lon": -73.999451,
+      "kind": "artwork"
+    },
+    {
+      "name": "712 Fifth Avenue",
+      "lat": 40.762298,
+      "lon": -73.975076,
+      "kind": "tower",
+      "heightM": 198.1
+    },
+    {
+      "name": "CitySpire Center",
+      "lat": 40.764183,
+      "lon": -73.979757,
+      "kind": "tower",
+      "heightM": 248.1
+    },
+    {
+      "name": "Random House Tower",
+      "lat": 40.76525,
+      "lon": -73.982542,
+      "kind": "tower",
+      "heightM": 208.0
+    },
+    {
+      "name": "Carnegie Hall Tower",
+      "lat": 40.764861,
+      "lon": -73.979591,
+      "kind": "tower",
+      "heightM": 231.0
+    },
+    {
+      "name": "Metropolitan Tower",
+      "lat": 40.7648,
+      "lon": -73.979242,
+      "kind": "tower",
+      "heightM": 218.0
+    },
+    {
+      "name": "432 Park Avenue",
+      "lat": 40.761696,
+      "lon": -73.97185,
+      "kind": "tower",
+      "heightM": 426.0
+    },
+    {
+      "name": "Intrepid Museum",
+      "lat": 40.76452,
+      "lon": -73.999526,
+      "kind": "museum"
+    },
+    {
+      "name": "New York Earth Room",
+      "lat": 40.725979,
+      "lon": -73.999754,
+      "kind": "artwork"
+    },
+    {
+      "name": "Liz Christy Garden",
+      "lat": 40.724241,
+      "lon": -73.992152,
+      "kind": "attraction"
+    },
+    {
+      "name": "Solow Building",
+      "lat": 40.763835,
+      "lon": -73.974953,
+      "kind": "tower",
+      "heightM": 210.0
+    },
+    {
+      "name": "USS Intrepid",
+      "lat": 40.764734,
+      "lon": -74.000829,
+      "kind": "ship"
+    },
+    {
+      "name": "One57",
+      "lat": 40.76554,
+      "lon": -73.979042,
+      "kind": "tower",
+      "heightM": 306.3
+    },
+    {
+      "name": "Four Seasons Hotel",
+      "lat": 40.762305,
+      "lon": -73.971273,
+      "kind": "tower",
+      "heightM": 208.0
+    },
+    {
+      "name": "Central Park Tower",
+      "lat": 40.766413,
+      "lon": -73.980984,
+      "kind": "tower",
+      "heightM": 472.0
+    },
+    {
+      "name": "General Motors Building",
+      "lat": 40.763539,
+      "lon": -73.972251,
+      "kind": "tower",
+      "heightM": 215.0
+    },
+    {
+      "name": "220 Central Park South",
+      "lat": 40.767004,
+      "lon": -73.980573,
+      "kind": "tower",
+      "heightM": 290.0
+    },
+    {
+      "name": "Museum of Arts and Design",
+      "lat": 40.767382,
+      "lon": -73.982005,
+      "kind": "museum"
+    },
+    {
+      "name": "Sim\u00f3n Bol\u00edvar",
+      "lat": 40.765709,
+      "lon": -73.975779,
+      "kind": "artwork"
+    },
+    {
+      "name": "Sherry Netherlands",
+      "lat": 40.76431,
+      "lon": -73.97253,
+      "kind": "tower",
+      "heightM": 170.7
+    },
+    {
+      "name": "Jos\u00e9 de San Mart\u00edn",
+      "lat": 40.766043,
+      "lon": -73.97663,
+      "kind": "artwork"
+    },
+    {
+      "name": "William Tecumseh Sherman",
+      "lat": 40.76481,
+      "lon": -73.973062,
+      "kind": "artwork"
+    },
+    {
+      "name": "Jos\u00e9 Mart\u00ed",
+      "lat": 40.766045,
+      "lon": -73.976066,
+      "kind": "artwork"
+    },
+    {
+      "name": "New Museum",
+      "lat": 40.722346,
+      "lon": -73.992841,
+      "kind": "museum"
+    },
+    {
+      "name": "Christopher Columbus Monument",
+      "lat": 40.768068,
+      "lon": -73.981898,
+      "kind": "monument"
+    },
+    {
+      "name": "Columbus Circle",
+      "lat": 40.768077,
+      "lon": -73.981894,
+      "kind": "attraction"
+    },
+    {
+      "name": "USS Maine Monument",
+      "lat": 40.768247,
+      "lon": -73.981001,
+      "kind": "monument"
+    },
+    {
+      "name": "SoHo",
+      "lat": 40.72288,
+      "lon": -73.99875,
+      "kind": "attraction"
+    },
+    {
+      "name": "Pepsi-Cola Sign",
+      "lat": 40.747475,
+      "lon": -73.957697,
+      "kind": "attraction"
+    },
+    {
+      "name": "New York City Fire Museum",
+      "lat": 40.725576,
+      "lon": -74.006935,
+      "kind": "museum"
+    },
+    {
+      "name": "Trump International Hotel and Tower",
+      "lat": 40.769121,
+      "lon": -73.981544,
+      "kind": "tower",
+      "heightM": 171.0
+    },
+    {
+      "name": "Sutton 58",
+      "lat": 40.758281,
+      "lon": -73.961283,
+      "kind": "tower",
+      "heightM": 258.0
+    },
+    {
+      "name": "Leslie-Lohman Museum of Art",
+      "lat": 40.721768,
+      "lon": -74.003032,
+      "kind": "museum"
+    },
+    {
+      "name": "Delacorte Musical Clock",
+      "lat": 40.768115,
+      "lon": -73.971175,
+      "kind": "yes"
+    },
+    {
+      "name": "Lower East Side Tenement Museum",
+      "lat": 40.718784,
+      "lon": -73.990027,
+      "kind": "museum"
+    },
+    {
+      "name": "Central Park Carousel",
+      "lat": 40.769943,
+      "lon": -73.975248,
+      "kind": "attraction"
+    },
+    {
+      "name": "Mount Vernon Hotel Museum",
+      "lat": 40.760522,
+      "lon": -73.959713,
+      "kind": "museum"
+    },
+    {
+      "name": "Christopher Columbus",
+      "lat": 40.769906,
+      "lon": -73.972773,
+      "kind": "artwork"
+    },
+    {
+      "name": "William Shakespeare",
+      "lat": 40.769799,
+      "lon": -73.97237,
+      "kind": "artwork"
+    },
+    {
+      "name": "Lincoln Center for the Performing Arts",
+      "lat": 40.772613,
+      "lon": -73.984223,
+      "kind": "attraction"
+    },
+    {
+      "name": "Balto",
+      "lat": 40.769961,
+      "lon": -73.97101,
+      "kind": "memorial"
+    },
+    {
+      "name": "Women's Rights Pioneers Monument",
+      "lat": 40.770711,
+      "lon": -73.97239,
+      "kind": "memorial"
+    },
+    {
+      "name": "American Folk Art Museum",
+      "lat": 40.77323,
+      "lon": -73.981596,
+      "kind": "museum"
+    },
+    {
+      "name": "FDNY Ladder 8",
+      "lat": 40.719557,
+      "lon": -74.006619,
+      "kind": "attraction"
+    },
+    {
+      "name": "Mmuseumm",
+      "lat": 40.717363,
+      "lon": -74.002815,
+      "kind": "museum"
+    },
+    {
+      "name": "Richard Morris Hunt",
+      "lat": 40.771456,
+      "lon": -73.967988,
+      "kind": "memorial"
+    },
+    {
+      "name": "Frick Collection",
+      "lat": 40.771259,
+      "lon": -73.967168,
+      "kind": "museum"
+    },
+    {
+      "name": "Jenga Building",
+      "lat": 40.717656,
+      "lon": -74.006259,
+      "kind": "tower",
+      "heightM": 250.0
+    },
+    {
+      "name": "Asia Society",
+      "lat": 40.769838,
+      "lon": -73.964291,
+      "kind": "museum"
+    },
+    {
+      "name": "Museum at Eldridge Street",
+      "lat": 40.714729,
+      "lon": -73.993461,
+      "kind": "museum"
+    },
+    {
+      "name": "MoMA PS1",
+      "lat": 40.745551,
+      "lon": -73.947494,
+      "kind": "museum"
+    },
+    {
+      "name": "33 Thomas Street",
+      "lat": 40.716521,
+      "lon": -74.005902,
+      "kind": "tower",
+      "heightM": 170.0
+    },
+    {
+      "name": "Bethesda Fountain",
+      "lat": 40.774316,
+      "lon": -73.970833,
+      "kind": "attraction"
+    },
+    {
+      "name": "Blackwell House",
+      "lat": 40.760335,
+      "lon": -73.951133,
+      "kind": "yes"
+    },
+    {
+      "name": "Triumph of the Human Spirit",
+      "lat": 40.714438,
+      "lon": -74.002888,
+      "kind": "memorial"
+    },
+    {
+      "name": "Bow Bridge",
+      "lat": 40.775759,
+      "lon": -73.971768,
+      "kind": "bridge"
+    },
+    {
+      "name": "Skyline Tower",
+      "lat": 40.747977,
+      "lon": -73.944446,
+      "kind": "tower",
+      "heightM": 237.1
+    },
+    {
+      "name": "Citigroup Building",
+      "lat": 40.747003,
+      "lon": -73.943876,
+      "kind": "tower",
+      "heightM": 205.0
+    },
+    {
+      "name": "New-York Historical Society",
+      "lat": 40.779286,
+      "lon": -73.974265,
+      "kind": "museum"
+    },
+    {
+      "name": "Woolworth Building",
+      "lat": 40.712455,
+      "lon": -74.008335,
+      "kind": "attraction"
+    },
+    {
+      "name": "Goldman Sachs Tower",
+      "lat": 40.714705,
+      "lon": -74.01446,
+      "kind": "tower",
+      "heightM": 228.3
+    },
+    {
+      "name": "7 World Trade Center",
+      "lat": 40.713396,
+      "lon": -74.012077,
+      "kind": "tower",
+      "heightM": 228.0
+    },
+    {
+      "name": "One World Trade Center",
+      "lat": 40.712999,
+      "lon": -74.013189,
+      "kind": "attraction"
+    },
+    {
+      "name": "Saint Paul's Chapel",
+      "lat": 40.711315,
+      "lon": -74.009196,
+      "kind": "attraction"
+    },
+    {
+      "name": "Manhattan Bridge",
+      "lat": 40.70708,
+      "lon": -73.990512,
+      "kind": "bridge"
+    },
+    {
+      "name": "Cleopatra's Needle",
+      "lat": 40.779636,
+      "lon": -73.965396,
+      "kind": "obelisk"
+    },
+    {
+      "name": "The Sphere",
+      "lat": 40.710497,
+      "lon": -74.013889,
+      "kind": "memorial"
+    },
+    {
+      "name": "America's Response Monument",
+      "lat": 40.710459,
+      "lon": -74.014053,
+      "kind": "memorial"
+    },
+    {
+      "name": "Brooklyn Bridge",
+      "lat": 40.705691,
+      "lon": -73.996357,
+      "kind": "bridge"
+    },
+    {
+      "name": "Temple of Dendur",
+      "lat": 40.780447,
+      "lon": -73.962644,
+      "kind": "monument"
+    },
+    {
+      "name": "South Street Seaport",
+      "lat": 40.705751,
+      "lon": -74.002906,
+      "kind": "attraction"
+    },
+    {
+      "name": "Ambrose",
+      "lat": 40.705317,
+      "lon": -74.002448,
+      "kind": "ship"
+    },
+    {
+      "name": "New York Stock Exchange",
+      "lat": 40.707025,
+      "lon": -74.01121,
+      "kind": "attraction"
+    },
+    {
+      "name": "Blackwell Island Light",
+      "lat": 40.772841,
+      "lon": -73.940183,
+      "kind": "lighthouse"
+    },
+    {
+      "name": "Soldiers' and Sailors' Monument",
+      "lat": 40.792096,
+      "lon": -73.978927,
+      "kind": "monument"
+    },
+    {
+      "name": "Prison Ship Martyrs Monument",
+      "lat": 40.691789,
+      "lon": -73.975533,
+      "kind": "monument"
+    },
+    {
+      "name": "Burnett Memorial Fountain",
+      "lat": 40.793158,
+      "lon": -73.95276,
+      "kind": "memorial"
+    },
+    {
+      "name": "Fort Clinton",
+      "lat": 40.795285,
+      "lon": -73.95215,
+      "kind": "fort"
+    },
+    {
+      "name": "Fort Jay",
+      "lat": 40.691418,
+      "lon": -74.016001,
+      "kind": "fort"
+    },
+    {
+      "name": "Nutter's Battery",
+      "lat": 40.796541,
+      "lon": -73.952851,
+      "kind": "memorial"
+    },
+    {
+      "name": "Blockhouse No. 1",
+      "lat": 40.79867,
+      "lon": -73.956288,
+      "kind": "fort"
+    },
+    {
+      "name": "Van Wagenen House",
+      "lat": 40.729964,
+      "lon": -74.066423,
+      "kind": "house"
+    },
+    {
+      "name": "Cathedral of Saint John the Divine",
+      "lat": 40.803767,
+      "lon": -73.961747,
+      "kind": "attraction"
+    },
+    {
+      "name": "Barclays Center",
+      "lat": 40.682562,
+      "lon": -73.975346,
+      "kind": "stadium"
+    },
+    {
+      "name": "Lincoln the Mystic",
+      "lat": 40.722473,
+      "lon": -74.076086,
+      "kind": "monument"
+    },
+    {
+      "name": "Statue of Liberty",
+      "lat": 40.689239,
+      "lon": -74.044535,
+      "kind": "attraction"
+    },
+    {
+      "name": "Soldiers' and Sailors' Arch",
+      "lat": 40.672989,
+      "lon": -73.969903,
+      "kind": "monument"
+    },
+    {
+      "name": "Marquis de Lafayette Monument",
+      "lat": 40.664475,
+      "lon": -73.976585,
+      "kind": "monument"
+    },
+    {
+      "name": "Meadowlands Arena",
+      "lat": 40.811605,
+      "lon": -74.06759,
+      "kind": "stadium"
+    },
+    {
+      "name": "MetLife Stadium",
+      "lat": 40.813523,
+      "lon": -74.074346,
+      "kind": "stadium"
+    },
+    {
+      "name": "Yankee Stadium",
+      "lat": 40.829616,
+      "lon": -73.926497,
+      "kind": "stadium"
+    },
+    {
+      "name": "Morris-Jumel Mansion",
+      "lat": 40.834468,
+      "lon": -73.93858,
+      "kind": "house"
+    },
+    {
+      "name": "Joker Stairs",
+      "lat": 40.835796,
+      "lon": -73.923605,
+      "kind": "attraction"
+    },
+    {
+      "name": "Robbins Reef Light",
+      "lat": 40.657376,
+      "lon": -74.065361,
+      "kind": "lighthouse"
+    },
+    {
+      "name": "Grandstand",
+      "lat": 40.748049,
+      "lon": -73.847826,
+      "kind": "stadium"
+    },
+    {
+      "name": "Arthur Ashe Stadium",
+      "lat": 40.749889,
+      "lon": -73.847043,
+      "kind": "stadium"
+    },
+    {
+      "name": "Westinghouse Time Capsules",
+      "lat": 40.74291,
+      "lon": -73.845096,
+      "kind": "attraction"
+    },
+    {
+      "name": "Citi Field",
+      "lat": 40.757037,
+      "lon": -73.845859,
+      "kind": "stadium"
+    },
+    {
+      "name": "Little Red Lighthouse",
+      "lat": 40.850255,
+      "lon": -73.946963,
+      "kind": "lighthouse"
+    },
+    {
+      "name": "Wyckoff House Museum",
+      "lat": 40.644362,
+      "lon": -73.920876,
+      "kind": "attraction"
+    },
+    {
+      "name": "Richmond County Bank Ballpark at Saint George",
+      "lat": 40.645448,
+      "lon": -74.076424,
+      "kind": "stadium"
+    },
+    {
+      "name": "Sports Illustrated Stadium",
+      "lat": 40.736864,
+      "lon": -74.150274,
+      "kind": "stadium"
+    },
+    {
+      "name": "The Cloisters",
+      "lat": 40.864823,
+      "lon": -73.931792,
+      "kind": "attraction"
+    },
+    {
+      "name": "Historic Wyckoff-Bennett-Mont Residence",
+      "lat": 40.61086,
+      "lon": -73.951232,
+      "kind": "attraction"
+    },
+    {
+      "name": "Harbor Defense Museum",
+      "lat": 40.608914,
+      "lon": -74.032051,
+      "kind": "military"
+    },
+    {
+      "name": "Fort Wadsworth Light",
+      "lat": 40.605812,
+      "lon": -74.053944,
+      "kind": "lighthouse"
+    },
+    {
+      "name": "Riverdale Monument",
+      "lat": 40.889252,
+      "lon": -73.908326,
+      "kind": "monument"
+    },
+    {
+      "name": "New York, Susquehanna and Western Railroad ALCO Type S-2 Locomotive",
+      "lat": 40.896363,
+      "lon": -74.065971,
+      "kind": "locomotive"
+    },
+    {
+      "name": "Coney Island Lighthouse",
+      "lat": 40.576605,
+      "lon": -74.011763,
+      "kind": "lighthouse"
+    },
+    {
+      "name": "Maimonides Park",
+      "lat": 40.57434,
+      "lon": -73.984078,
+      "kind": "stadium"
+    },
+    {
+      "name": "Wonder Wheel",
+      "lat": 40.574041,
+      "lon": -73.979145,
+      "kind": "attraction"
+    },
+    {
+      "name": "Stepping Stones Lighthouse",
+      "lat": 40.824313,
+      "lon": -73.774784,
+      "kind": "lighthouse"
+    },
+    {
+      "name": "New York City Farm Colony",
+      "lat": 40.594784,
+      "lon": -74.137868,
+      "kind": "attraction"
+    },
+    {
+      "name": "New Dorp Light",
+      "lat": 40.580787,
+      "lon": -74.120121,
+      "kind": "lighthouse"
+    },
+    {
+      "name": "Staten Island Range Lighthouse",
+      "lat": 40.576072,
+      "lon": -74.141248,
+      "kind": "lighthouse"
+    },
+    {
+      "name": "Hinchliffe Stadium",
+      "lat": 40.918381,
+      "lon": -74.181377,
+      "kind": "stadium"
+    },
+    {
+      "name": "Sands Point Lighthouse",
+      "lat": 40.865889,
+      "lon": -73.729504,
+      "kind": "lighthouse"
+    },
+    {
+      "name": "Execution Rocks Light",
+      "lat": 40.878046,
+      "lon": -73.737814,
+      "kind": "lighthouse"
+    },
+    {
+      "name": "Arnold and Joan Saltzman Fine Arts Building",
+      "lat": 40.80961,
+      "lon": -73.642795,
+      "kind": "manor"
+    },
+    {
+      "name": "The Hermitage",
+      "lat": 41.007136,
+      "lon": -74.117735,
+      "kind": "house"
+    },
+    {
+      "name": "Gunnison Beach",
+      "lat": 40.458744,
+      "lon": -73.991369,
+      "kind": "attraction"
+    },
+    {
+      "name": "Princes Bay Light",
+      "lat": 40.507678,
+      "lon": -74.213388,
+      "kind": "lighthouse"
+    },
+    {
+      "name": "Holocaust Museum and Tolerance Center",
+      "lat": 40.88409,
+      "lon": -73.641563,
+      "kind": "manor"
+    },
+    {
+      "name": "James M. Shuart Stadium",
+      "lat": 40.715584,
+      "lon": -73.596249,
+      "kind": "stadium"
+    },
+    {
+      "name": "Nassau Veterans Memorial Coliseum",
+      "lat": 40.722874,
+      "lon": -73.590711,
+      "kind": "stadium"
+    },
+    {
+      "name": "The Conference House",
+      "lat": 40.503129,
+      "lon": -74.25322,
+      "kind": "manor"
+    },
+    {
+      "name": "Lyndhurst Mansion",
+      "lat": 41.053986,
+      "lon": -73.867368,
+      "kind": "house"
+    },
+    {
+      "name": "Great Beds Light",
+      "lat": 40.486667,
+      "lon": -74.253044,
+      "kind": "lighthouse"
+    },
+    {
+      "name": "Westchester County Center",
+      "lat": 41.037154,
+      "lon": -73.778811,
+      "kind": "stadium"
+    },
+    {
+      "name": "Planting Fields Arboretum",
+      "lat": 40.862577,
+      "lon": -73.557906,
+      "kind": "heritage"
+    },
+    {
+      "name": "Tarrytown Light",
+      "lat": 41.084053,
+      "lon": -73.874242,
+      "kind": "lighthouse"
+    },
+    {
+      "name": "Great Captain Island Light",
+      "lat": 40.9825,
+      "lon": -73.623628,
+      "kind": "lighthouse"
+    },
+    {
+      "name": "Wantagh Railroad Complex",
+      "lat": 40.680591,
+      "lon": -73.510315,
+      "kind": "heritage"
+    },
+    {
+      "name": "Tripod Rock",
+      "lat": 40.961307,
+      "lon": -74.385272,
+      "kind": "attraction"
+    },
+    {
+      "name": "Theodore Roosevelt Monument Assemblage",
+      "lat": 40.876593,
+      "lon": -73.531769,
+      "kind": "monument"
+    },
+    {
+      "name": "Oyster Bay Railroad Station Turntable",
+      "lat": 40.874952,
+      "lon": -73.528586,
+      "kind": "railway"
+    },
+    {
+      "name": "Holmdel Horn Antenna",
+      "lat": 40.390723,
+      "lon": -74.184844,
+      "kind": "telescope"
+    },
+    {
+      "name": "Sagamore Hill",
+      "lat": 40.885577,
+      "lon": -73.501073,
+      "kind": "manor"
+    },
+    {
+      "name": "SHI Stadium",
+      "lat": 40.513504,
+      "lon": -74.465254,
+      "kind": "stadium"
+    },
+    {
+      "name": "New York Renaissance Faire",
+      "lat": 41.248978,
+      "lon": -74.230098,
+      "kind": "attraction"
+    },
+    {
+      "name": "Earthplace",
+      "lat": 41.147474,
+      "lon": -73.380549,
+      "kind": "attraction"
+    },
+    {
+      "name": "Flatiron District",
+      "lat": 40.741072,
+      "lon": -73.989653,
+      "kind": "attraction"
+    },
+    {
+      "name": "Diamond District",
+      "lat": 40.757372,
+      "lon": -73.980158,
+      "kind": "attraction"
+    },
+    {
+      "name": "Hangman's Elm",
+      "lat": 40.731969,
+      "lon": -73.998609,
+      "kind": "attraction"
+    },
+    {
+      "name": "Samuel Sullivan Cox",
+      "lat": 40.726051,
+      "lon": -73.983138,
+      "kind": "monument"
+    },
+    {
+      "name": "Spyscape",
+      "lat": 40.765064,
+      "lon": -73.983859,
+      "kind": "attraction"
+    },
+    {
+      "name": "Gapstow Bridge",
+      "lat": 40.766928,
+      "lon": -73.973831,
+      "kind": "bridge"
+    },
+    {
+      "name": "Bloody Angle",
+      "lat": 40.714413,
+      "lon": -73.99815,
+      "kind": "attraction"
+    },
+    {
+      "name": "JFK Stadium",
+      "lat": 40.749743,
+      "lon": -74.034592,
+      "kind": "stadium"
+    },
+    {
+      "name": "Eleanor Roosevelt Monument",
+      "lat": 40.780646,
+      "lon": -73.985784,
+      "kind": "monument"
+    },
+    {
+      "name": "Jane's Carousel",
+      "lat": 40.704434,
+      "lon": -73.992385,
+      "kind": "attraction"
+    },
+    {
+      "name": "Brooklyn Heights Promenade",
+      "lat": 40.697651,
+      "lon": -73.997099,
+      "kind": "bridge"
+    },
+    {
+      "name": "Miller Stadium",
+      "lat": 40.788554,
+      "lon": -74.019268,
+      "kind": "stadium"
+    },
+    {
+      "name": "Henry Ward Beecher Monument",
+      "lat": 40.694876,
+      "lon": -73.990108,
+      "kind": "monument"
+    },
+    {
+      "name": "Jackie Robinson",
+      "lat": 40.732332,
+      "lon": -74.063169,
+      "kind": "monument"
+    },
+    {
+      "name": "Alma Mater",
+      "lat": 40.807826,
+      "lon": -73.962133,
+      "kind": "monument"
+    },
+    {
+      "name": "Icahn Stadium",
+      "lat": 40.793249,
+      "lon": -73.925321,
+      "kind": "stadium"
+    },
+    {
+      "name": "Abyssinian Baptist Church",
+      "lat": 40.816642,
+      "lon": -73.941478,
+      "kind": "attraction"
+    },
+    {
+      "name": "General Slocum Disaster Memorial",
+      "lat": 40.709242,
+      "lon": -73.881198,
+      "kind": "monument"
+    },
+    {
+      "name": "Meadowlands Racing & Entertainment Center",
+      "lat": 40.820137,
+      "lon": -74.071765,
+      "kind": "stadium"
+    },
+    {
+      "name": "Forest Hills Stadium",
+      "lat": 40.71966,
+      "lon": -73.849871,
+      "kind": "stadium"
+    },
+    {
+      "name": "Stadium 17",
+      "lat": 40.749169,
+      "lon": -73.844556,
+      "kind": "stadium"
+    },
+    {
+      "name": "Riggin Field",
+      "lat": 40.82568,
+      "lon": -74.097587,
+      "kind": "stadium"
+    },
+    {
+      "name": "Stadium 1",
+      "lat": 40.839026,
+      "lon": -73.895348,
+      "kind": "stadium"
+    },
+    {
+      "name": "Stadium 2",
+      "lat": 40.838918,
+      "lon": -73.895045,
+      "kind": "stadium"
+    },
+    {
+      "name": "Billiou-Stillwell-Perine House",
+      "lat": 40.593424,
+      "lon": -74.100005,
+      "kind": "attraction"
+    },
+    {
+      "name": "Women's Federation Monument",
+      "lat": 40.980758,
+      "lon": -73.909427,
+      "kind": "monument"
+    },
+    {
+      "name": "East Jersey Olde Towne Village",
+      "lat": 40.513846,
+      "lon": -74.476534,
+      "kind": "attraction"
+    },
+    {
+      "name": "Bedford Village Historic District",
+      "lat": 41.202934,
+      "lon": -73.64337,
+      "kind": "district"
+    }
+  ],
+  "bridges": [
+    {
+      "name": "Pulaski Skyway",
+      "points": [
+        [
+          40.738647,
+          -74.063894
+        ],
+        [
+          40.7334,
+          -74.1295
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 5564.6,
+      "waterSpanM": 360.8
+    },
+    {
+      "name": "Tappan Zee Bridge",
+      "points": [
+        [
+          41.073866,
+          -73.92
+        ],
+        [
+          41.068687,
+          -73.865706
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 4592.9,
+      "waterSpanM": 4478.7
+    },
+    {
+      "name": "New York State Thruway",
+      "points": [
+        [
+          41.072585,
+          -73.917617
+        ],
+        [
+          41.072373,
+          -73.917283
+        ],
+        [
+          41.07218,
+          -73.916931
+        ],
+        [
+          41.072,
+          -73.916563
+        ],
+        [
+          41.071834,
+          -73.916184
+        ],
+        [
+          41.071681,
+          -73.915798
+        ],
+        [
+          41.071541,
+          -73.9154
+        ],
+        [
+          41.071416,
+          -73.914996
+        ],
+        [
+          41.071304,
+          -73.914584
+        ],
+        [
+          41.071207,
+          -73.914165
+        ],
+        [
+          41.071125,
+          -73.913741
+        ],
+        [
+          41.071057,
+          -73.913315
+        ],
+        [
+          41.071005,
+          -73.912886
+        ],
+        [
+          41.070967,
+          -73.912452
+        ],
+        [
+          41.070944,
+          -73.912015
+        ],
+        [
+          41.070938,
+          -73.911581
+        ],
+        [
+          41.070938,
+          -73.911143
+        ],
+        [
+          41.070938,
+          -73.907673
+        ],
+        [
+          41.070941,
+          -73.895101
+        ],
+        [
+          41.07094,
+          -73.894522
+        ],
+        [
+          41.070939,
+          -73.893942
+        ],
+        [
+          41.070936,
+          -73.893362
+        ],
+        [
+          41.070931,
+          -73.892788
+        ],
+        [
+          41.070926,
+          -73.892207
+        ],
+        [
+          41.07092,
+          -73.891633
+        ],
+        [
+          41.070912,
+          -73.891056
+        ],
+        [
+          41.070903,
+          -73.890476
+        ],
+        [
+          41.070894,
+          -73.8899
+        ],
+        [
+          41.070886,
+          -73.889321
+        ],
+        [
+          41.070879,
+          -73.888741
+        ],
+        [
+          41.070874,
+          -73.888161
+        ],
+        [
+          41.070868,
+          -73.887295
+        ],
+        [
+          41.070867,
+          -73.886713
+        ],
+        [
+          41.070866,
+          -73.886139
+        ],
+        [
+          41.070866,
+          -73.885555
+        ],
+        [
+          41.070866,
+          -73.884978
+        ],
+        [
+          41.070866,
+          -73.884402
+        ],
+        [
+          41.070866,
+          -73.883244
+        ],
+        [
+          41.070866,
+          -73.878754
+        ],
+        [
+          41.070867,
+          -73.878176
+        ],
+        [
+          41.070867,
+          -73.877595
+        ],
+        [
+          41.070867,
+          -73.877013
+        ],
+        [
+          41.070867,
+          -73.876432
+        ],
+        [
+          41.070866,
+          -73.875711
+        ],
+        [
+          41.070862,
+          -73.875275
+        ],
+        [
+          41.07084,
+          -73.87484
+        ],
+        [
+          41.070806,
+          -73.874408
+        ],
+        [
+          41.070757,
+          -73.873981
+        ],
+        [
+          41.070695,
+          -73.873563
+        ],
+        [
+          41.070617,
+          -73.873143
+        ],
+        [
+          41.070526,
+          -73.872728
+        ],
+        [
+          41.07042,
+          -73.872315
+        ],
+        [
+          41.070301,
+          -73.871911
+        ],
+        [
+          41.070167,
+          -73.871515
+        ],
+        [
+          41.070022,
+          -73.871129
+        ],
+        [
+          41.069863,
+          -73.87075
+        ],
+        [
+          41.069692,
+          -73.870382
+        ],
+        [
+          41.06951,
+          -73.870028
+        ],
+        [
+          41.069313,
+          -73.869676
+        ],
+        [
+          41.069105,
+          -73.869341
+        ],
+        [
+          41.068886,
+          -73.869018
+        ],
+        [
+          41.06866,
+          -73.868711
+        ],
+        [
+          41.068421,
+          -73.868415
+        ],
+        [
+          41.068172,
+          -73.868134
+        ],
+        [
+          41.067917,
+          -73.867866
+        ],
+        [
+          41.067574,
+          -73.867505
+        ],
+        [
+          41.067228,
+          -73.867144
+        ],
+        [
+          41.066885,
+          -73.866789
+        ],
+        [
+          41.066348,
+          -73.866252
+        ]
+      ],
+      "widthM": 22.2,
+      "lengthM": 4544.8,
+      "waterSpanM": 4349.3
+    },
+    {
+      "name": "Queensboro Bridge",
+      "points": [
+        [
+          40.759922,
+          -73.961973
+        ],
+        [
+          40.760132,
+          -73.961814
+        ],
+        [
+          40.760055,
+          -73.961405
+        ],
+        [
+          40.759677,
+          -73.960526
+        ],
+        [
+          40.759012,
+          -73.959092
+        ],
+        [
+          40.757415,
+          -73.955397
+        ],
+        [
+          40.756553,
+          -73.953427
+        ],
+        [
+          40.755202,
+          -73.950322
+        ],
+        [
+          40.754568,
+          -73.948884
+        ],
+        [
+          40.75099,
+          -73.940652
+        ],
+        [
+          40.750777,
+          -73.940821
+        ],
+        [
+          40.751525,
+          -73.942519
+        ],
+        [
+          40.752735,
+          -73.945307
+        ],
+        [
+          40.754316,
+          -73.948965
+        ],
+        [
+          40.754936,
+          -73.950399
+        ],
+        [
+          40.756272,
+          -73.953467
+        ],
+        [
+          40.757135,
+          -73.955441
+        ],
+        [
+          40.758475,
+          -73.958546
+        ],
+        [
+          40.758742,
+          -73.959162
+        ],
+        [
+          40.759383,
+          -73.960631
+        ],
+        [
+          40.759765,
+          -73.961623
+        ],
+        [
+          40.759922,
+          -73.961973
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 4287.3,
+      "waterSpanM": 200.3
+    },
+    {
+      "name": "Gowanus Expressway (HOV)",
+      "points": [
+        [
+          40.648428,
+          -74.013835
+        ],
+        [
+          40.64895,
+          -74.013293
+        ],
+        [
+          40.649321,
+          -74.012897
+        ],
+        [
+          40.649667,
+          -74.01254
+        ],
+        [
+          40.649973,
+          -74.012226
+        ],
+        [
+          40.65025,
+          -74.011942
+        ],
+        [
+          40.650648,
+          -74.011518
+        ],
+        [
+          40.650987,
+          -74.011172
+        ],
+        [
+          40.651274,
+          -74.010873
+        ],
+        [
+          40.651673,
+          -74.010453
+        ],
+        [
+          40.651977,
+          -74.01014
+        ],
+        [
+          40.652398,
+          -74.009693
+        ],
+        [
+          40.652779,
+          -74.009302
+        ],
+        [
+          40.653335,
+          -74.008725
+        ],
+        [
+          40.65361,
+          -74.008444
+        ],
+        [
+          40.65398,
+          -74.008065
+        ],
+        [
+          40.654395,
+          -74.007623
+        ],
+        [
+          40.654597,
+          -74.007416
+        ],
+        [
+          40.655112,
+          -74.006882
+        ],
+        [
+          40.655591,
+          -74.006368
+        ],
+        [
+          40.656073,
+          -74.005876
+        ],
+        [
+          40.656495,
+          -74.005425
+        ],
+        [
+          40.656847,
+          -74.005065
+        ],
+        [
+          40.657283,
+          -74.004609
+        ],
+        [
+          40.657742,
+          -74.004138
+        ],
+        [
+          40.658227,
+          -74.00364
+        ],
+        [
+          40.658634,
+          -74.003221
+        ],
+        [
+          40.659023,
+          -74.002805
+        ],
+        [
+          40.659347,
+          -74.00247
+        ],
+        [
+          40.659738,
+          -74.002062
+        ],
+        [
+          40.660287,
+          -74.001492
+        ],
+        [
+          40.660811,
+          -74.000944
+        ],
+        [
+          40.661364,
+          -74.000375
+        ],
+        [
+          40.661874,
+          -73.999829
+        ],
+        [
+          40.662449,
+          -73.999241
+        ],
+        [
+          40.663122,
+          -73.998541
+        ],
+        [
+          40.66386,
+          -73.997782
+        ],
+        [
+          40.664443,
+          -73.997146
+        ],
+        [
+          40.66495,
+          -73.996636
+        ],
+        [
+          40.665273,
+          -73.996383
+        ],
+        [
+          40.665599,
+          -73.996209
+        ],
+        [
+          40.665993,
+          -73.996057
+        ],
+        [
+          40.666326,
+          -73.995973
+        ],
+        [
+          40.666627,
+          -73.995948
+        ],
+        [
+          40.666992,
+          -73.99595
+        ],
+        [
+          40.667415,
+          -73.996007
+        ],
+        [
+          40.667806,
+          -73.996146
+        ],
+        [
+          40.668119,
+          -73.996282
+        ],
+        [
+          40.668399,
+          -73.996421
+        ],
+        [
+          40.66868,
+          -73.996583
+        ],
+        [
+          40.668964,
+          -73.996763
+        ],
+        [
+          40.66919,
+          -73.996914
+        ],
+        [
+          40.669509,
+          -73.997117
+        ],
+        [
+          40.669813,
+          -73.997321
+        ],
+        [
+          40.670149,
+          -73.997522
+        ],
+        [
+          40.670559,
+          -73.997796
+        ],
+        [
+          40.670882,
+          -73.99801
+        ],
+        [
+          40.671237,
+          -73.998227
+        ],
+        [
+          40.671585,
+          -73.998443
+        ],
+        [
+          40.671959,
+          -73.998664
+        ],
+        [
+          40.67231,
+          -73.998878
+        ],
+        [
+          40.672716,
+          -73.999136
+        ],
+        [
+          40.673207,
+          -73.99945
+        ],
+        [
+          40.673478,
+          -73.999617
+        ],
+        [
+          40.67385,
+          -73.999851
+        ],
+        [
+          40.674289,
+          -74.000125
+        ],
+        [
+          40.674586,
+          -74.000323
+        ],
+        [
+          40.674936,
+          -74.000539
+        ],
+        [
+          40.675373,
+          -74.000806
+        ],
+        [
+          40.675916,
+          -74.001146
+        ],
+        [
+          40.676305,
+          -74.001389
+        ],
+        [
+          40.676569,
+          -74.001554
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 3752.2,
+      "waterSpanM": 100.2
+    },
+    {
+      "name": "Robert F. Kennedy Bridge",
+      "points": [
+        [
+          40.773077,
+          -73.927701
+        ],
+        [
+          40.802208,
+          -73.924181
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 3256.4,
+      "waterSpanM": 481.3
+    },
+    {
+      "name": "Great South Bay Bridge",
+      "points": [
+        [
+          40.685496,
+          -73.280171
+        ],
+        [
+          40.664439,
+          -73.26726
+        ],
+        [
+          40.663911,
+          -73.266926
+        ],
+        [
+          40.663345,
+          -73.266613
+        ],
+        [
+          40.662523,
+          -73.266165
+        ],
+        [
+          40.66208,
+          -73.265936
+        ],
+        [
+          40.66151,
+          -73.265667
+        ],
+        [
+          40.660937,
+          -73.265413
+        ],
+        [
+          40.660335,
+          -73.265155
+        ],
+        [
+          40.659047,
+          -73.264709
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 3224.0,
+      "waterSpanM": 3218.1
+    },
+    {
+      "name": "New Jersey Turnpike Newark Bay Extension",
+      "points": [
+        [
+          40.69141,
+          -74.10542
+        ],
+        [
+          40.696969,
+          -74.123633
+        ],
+        [
+          40.697306,
+          -74.124773
+        ],
+        [
+          40.697983,
+          -74.127062
+        ],
+        [
+          40.698268,
+          -74.128017
+        ],
+        [
+          40.698555,
+          -74.128974
+        ],
+        [
+          40.698987,
+          -74.130411
+        ],
+        [
+          40.701142,
+          -74.137299
+        ],
+        [
+          40.7013,
+          -74.137824
+        ],
+        [
+          40.701463,
+          -74.138342
+        ],
+        [
+          40.701621,
+          -74.138858
+        ],
+        [
+          40.70178,
+          -74.139335
+        ],
+        [
+          40.701958,
+          -74.139856
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 3134.7,
+      "waterSpanM": 603.4
+    },
+    {
+      "name": "Throgs Neck Bridge",
+      "points": [
+        [
+          40.816862,
+          -73.796942
+        ],
+        [
+          40.789214,
+          -73.790885
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 3119.7,
+      "waterSpanM": 1686.8
+    },
+    {
+      "name": "Normandy Road",
+      "points": [
+        [
+          40.42799,
+          -74.067821
+        ],
+        [
+          40.428285,
+          -74.067659
+        ],
+        [
+          40.428583,
+          -74.067555
+        ],
+        [
+          40.429069,
+          -74.067428
+        ],
+        [
+          40.42959,
+          -74.067305
+        ],
+        [
+          40.430168,
+          -74.067152
+        ],
+        [
+          40.430617,
+          -74.066974
+        ],
+        [
+          40.43085,
+          -74.066813
+        ],
+        [
+          40.431452,
+          -74.066412
+        ],
+        [
+          40.431876,
+          -74.066118
+        ],
+        [
+          40.432084,
+          -74.065973
+        ],
+        [
+          40.432438,
+          -74.065744
+        ],
+        [
+          40.433047,
+          -74.065331
+        ],
+        [
+          40.43352,
+          -74.065012
+        ],
+        [
+          40.433921,
+          -74.064732
+        ],
+        [
+          40.434786,
+          -74.064141
+        ],
+        [
+          40.435175,
+          -74.063875
+        ],
+        [
+          40.435906,
+          -74.063371
+        ],
+        [
+          40.436493,
+          -74.062974
+        ],
+        [
+          40.436853,
+          -74.062733
+        ],
+        [
+          40.437182,
+          -74.062497
+        ],
+        [
+          40.437826,
+          -74.062072
+        ],
+        [
+          40.438451,
+          -74.061643
+        ],
+        [
+          40.43901,
+          -74.061259
+        ],
+        [
+          40.439518,
+          -74.060906
+        ],
+        [
+          40.440032,
+          -74.060557
+        ],
+        [
+          40.440277,
+          -74.060383
+        ],
+        [
+          40.440596,
+          -74.06017
+        ],
+        [
+          40.441414,
+          -74.059612
+        ],
+        [
+          40.441971,
+          -74.059224
+        ],
+        [
+          40.442481,
+          -74.058883
+        ],
+        [
+          40.442987,
+          -74.058542
+        ],
+        [
+          40.443461,
+          -74.058221
+        ],
+        [
+          40.443989,
+          -74.057858
+        ],
+        [
+          40.444688,
+          -74.057379
+        ],
+        [
+          40.445187,
+          -74.057047
+        ],
+        [
+          40.445843,
+          -74.056596
+        ],
+        [
+          40.446218,
+          -74.056338
+        ],
+        [
+          40.446739,
+          -74.055994
+        ],
+        [
+          40.447399,
+          -74.055547
+        ],
+        [
+          40.447867,
+          -74.055222
+        ],
+        [
+          40.448161,
+          -74.05503
+        ],
+        [
+          40.448484,
+          -74.054896
+        ],
+        [
+          40.448712,
+          -74.054842
+        ],
+        [
+          40.449039,
+          -74.054763
+        ],
+        [
+          40.449356,
+          -74.054641
+        ],
+        [
+          40.449605,
+          -74.054489
+        ],
+        [
+          40.450096,
+          -74.054143
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 2731.6,
+      "waterSpanM": 2626.3
+    },
+    {
+      "name": "Outerbridge Crossing",
+      "points": [
+        [
+          40.524616,
+          -74.237218
+        ],
+        [
+          40.525425,
+          -74.269321
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 2717.9,
+      "waterSpanM": 720.5
+    },
+    {
+      "name": "Verrazzano-Narrows Bridge",
+      "points": [
+        [
+          40.601865,
+          -74.05926
+        ],
+        [
+          40.610681,
+          -74.03198
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 2505.7,
+      "waterSpanM": 1564.8
+    },
+    {
+      "name": "Vincent R. Casciano Memorial Bridge",
+      "points": [
+        [
+          40.699,
+          -74.130395
+        ],
+        [
+          40.691483,
+          -74.105778
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 2239.9,
+      "waterSpanM": 1421.2
+    },
+    {
+      "name": "Oak Point Link Running Track",
+      "points": [
+        [
+          40.830787,
+          -73.933274
+        ],
+        [
+          40.830254,
+          -73.933298
+        ],
+        [
+          40.8296,
+          -73.93323
+        ],
+        [
+          40.828359,
+          -73.933063
+        ],
+        [
+          40.827126,
+          -73.932932
+        ],
+        [
+          40.825112,
+          -73.932701
+        ],
+        [
+          40.823538,
+          -73.932573
+        ],
+        [
+          40.821291,
+          -73.932401
+        ],
+        [
+          40.819293,
+          -73.932316
+        ],
+        [
+          40.817232,
+          -73.932275
+        ],
+        [
+          40.815046,
+          -73.932329
+        ],
+        [
+          40.814326,
+          -73.93236
+        ],
+        [
+          40.813678,
+          -73.932407
+        ],
+        [
+          40.813303,
+          -73.932428
+        ],
+        [
+          40.81269,
+          -73.932495
+        ],
+        [
+          40.812209,
+          -73.932559
+        ],
+        [
+          40.811769,
+          -73.932603
+        ],
+        [
+          40.811236,
+          -73.932556
+        ],
+        [
+          40.810746,
+          -73.932525
+        ]
+      ],
+      "widthM": 12.0,
+      "lengthM": 2235.1,
+      "waterSpanM": 381.7
+    },
+    {
+      "name": "Goethals Bridge",
+      "points": [
+        [
+          40.629556,
+          -74.186293
+        ],
+        [
+          40.641793,
+          -74.207176
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 2228.8,
+      "waterSpanM": 361.4
+    },
+    {
+      "name": "Bayonne Bridge",
+      "points": [
+        [
+          40.63323,
+          -74.145863
+        ],
+        [
+          40.651707,
+          -74.137378
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 2178.0,
+      "waterSpanM": 503.2
+    },
+    {
+      "name": "Brooklyn Bridge",
+      "points": [
+        [
+          40.702354,
+          -73.991922
+        ],
+        [
+          40.702598,
+          -73.99223
+        ],
+        [
+          40.702815,
+          -73.992503
+        ],
+        [
+          40.703282,
+          -73.993091
+        ],
+        [
+          40.703597,
+          -73.993486
+        ],
+        [
+          40.703769,
+          -73.993702
+        ],
+        [
+          40.703966,
+          -73.993951
+        ],
+        [
+          40.704136,
+          -73.994167
+        ],
+        [
+          40.704325,
+          -73.994405
+        ],
+        [
+          40.708793,
+          -74.000033
+        ],
+        [
+          40.709047,
+          -74.000353
+        ],
+        [
+          40.709125,
+          -74.00066
+        ],
+        [
+          40.708667,
+          -74.000338
+        ],
+        [
+          40.708432,
+          -74.000042
+        ],
+        [
+          40.708077,
+          -73.999595
+        ],
+        [
+          40.704145,
+          -73.994643
+        ],
+        [
+          40.70396,
+          -73.99441
+        ],
+        [
+          40.703646,
+          -73.994015
+        ],
+        [
+          40.703447,
+          -73.993763
+        ],
+        [
+          40.702663,
+          -73.992776
+        ],
+        [
+          40.702493,
+          -73.992562
+        ],
+        [
+          40.702206,
+          -73.9922
+        ],
+        [
+          40.702354,
+          -73.991922
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 2165.3,
+      "waterSpanM": 161.3
+    },
+    {
+      "name": "New Jersey Turnpike Eastern Spur",
+      "points": [
+        [
+          40.750945,
+          -74.115817
+        ],
+        [
+          40.750749,
+          -74.116133
+        ],
+        [
+          40.750539,
+          -74.116457
+        ],
+        [
+          40.750285,
+          -74.116828
+        ],
+        [
+          40.750029,
+          -74.117184
+        ],
+        [
+          40.749776,
+          -74.117518
+        ],
+        [
+          40.749531,
+          -74.117824
+        ],
+        [
+          40.749292,
+          -74.118105
+        ],
+        [
+          40.749072,
+          -74.118357
+        ],
+        [
+          40.748803,
+          -74.118651
+        ],
+        [
+          40.748543,
+          -74.118918
+        ],
+        [
+          40.748264,
+          -74.119194
+        ],
+        [
+          40.747976,
+          -74.119461
+        ],
+        [
+          40.747659,
+          -74.119739
+        ],
+        [
+          40.74735,
+          -74.119993
+        ],
+        [
+          40.747077,
+          -74.12021
+        ],
+        [
+          40.746765,
+          -74.12044
+        ],
+        [
+          40.746444,
+          -74.120664
+        ],
+        [
+          40.746099,
+          -74.120888
+        ],
+        [
+          40.745769,
+          -74.121089
+        ],
+        [
+          40.745432,
+          -74.121279
+        ],
+        [
+          40.745118,
+          -74.121445
+        ],
+        [
+          40.744815,
+          -74.121593
+        ],
+        [
+          40.744514,
+          -74.12173
+        ],
+        [
+          40.744219,
+          -74.121853
+        ],
+        [
+          40.74393,
+          -74.121968
+        ],
+        [
+          40.74364,
+          -74.122073
+        ],
+        [
+          40.741116,
+          -74.122917
+        ],
+        [
+          40.740837,
+          -74.12301
+        ],
+        [
+          40.740561,
+          -74.123101
+        ],
+        [
+          40.74028,
+          -74.123188
+        ],
+        [
+          40.740005,
+          -74.123267
+        ],
+        [
+          40.739739,
+          -74.123336
+        ],
+        [
+          40.739466,
+          -74.12339
+        ],
+        [
+          40.73919,
+          -74.123434
+        ],
+        [
+          40.738927,
+          -74.123462
+        ],
+        [
+          40.738633,
+          -74.123487
+        ],
+        [
+          40.738338,
+          -74.123504
+        ],
+        [
+          40.735708,
+          -74.123622
+        ],
+        [
+          40.735339,
+          -74.123644
+        ],
+        [
+          40.735006,
+          -74.123677
+        ],
+        [
+          40.734663,
+          -74.123727
+        ],
+        [
+          40.734379,
+          -74.123783
+        ],
+        [
+          40.734069,
+          -74.123859
+        ],
+        [
+          40.733823,
+          -74.123934
+        ],
+        [
+          40.733545,
+          -74.124033
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 2127.0,
+      "waterSpanM": 100.1
+    },
+    {
+      "name": "Bronx-Whitestone Bridge",
+      "points": [
+        [
+          40.811858,
+          -73.836058
+        ],
+        [
+          40.794773,
+          -73.82507
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 2115.3,
+      "waterSpanM": 1045.8
+    },
+    {
+      "name": "Chaplain Washington Bridge",
+      "points": [
+        [
+          40.733853,
+          -74.125245
+        ],
+        [
+          40.751319,
+          -74.117031
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 2064.0,
+      "waterSpanM": 242.3
+    },
+    {
+      "name": "Williamsburg Bridge",
+      "points": [
+        [
+          40.710424,
+          -73.961706
+        ],
+        [
+          40.717243,
+          -73.984214
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 2045.2,
+      "waterSpanM": 642.2
+    },
+    {
+      "name": "Manhattan Bridge",
+      "points": [
+        [
+          40.699389,
+          -73.986254
+        ],
+        [
+          40.714771,
+          -73.994804
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1858.1,
+      "waterSpanM": 665.2
+    },
+    {
+      "name": "Southwalk",
+      "points": [
+        [
+          40.84902,
+          -73.941722
+        ],
+        [
+          40.84902,
+          -73.942038
+        ],
+        [
+          40.848791,
+          -73.942155
+        ],
+        [
+          40.8487,
+          -73.941875
+        ],
+        [
+          40.848897,
+          -73.941693
+        ],
+        [
+          40.849144,
+          -73.941767
+        ],
+        [
+          40.849309,
+          -73.941992
+        ],
+        [
+          40.849656,
+          -73.943454
+        ],
+        [
+          40.849749,
+          -73.943895
+        ],
+        [
+          40.849865,
+          -73.94444
+        ],
+        [
+          40.850294,
+          -73.946447
+        ],
+        [
+          40.851312,
+          -73.951444
+        ],
+        [
+          40.852782,
+          -73.958939
+        ],
+        [
+          40.853104,
+          -73.96076
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1833.5,
+      "waterSpanM": 242.5
+    },
+    {
+      "name": "BMT Brighton Line",
+      "points": [
+        [
+          40.714336,
+          -73.994688
+        ],
+        [
+          40.699724,
+          -73.986516
+        ]
+      ],
+      "widthM": 12.0,
+      "lengthM": 1766.8,
+      "waterSpanM": 661.3
+    },
+    {
+      "name": "George Washington Bridge",
+      "points": [
+        [
+          40.853693,
+          -73.962861
+        ],
+        [
+          40.849946,
+          -73.94355
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1678.7,
+      "waterSpanM": 980.4
+    },
+    {
+      "name": "Vieser Bridge",
+      "points": [
+        [
+          40.515985,
+          -74.300101
+        ],
+        [
+          40.503641,
+          -74.300858
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1375.6,
+      "waterSpanM": 605.4
+    },
+    {
+      "name": "Edison Bridge",
+      "points": [
+        [
+          40.503633,
+          -74.300614
+        ],
+        [
+          40.515971,
+          -74.299832
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1375.0,
+      "waterSpanM": 605.1
+    },
+    {
+      "name": "Garden State Parkway",
+      "points": [
+        [
+          40.5159,
+          -74.301363
+        ],
+        [
+          40.515285,
+          -74.30131
+        ],
+        [
+          40.514852,
+          -74.301266
+        ],
+        [
+          40.514413,
+          -74.301226
+        ],
+        [
+          40.513976,
+          -74.301197
+        ],
+        [
+          40.513535,
+          -74.301175
+        ],
+        [
+          40.513095,
+          -74.301162
+        ],
+        [
+          40.512659,
+          -74.301161
+        ],
+        [
+          40.512226,
+          -74.301165
+        ],
+        [
+          40.511787,
+          -74.30118
+        ],
+        [
+          40.503602,
+          -74.301701
+        ]
+      ],
+      "widthM": 29.6,
+      "lengthM": 1370.5,
+      "waterSpanM": 221.2
+    },
+    {
+      "name": "Driscoll Bridge",
+      "points": [
+        [
+          40.5158,
+          -74.300975
+        ],
+        [
+          40.50374,
+          -74.30131
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1342.7,
+      "waterSpanM": 608.8
+    },
+    {
+      "name": "Fire Island Inlet Bridge",
+      "points": [
+        [
+          40.624958,
+          -73.261876
+        ],
+        [
+          40.636538,
+          -73.263252
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1294.3,
+      "waterSpanM": 1210.5
+    },
+    {
+      "name": "Robert Moses Causeway",
+      "points": [
+        [
+          40.624958,
+          -73.261874
+        ],
+        [
+          40.636538,
+          -73.263254
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1294.3,
+      "waterSpanM": 1210.5
+    },
+    {
+      "name": "Rikers Island Bridge",
+      "points": [
+        [
+          40.776507,
+          -73.891987
+        ],
+        [
+          40.786884,
+          -73.885074
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1293.9,
+      "waterSpanM": 1190.8
+    },
+    {
+      "name": "Victory Bridge",
+      "points": [
+        [
+          40.512605,
+          -74.287948
+        ],
+        [
+          40.510534,
+          -74.289417
+        ],
+        [
+          40.510154,
+          -74.2897
+        ],
+        [
+          40.50978,
+          -74.289993
+        ],
+        [
+          40.509421,
+          -74.290297
+        ],
+        [
+          40.507241,
+          -74.29222
+        ],
+        [
+          40.506875,
+          -74.292537
+        ],
+        [
+          40.506506,
+          -74.292841
+        ],
+        [
+          40.50613,
+          -74.293136
+        ],
+        [
+          40.505753,
+          -74.293424
+        ],
+        [
+          40.505379,
+          -74.293713
+        ],
+        [
+          40.505005,
+          -74.294017
+        ],
+        [
+          40.504641,
+          -74.294322
+        ],
+        [
+          40.50355,
+          -74.295257
+        ],
+        [
+          40.503176,
+          -74.295578
+        ],
+        [
+          40.503096,
+          -74.295648
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1243.9,
+      "waterSpanM": 560.9
+    },
+    {
+      "name": "Marine Parkway Bridge",
+      "points": [
+        [
+          40.568435,
+          -73.88185
+        ],
+        [
+          40.578462,
+          -73.887934
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1229.0,
+      "waterSpanM": 1166.5
+    },
+    {
+      "name": "Upper Bay Bridge",
+      "points": [
+        [
+          40.694671,
+          -74.110617
+        ],
+        [
+          40.700653,
+          -74.122842
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1228.0,
+      "waterSpanM": 1248.4
+    },
+    {
+      "name": "Chrystie Street",
+      "points": [
+        [
+          40.705106,
+          -73.989274
+        ],
+        [
+          40.714437,
+          -73.994457
+        ],
+        [
+          40.714812,
+          -73.99467
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1172.5,
+      "waterSpanM": 282.5
+    },
+    {
+      "name": "Canal Street",
+      "points": [
+        [
+          40.71473,
+          -73.994933
+        ],
+        [
+          40.714354,
+          -73.994728
+        ],
+        [
+          40.705073,
+          -73.989544
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1167.2,
+      "waterSpanM": 301.3
+    },
+    {
+      "name": "Ed Koch Queensboro Bridge Lower Level",
+      "points": [
+        [
+          40.754505,
+          -73.948878
+        ],
+        [
+          40.759001,
+          -73.959233
+        ],
+        [
+          40.759574,
+          -73.960551
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1134.6,
+      "waterSpanM": 162.2
+    },
+    {
+      "name": "Ed Koch Queensboro Bridge Lower Roadway",
+      "points": [
+        [
+          40.759458,
+          -73.960627
+        ],
+        [
+          40.754391,
+          -73.948965
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1133.7,
+      "waterSpanM": 283.6
+    },
+    {
+      "name": "Ed Koch Queensboro Bridge Upper Level",
+      "points": [
+        [
+          40.754475,
+          -73.948901
+        ],
+        [
+          40.754712,
+          -73.949446
+        ],
+        [
+          40.758976,
+          -73.959252
+        ],
+        [
+          40.759545,
+          -73.96056
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1133.7,
+      "waterSpanM": 121.5
+    },
+    {
+      "name": "Canal Street (lower level)",
+      "points": [
+        [
+          40.705089,
+          -73.989408
+        ],
+        [
+          40.714368,
+          -73.994587
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1121.6,
+      "waterSpanM": 549.6
+    },
+    {
+      "name": "FDR Drive",
+      "points": [
+        [
+          40.710704,
+          -73.983551
+        ],
+        [
+          40.710679,
+          -73.983937
+        ],
+        [
+          40.710638,
+          -73.984503
+        ],
+        [
+          40.71059,
+          -73.984995
+        ],
+        [
+          40.710097,
+          -73.989257
+        ],
+        [
+          40.710029,
+          -73.989805
+        ],
+        [
+          40.709517,
+          -73.993228
+        ],
+        [
+          40.709446,
+          -73.993768
+        ],
+        [
+          40.709379,
+          -73.994314
+        ],
+        [
+          40.709326,
+          -73.994707
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 954.3,
+      "waterSpanM": 345.6
+    },
+    {
+      "name": "Cross Bay Bridge",
+      "points": [
+        [
+          40.595788,
+          -73.819819
+        ],
+        [
+          40.587392,
+          -73.818484
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 941.4,
+      "waterSpanM": 816.7
+    },
+    {
+      "name": "Raritan Bay Drawbridge",
+      "points": [
+        [
+          40.493374,
+          -74.282575
+        ],
+        [
+          40.500699,
+          -74.278257
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 893.5,
+      "waterSpanM": 871.6
+    },
+    {
+      "name": "Joseph P. Addabbo Memorial Bridge",
+      "points": [
+        [
+          40.638709,
+          -73.832826
+        ],
+        [
+          40.645969,
+          -73.836633
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 869.8,
+      "waterSpanM": 767.2
+    },
+    {
+      "name": "Cross Bay Boulevard",
+      "points": [
+        [
+          40.645942,
+          -73.836669
+        ],
+        [
+          40.645405,
+          -73.836467
+        ],
+        [
+          40.645052,
+          -73.836291
+        ],
+        [
+          40.640381,
+          -73.83381
+        ],
+        [
+          40.639255,
+          -73.8332
+        ],
+        [
+          40.638918,
+          -73.833008
+        ],
+        [
+          40.638695,
+          -73.832872
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 868.6,
+      "waterSpanM": 544.3
+    },
+    {
+      "name": "Wittpenn Bridge",
+      "points": [
+        [
+          40.739271,
+          -74.076536
+        ],
+        [
+          40.742705,
+          -74.085678
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 860.6,
+      "waterSpanM": 380.5
+    },
+    {
+      "name": "National Docks Branch",
+      "points": [
+        [
+          40.698767,
+          -74.119029
+        ],
+        [
+          40.69806,
+          -74.117585
+        ],
+        [
+          40.694654,
+          -74.110631
+        ]
+      ],
+      "widthM": 12.0,
+      "lengthM": 843.7,
+      "waterSpanM": 864.1
+    },
+    {
+      "name": "Oceanic Bridge",
+      "points": [
+        [
+          40.384478,
+          -74.016653
+        ],
+        [
+          40.378182,
+          -74.01145
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 828.2,
+      "waterSpanM": 786.7
+    },
+    {
+      "name": "Mill Basin Bridge",
+      "points": [
+        [
+          40.608222,
+          -73.897896
+        ],
+        [
+          40.601227,
+          -73.900723
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 814.5,
+      "waterSpanM": 243.8
     }
   ],
   "places": [
@@ -2131,6 +6572,7 @@
   "attribution": [
     "Map data \u00a9 OpenStreetMap contributors, ODbL (openstreetmap.org/copyright).",
     "Elevation: USGS 3D Elevation Program (3DEP), public domain.",
-    "Airport and runway data: FAA Aeronautical Information Services, public domain."
+    "Airport and runway data: FAA Aeronautical Information Services, public domain.",
+    "Some building heights: Wikidata (CC0), property P2048."
   ]
 }

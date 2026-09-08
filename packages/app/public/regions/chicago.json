@@ -123,7 +123,7 @@
     "byteOffset": 2107304
   },
   "buildings": {
-    "count": 2029,
+    "count": 2044,
     "byteOffset": 2966636
   },
   "airfields": [
@@ -470,6 +470,3324 @@
       "lengthM": 952.5,
       "widthM": 12.19,
       "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport 3HO, runway 18/36. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    }
+  ],
+  "landmarks": [
+    {
+      "name": "ABC Building",
+      "lat": 41.885403,
+      "lon": -87.628472,
+      "kind": "building"
+    },
+    {
+      "name": "ABC TV Studios",
+      "lat": 41.885316,
+      "lon": -87.6286,
+      "kind": "building"
+    },
+    {
+      "name": "Page Brothers Building",
+      "lat": 41.885497,
+      "lon": -87.627598,
+      "kind": "building"
+    },
+    {
+      "name": "Leo Burnett Building",
+      "lat": 41.886282,
+      "lon": -87.629074,
+      "kind": "building"
+    },
+    {
+      "name": "Chicago Theatre",
+      "lat": 41.885415,
+      "lon": -87.627304,
+      "kind": "building"
+    },
+    {
+      "name": "Kemper Building",
+      "lat": 41.886527,
+      "lon": -87.62743,
+      "kind": "tower",
+      "heightM": 159.0
+    },
+    {
+      "name": "Oliver Building",
+      "lat": 41.884946,
+      "lon": -87.629239,
+      "kind": "building"
+    },
+    {
+      "name": "Joffrey Tower",
+      "lat": 41.88484,
+      "lon": -87.627504,
+      "kind": "building"
+    },
+    {
+      "name": "Goodman Theatre Center",
+      "lat": 41.885111,
+      "lon": -87.629928,
+      "kind": "building"
+    },
+    {
+      "name": "35 East Wacker",
+      "lat": 41.886528,
+      "lon": -87.626792,
+      "kind": "tower",
+      "heightM": 160.7
+    },
+    {
+      "name": "Heald Square Monument",
+      "lat": 41.887203,
+      "lon": -87.626847,
+      "kind": "monument"
+    },
+    {
+      "name": "77 West Wacker",
+      "lat": 41.886518,
+      "lon": -87.630551,
+      "kind": "tower",
+      "heightM": 203.6
+    },
+    {
+      "name": "Chicago Title & Trust Building",
+      "lat": 41.884911,
+      "lon": -87.630522,
+      "kind": "tower",
+      "heightM": 230.0
+    },
+    {
+      "name": "Block 37 Shops",
+      "lat": 41.883863,
+      "lon": -87.628711,
+      "kind": "building"
+    },
+    {
+      "name": "Macy's",
+      "lat": 41.883863,
+      "lon": -87.627055,
+      "kind": "building"
+    },
+    {
+      "name": "Richard J. Daley Center",
+      "lat": 41.884096,
+      "lon": -87.630206,
+      "kind": "tower",
+      "heightM": 197.5
+    },
+    {
+      "name": "Seventeenth Church of Christ Scientist",
+      "lat": 41.887095,
+      "lon": -87.625908,
+      "kind": "building"
+    },
+    {
+      "name": "Monument With Standing Beast",
+      "lat": 41.884741,
+      "lon": -87.631214,
+      "kind": "artwork"
+    },
+    {
+      "name": "Chicago Picasso",
+      "lat": 41.883623,
+      "lon": -87.629979,
+      "kind": "artwork"
+    },
+    {
+      "name": "OneEleven",
+      "lat": 41.886512,
+      "lon": -87.631456,
+      "kind": "tower",
+      "heightM": 192.0
+    },
+    {
+      "name": "We Will Chicago",
+      "lat": 41.884423,
+      "lon": -87.625466,
+      "kind": "artwork"
+    },
+    {
+      "name": "Irv Kupcinet",
+      "lat": 41.887701,
+      "lon": -87.626232,
+      "kind": "artwork"
+    },
+    {
+      "name": "Google Center",
+      "lat": 41.885119,
+      "lon": -87.631682,
+      "kind": "building"
+    },
+    {
+      "name": "Pendry Chicago",
+      "lat": 41.886526,
+      "lon": -87.625008,
+      "kind": "tower",
+      "heightM": 149.0
+    },
+    {
+      "name": "Chicago Picasso Braille Model",
+      "lat": 41.883377,
+      "lon": -87.629829,
+      "kind": "artwork"
+    },
+    {
+      "name": "Crain Communications Building",
+      "lat": 41.884826,
+      "lon": -87.624972,
+      "kind": "tower",
+      "heightM": 177.0
+    },
+    {
+      "name": "Staypineapple, An Iconic Hotel, The Loop",
+      "lat": 41.883042,
+      "lon": -87.628233,
+      "kind": "building"
+    },
+    {
+      "name": "Club Quarters Hotel, Wacker at Michigan",
+      "lat": 41.887616,
+      "lon": -87.625442,
+      "kind": "tower",
+      "heightM": 158.0
+    },
+    {
+      "name": "Reliance Building",
+      "lat": 41.882864,
+      "lon": -87.628538,
+      "kind": "building"
+    },
+    {
+      "name": "330 North Wabash",
+      "lat": 41.888655,
+      "lon": -87.627595,
+      "kind": "tower",
+      "heightM": 211.8
+    },
+    {
+      "name": "Cook County Building",
+      "lat": 41.883849,
+      "lon": -87.631395,
+      "kind": "building"
+    },
+    {
+      "name": "London House Chicago",
+      "lat": 41.887755,
+      "lon": -87.625305,
+      "kind": "building"
+    },
+    {
+      "name": "321 North Clark",
+      "lat": 41.888252,
+      "lon": -87.630618,
+      "kind": "tower",
+      "heightM": 155.0
+    },
+    {
+      "name": "Miro's Chicago",
+      "lat": 41.883069,
+      "lon": -87.630377,
+      "kind": "artwork"
+    },
+    {
+      "name": "Stevens Building",
+      "lat": 41.882714,
+      "lon": -87.62737,
+      "kind": "building"
+    },
+    {
+      "name": "Chicago Cultural Center",
+      "lat": 41.88388,
+      "lon": -87.624985,
+      "kind": "building"
+    },
+    {
+      "name": "London Guarantee Building",
+      "lat": 41.887956,
+      "lon": -87.625098,
+      "kind": "building"
+    },
+    {
+      "name": "Illinois Holocaust Museum Presents Experience360",
+      "lat": 41.889024,
+      "lon": -87.628586,
+      "kind": "museum"
+    },
+    {
+      "name": "Chicago City Hall",
+      "lat": 41.883845,
+      "lon": -87.631953,
+      "kind": "building"
+    },
+    {
+      "name": "First United Methodist Church of Chicago",
+      "lat": 41.882859,
+      "lon": -87.630615,
+      "kind": "building"
+    },
+    {
+      "name": "Harry Caray's Italian Steakhouse",
+      "lat": 41.889017,
+      "lon": -87.629277,
+      "kind": "building"
+    },
+    {
+      "name": "Old Republic Building",
+      "lat": 41.887089,
+      "lon": -87.624191,
+      "kind": "building"
+    },
+    {
+      "name": "Trump International Hotel & Tower Chicago",
+      "lat": 41.888873,
+      "lon": -87.626457,
+      "kind": "building"
+    },
+    {
+      "name": "353 North Clark",
+      "lat": 41.888928,
+      "lon": -87.630147,
+      "kind": "tower",
+      "heightM": 182.0
+    },
+    {
+      "name": "Reid-Murdoch Center",
+      "lat": 41.888114,
+      "lon": -87.631747,
+      "kind": "building"
+    },
+    {
+      "name": "Cow",
+      "lat": 41.883357,
+      "lon": -87.624819,
+      "kind": "artwork"
+    },
+    {
+      "name": "Michael A. Bilandic Building",
+      "lat": 41.884816,
+      "lon": -87.63292,
+      "kind": "building"
+    },
+    {
+      "name": "Three First National Plaza",
+      "lat": 41.882334,
+      "lon": -87.629854,
+      "kind": "tower",
+      "heightM": 234.0
+    },
+    {
+      "name": "Burnham Center",
+      "lat": 41.882863,
+      "lon": -87.63142,
+      "kind": "building"
+    },
+    {
+      "name": "333 North Michigan",
+      "lat": 41.887811,
+      "lon": -87.62421,
+      "kind": "building"
+    },
+    {
+      "name": "Builders Building",
+      "lat": 41.886513,
+      "lon": -87.633253,
+      "kind": "building"
+    },
+    {
+      "name": "McCormick Bridgehouse & Chicago River Museum",
+      "lat": 41.888495,
+      "lon": -87.624686,
+      "kind": "museum"
+    },
+    {
+      "name": "Chicago Building",
+      "lat": 41.881858,
+      "lon": -87.62818,
+      "kind": "building"
+    },
+    {
+      "name": "Cadillac Palace Theatre",
+      "lat": 41.884118,
+      "lon": -87.633173,
+      "kind": "building"
+    },
+    {
+      "name": "Century Tower",
+      "lat": 41.886054,
+      "lon": -87.633659,
+      "kind": "tower",
+      "heightM": 137.0
+    },
+    {
+      "name": "120 North LaSalle",
+      "lat": 41.883711,
+      "lon": -87.632964,
+      "kind": "tower",
+      "heightM": 153.0
+    },
+    {
+      "name": "One Illinois Center",
+      "lat": 41.88769,
+      "lon": -87.623577,
+      "kind": "building"
+    },
+    {
+      "name": "Heyworth Building",
+      "lat": 41.881873,
+      "lon": -87.626703,
+      "kind": "building"
+    },
+    {
+      "name": "Randolph Tower",
+      "lat": 41.884835,
+      "lon": -87.633632,
+      "kind": "tower",
+      "heightM": 140.8
+    },
+    {
+      "name": "Two Illinois Center",
+      "lat": 41.886955,
+      "lon": -87.623054,
+      "kind": "building"
+    },
+    {
+      "name": "St. Peter's Church",
+      "lat": 41.882325,
+      "lon": -87.63148,
+      "kind": "building"
+    },
+    {
+      "name": "Chicago Architecture Center",
+      "lat": 41.888013,
+      "lon": -87.623623,
+      "kind": "museum"
+    },
+    {
+      "name": "Two Prudential Plaza",
+      "lat": 41.885418,
+      "lon": -87.62272,
+      "kind": "tower",
+      "heightM": 303.0
+    },
+    {
+      "name": "Crossing",
+      "lat": 41.888575,
+      "lon": -87.632531,
+      "kind": "artwork"
+    },
+    {
+      "name": "Silversmith Hotel Chicago Downtown",
+      "lat": 41.881652,
+      "lon": -87.626655,
+      "kind": "building"
+    },
+    {
+      "name": "Sullivan Center",
+      "lat": 41.881486,
+      "lon": -87.627271,
+      "kind": "building"
+    },
+    {
+      "name": "Chase Tower",
+      "lat": 41.881619,
+      "lon": -87.630141,
+      "kind": "tower",
+      "heightM": 260.0
+    },
+    {
+      "name": "300 North LaSalle",
+      "lat": 41.888223,
+      "lon": -87.633141,
+      "kind": "building"
+    },
+    {
+      "name": "I Am Temple",
+      "lat": 41.883477,
+      "lon": -87.633363,
+      "kind": "building"
+    },
+    {
+      "name": "One North LaSalle",
+      "lat": 41.88232,
+      "lon": -87.632027,
+      "kind": "tower",
+      "heightM": 161.0
+    },
+    {
+      "name": "Haskell Building",
+      "lat": 41.881482,
+      "lon": -87.626646,
+      "kind": "building"
+    },
+    {
+      "name": "River Plaza",
+      "lat": 41.889796,
+      "lon": -87.625787,
+      "kind": "building"
+    },
+    {
+      "name": "Barker Building",
+      "lat": 41.881369,
+      "lon": -87.626644,
+      "kind": "building"
+    },
+    {
+      "name": "Jewelers Building",
+      "lat": 41.881624,
+      "lon": -87.625683,
+      "kind": "building"
+    },
+    {
+      "name": "J.P. Atwater",
+      "lat": 41.881259,
+      "lon": -87.626641,
+      "kind": "building"
+    },
+    {
+      "name": "Loop Synagogue",
+      "lat": 41.881589,
+      "lon": -87.63126,
+      "kind": "building"
+    },
+    {
+      "name": "Court House Square",
+      "lat": 41.890241,
+      "lon": -87.630135,
+      "kind": "building"
+    },
+    {
+      "name": "Inland Steel Building",
+      "lat": 41.881061,
+      "lon": -87.629012,
+      "kind": "building"
+    },
+    {
+      "name": "Wrigley Building",
+      "lat": 41.889661,
+      "lon": -87.624796,
+      "kind": "building"
+    },
+    {
+      "name": "Four Seasons",
+      "lat": 41.881094,
+      "lon": -87.629789,
+      "kind": "artwork"
+    },
+    {
+      "name": "Plaza 440",
+      "lat": 41.890478,
+      "lon": -87.627411,
+      "kind": "tower",
+      "heightM": 149.4
+    },
+    {
+      "name": "Cloud Gate",
+      "lat": 41.882686,
+      "lon": -87.623341,
+      "kind": "artwork"
+    },
+    {
+      "name": "Legacy at Millennium Park",
+      "lat": 41.881329,
+      "lon": -87.625664,
+      "kind": "tower",
+      "heightM": 250.0
+    },
+    {
+      "name": "Hyatt Regency Chicago",
+      "lat": 41.887492,
+      "lon": -87.622234,
+      "kind": "building"
+    },
+    {
+      "name": "Residence Inn Chicago Downtown/Loop",
+      "lat": 41.881686,
+      "lon": -87.631951,
+      "kind": "tower",
+      "heightM": 138.0
+    },
+    {
+      "name": "Gage Building",
+      "lat": 41.881475,
+      "lon": -87.624954,
+      "kind": "tower",
+      "heightM": 133.5
+    },
+    {
+      "name": "151 North Franklin",
+      "lat": 41.884831,
+      "lon": -87.634893,
+      "kind": "tower",
+      "heightM": 183.0
+    },
+    {
+      "name": "Aon Center",
+      "lat": 41.885282,
+      "lon": -87.621548,
+      "kind": "tower",
+      "heightM": 340.0
+    },
+    {
+      "name": "Washington Block",
+      "lat": 41.882969,
+      "lon": -87.634088,
+      "kind": "tower",
+      "heightM": 155.0
+    },
+    {
+      "name": "Joan W. and Irving B. Harris Theater for Music and Dance",
+      "lat": 41.883893,
+      "lon": -87.621902,
+      "kind": "building"
+    },
+    {
+      "name": "Merchandise Mart CTA Station",
+      "lat": 41.888668,
+      "lon": -87.634016,
+      "kind": "building"
+    },
+    {
+      "name": "Amalgamated Bank",
+      "lat": 41.880478,
+      "lon": -87.628152,
+      "kind": "building"
+    },
+    {
+      "name": "Jay Pritzker Pavilion",
+      "lat": 41.883508,
+      "lon": -87.62189,
+      "kind": "building"
+    },
+    {
+      "name": "10 South LaSalle",
+      "lat": 41.881602,
+      "lon": -87.632745,
+      "kind": "tower",
+      "heightM": 153.0
+    },
+    {
+      "name": "Jack Brickhouse",
+      "lat": 41.889889,
+      "lon": -87.623865,
+      "kind": "artwork"
+    },
+    {
+      "name": "55 West Monroe",
+      "lat": 41.880389,
+      "lon": -87.629848,
+      "kind": "building"
+    },
+    {
+      "name": "The Kimpton Gray Hotel",
+      "lat": 41.88089,
+      "lon": -87.631763,
+      "kind": "tower",
+      "heightM": 155.0
+    },
+    {
+      "name": "The Palmer House Hilton",
+      "lat": 41.880335,
+      "lon": -87.626952,
+      "kind": "building"
+    },
+    {
+      "name": "Equitable Building",
+      "lat": 41.889612,
+      "lon": -87.622991,
+      "kind": "tower",
+      "heightM": 139.0
+    },
+    {
+      "name": "Singer Building",
+      "lat": 41.880158,
+      "lon": -87.628137,
+      "kind": "building"
+    },
+    {
+      "name": "181 West Madison",
+      "lat": 41.88158,
+      "lon": -87.633358,
+      "kind": "tower",
+      "heightM": 207.0
+    },
+    {
+      "name": "Madison Plaza",
+      "lat": 41.882314,
+      "lon": -87.634343,
+      "kind": "tower",
+      "heightM": 182.0
+    },
+    {
+      "name": "McDonald's Cycle Center",
+      "lat": 41.883945,
+      "lon": -87.621115,
+      "kind": "building"
+    },
+    {
+      "name": "Northern Trust Bank",
+      "lat": 41.88103,
+      "lon": -87.632623,
+      "kind": "building"
+    },
+    {
+      "name": "American Medical Association",
+      "lat": 41.891427,
+      "lon": -87.627336,
+      "kind": "building"
+    },
+    {
+      "name": "333 Wacker Drive",
+      "lat": 41.886142,
+      "lon": -87.635984,
+      "kind": "tower",
+      "heightM": 148.0
+    },
+    {
+      "name": "Pritzker Military Museum & Library",
+      "lat": 41.88062,
+      "lon": -87.624663,
+      "kind": "museum"
+    },
+    {
+      "name": "Mid-Continental Plaza",
+      "lat": 41.880173,
+      "lon": -87.625648,
+      "kind": "building"
+    },
+    {
+      "name": "University of Chicago Gleacher Center",
+      "lat": 41.889626,
+      "lon": -87.62233,
+      "kind": "building"
+    },
+    {
+      "name": "Citadel Center",
+      "lat": 41.879807,
+      "lon": -87.628561,
+      "kind": "building"
+    },
+    {
+      "name": "Marquette Building",
+      "lat": 41.879794,
+      "lon": -87.629758,
+      "kind": "building"
+    },
+    {
+      "name": "Merchandise Mart",
+      "lat": 41.888533,
+      "lon": -87.635486,
+      "kind": "building"
+    },
+    {
+      "name": "155 North Wacker",
+      "lat": 41.884828,
+      "lon": -87.63632,
+      "kind": "tower",
+      "heightM": 194.0
+    },
+    {
+      "name": "Tribune Tower",
+      "lat": 41.890552,
+      "lon": -87.623328,
+      "kind": "building"
+    },
+    {
+      "name": "191 North Wacker",
+      "lat": 41.885371,
+      "lon": -87.636483,
+      "kind": "tower",
+      "heightM": 157.0
+    },
+    {
+      "name": "The National Building",
+      "lat": 41.879787,
+      "lon": -87.630346,
+      "kind": "building"
+    },
+    {
+      "name": "The Shops at North Bridge",
+      "lat": 41.891431,
+      "lon": -87.624972,
+      "kind": "building"
+    },
+    {
+      "name": "Cubi VII",
+      "lat": 41.880484,
+      "lon": -87.623803,
+      "kind": "artwork"
+    },
+    {
+      "name": "Aqua",
+      "lat": 41.886325,
+      "lon": -87.619903,
+      "kind": "tower",
+      "heightM": 262.0
+    },
+    {
+      "name": "Grand Plaza",
+      "lat": 41.89206,
+      "lon": -87.628897,
+      "kind": "tower",
+      "heightM": 195.0
+    },
+    {
+      "name": "Blue Cross-Blue Shield Tower",
+      "lat": 41.884878,
+      "lon": -87.619911,
+      "kind": "tower",
+      "heightM": 243.0
+    },
+    {
+      "name": "122 South Michigan",
+      "lat": 41.879912,
+      "lon": -87.624946,
+      "kind": "building"
+    },
+    {
+      "name": "Century Building",
+      "lat": 41.87931,
+      "lon": -87.62809,
+      "kind": "building"
+    },
+    {
+      "name": "Field Building",
+      "lat": 41.879769,
+      "lon": -87.631568,
+      "kind": "building"
+    },
+    {
+      "name": "Chicago Rising from the Lake",
+      "lat": 41.888973,
+      "lon": -87.620783,
+      "kind": "artwork"
+    },
+    {
+      "name": "Wolf Point East",
+      "lat": 41.887792,
+      "lon": -87.636761,
+      "kind": "tower",
+      "heightM": 207.0
+    },
+    {
+      "name": "Anti-Cruelty Society",
+      "lat": 41.891368,
+      "lon": -87.63305,
+      "kind": "building"
+    },
+    {
+      "name": "Begin Route 66",
+      "lat": 41.879615,
+      "lon": -87.62463,
+      "kind": "attraction"
+    },
+    {
+      "name": "Consumers Building",
+      "lat": 41.879014,
+      "lon": -87.628161,
+      "kind": "building"
+    },
+    {
+      "name": "UBS Tower",
+      "lat": 41.882331,
+      "lon": -87.636142,
+      "kind": "tower",
+      "heightM": 198.0
+    },
+    {
+      "name": "Lion \"on the prowl\"",
+      "lat": 41.879727,
+      "lon": -87.624151,
+      "kind": "artwork"
+    },
+    {
+      "name": "190 South Lasalle",
+      "lat": 41.879753,
+      "lon": -87.63272,
+      "kind": "building"
+    },
+    {
+      "name": "NBC Tower",
+      "lat": 41.889888,
+      "lon": -87.621033,
+      "kind": "tower",
+      "heightM": 151.5
+    },
+    {
+      "name": "Dirksen Federal Building and US Courthouse",
+      "lat": 41.878818,
+      "lon": -87.628962,
+      "kind": "building"
+    },
+    {
+      "name": "McClurg Building",
+      "lat": 41.878879,
+      "lon": -87.626594,
+      "kind": "building"
+    },
+    {
+      "name": "Flamingo",
+      "lat": 41.878807,
+      "lon": -87.629681,
+      "kind": "artwork"
+    },
+    {
+      "name": "Benson & Rixon Building",
+      "lat": 41.878679,
+      "lon": -87.628076,
+      "kind": "building"
+    },
+    {
+      "name": "Lion \u201cin an attitude of defiance\u201d",
+      "lat": 41.879395,
+      "lon": -87.624144,
+      "kind": "artwork"
+    },
+    {
+      "name": "110 North Wacker",
+      "lat": 41.883754,
+      "lon": -87.637465,
+      "kind": "tower",
+      "heightM": 249.0
+    },
+    {
+      "name": "Millennium Centre",
+      "lat": 41.892856,
+      "lon": -87.629235,
+      "kind": "tower",
+      "heightM": 179.9
+    },
+    {
+      "name": "Tree Studios",
+      "lat": 41.892877,
+      "lon": -87.627731,
+      "kind": "building"
+    },
+    {
+      "name": "The Rookery",
+      "lat": 41.879083,
+      "lon": -87.631831,
+      "kind": "building"
+    },
+    {
+      "name": "340 on the Park",
+      "lat": 41.884794,
+      "lon": -87.618806,
+      "kind": "tower",
+      "heightM": 189.1
+    },
+    {
+      "name": "Theodore Thomas Orchestra Hall",
+      "lat": 41.878983,
+      "lon": -87.625096,
+      "kind": "building"
+    },
+    {
+      "name": "Salesforce Tower",
+      "lat": 41.887386,
+      "lon": -87.63766,
+      "kind": "tower",
+      "heightM": 255.0
+    },
+    {
+      "name": "Former Medinah Temple",
+      "lat": 41.892894,
+      "lon": -87.62725,
+      "kind": "building"
+    },
+    {
+      "name": "Chicago Stock Exchange Arch",
+      "lat": 41.880674,
+      "lon": -87.621176,
+      "kind": "artwork"
+    },
+    {
+      "name": "Ronald McDonald House",
+      "lat": 41.891532,
+      "lon": -87.62224,
+      "kind": "tower",
+      "heightM": 135.0
+    },
+    {
+      "name": "Kluczynski Federal Building",
+      "lat": 41.878455,
+      "lon": -87.629898,
+      "kind": "tower",
+      "heightM": 166.0
+    },
+    {
+      "name": "The Art Institute of Chicago",
+      "lat": 41.879559,
+      "lon": -87.622568,
+      "kind": "museum"
+    },
+    {
+      "name": "Optima Signature",
+      "lat": 41.891511,
+      "lon": -87.621599,
+      "kind": "tower",
+      "heightM": 179.0
+    },
+    {
+      "name": "Constellation",
+      "lat": 41.886264,
+      "lon": -87.638929,
+      "kind": "artwork"
+    },
+    {
+      "name": "Loews Chicago Downtown",
+      "lat": 41.889864,
+      "lon": -87.619093,
+      "kind": "tower",
+      "heightM": 174.0
+    },
+    {
+      "name": "Money Museum",
+      "lat": 41.87833,
+      "lon": -87.632568,
+      "kind": "museum"
+    },
+    {
+      "name": "111 South Wacker",
+      "lat": 41.88029,
+      "lon": -87.636317,
+      "kind": "tower",
+      "heightM": 208.0
+    },
+    {
+      "name": "Ransom R. Cable House",
+      "lat": 41.89391,
+      "lon": -87.627065,
+      "kind": "tower",
+      "heightM": 149.4
+    },
+    {
+      "name": "55 East Erie",
+      "lat": 41.893874,
+      "lon": -87.626112,
+      "kind": "tower",
+      "heightM": 197.0
+    },
+    {
+      "name": "Museum of Broadcast Communications",
+      "lat": 41.884604,
+      "lon": -87.639321,
+      "kind": "museum"
+    },
+    {
+      "name": "River Point",
+      "lat": 41.886177,
+      "lon": -87.639453,
+      "kind": "tower",
+      "heightM": 222.0
+    },
+    {
+      "name": "St. Regis Chicago",
+      "lat": 41.887237,
+      "lon": -87.617259,
+      "kind": "tower",
+      "heightM": 362.9
+    },
+    {
+      "name": "Sir Georg Solti Bust",
+      "lat": 41.877868,
+      "lon": -87.623633,
+      "kind": "artwork"
+    },
+    {
+      "name": "Chicago Board of Trade Building",
+      "lat": 41.877506,
+      "lon": -87.631783,
+      "kind": "tower",
+      "heightM": 184.0
+    },
+    {
+      "name": "The Shoreham",
+      "lat": 41.886721,
+      "lon": -87.616826,
+      "kind": "tower",
+      "heightM": 142.0
+    },
+    {
+      "name": "Richard H. Driehaus Museum",
+      "lat": 41.894285,
+      "lon": -87.626503,
+      "kind": "museum"
+    },
+    {
+      "name": "Metropolitan Water Reclamation District of Greater Chicago",
+      "lat": 41.894422,
+      "lon": -87.625095,
+      "kind": "tower",
+      "heightM": 143.0
+    },
+    {
+      "name": "Willis Tower",
+      "lat": 41.878735,
+      "lon": -87.635962,
+      "kind": "tower",
+      "heightM": 442.1
+    },
+    {
+      "name": "Hector Guimard Metro entrance",
+      "lat": 41.876951,
+      "lon": -87.623881,
+      "kind": "artwork"
+    },
+    {
+      "name": "River East Center",
+      "lat": 41.891433,
+      "lon": -87.618195,
+      "kind": "tower",
+      "heightM": 196.3
+    },
+    {
+      "name": "200 South Wacker",
+      "lat": 41.879035,
+      "lon": -87.637383,
+      "kind": "tower",
+      "heightM": 152.0
+    },
+    {
+      "name": "The Fordham",
+      "lat": 41.895293,
+      "lon": -87.627314,
+      "kind": "tower",
+      "heightM": 158.6
+    },
+    {
+      "name": "North Harbor Tower",
+      "lat": 41.885444,
+      "lon": -87.615475,
+      "kind": "tower",
+      "heightM": 163.0
+    },
+    {
+      "name": "Chicago Place",
+      "lat": 41.895334,
+      "lon": -87.624944,
+      "kind": "tower",
+      "heightM": 185.0
+    },
+    {
+      "name": "311 South Wacker Drive",
+      "lat": 41.877464,
+      "lon": -87.6359,
+      "kind": "tower",
+      "heightM": 292.9
+    },
+    {
+      "name": "Harbor Point",
+      "lat": 41.884938,
+      "lon": -87.614798,
+      "kind": "tower",
+      "heightM": 160.0
+    },
+    {
+      "name": "The Parkshore",
+      "lat": 41.885668,
+      "lon": -87.614707,
+      "kind": "tower",
+      "heightM": 169.0
+    },
+    {
+      "name": "425 South Financial Place",
+      "lat": 41.875949,
+      "lon": -87.632227,
+      "kind": "tower",
+      "heightM": 157.0
+    },
+    {
+      "name": "Heller International Building",
+      "lat": 41.880912,
+      "lon": -87.640413,
+      "kind": "tower",
+      "heightM": 183.0
+    },
+    {
+      "name": "235 West Van Buren Street",
+      "lat": 41.876596,
+      "lon": -87.634658,
+      "kind": "tower",
+      "heightM": 150.0
+    },
+    {
+      "name": "San Marco II",
+      "lat": 41.875953,
+      "lon": -87.632715,
+      "kind": "artwork"
+    },
+    {
+      "name": "Equestrian Indians (The Bowman)",
+      "lat": 41.875978,
+      "lon": -87.623508,
+      "kind": "artwork"
+    },
+    {
+      "name": "Magdalene",
+      "lat": 41.875732,
+      "lon": -87.623879,
+      "kind": "artwork"
+    },
+    {
+      "name": "Chicago Union Station",
+      "lat": 41.878697,
+      "lon": -87.639196,
+      "kind": "tower",
+      "heightM": 137.0
+    },
+    {
+      "name": "400 East Ohio Street",
+      "lat": 41.892838,
+      "lon": -87.617411,
+      "kind": "tower",
+      "heightM": 157.0
+    },
+    {
+      "name": "Equestrian Indians (The Spearman)",
+      "lat": 41.875499,
+      "lon": -87.623491,
+      "kind": "artwork"
+    },
+    {
+      "name": "Batcolumn",
+      "lat": 41.881969,
+      "lon": -87.643123,
+      "kind": "memorial"
+    },
+    {
+      "name": "Loyola University Museum of Art",
+      "lat": 41.897329,
+      "lon": -87.625058,
+      "kind": "museum"
+    },
+    {
+      "name": "Buckingham Fountain",
+      "lat": 41.875802,
+      "lon": -87.618972,
+      "kind": "attraction"
+    },
+    {
+      "name": "Museum of Contemporary Art",
+      "lat": 41.897219,
+      "lon": -87.621221,
+      "kind": "museum"
+    },
+    {
+      "name": "Chicago Sports Museum",
+      "lat": 41.898026,
+      "lon": -87.622078,
+      "kind": "museum"
+    },
+    {
+      "name": "Allow Me",
+      "lat": 41.899341,
+      "lon": -87.624854,
+      "kind": "artwork"
+    },
+    {
+      "name": "Captain on the Helm",
+      "lat": 41.890719,
+      "lon": -87.609698,
+      "kind": "artwork"
+    },
+    {
+      "name": "Chicago Children's Museum",
+      "lat": 41.891472,
+      "lon": -87.609203,
+      "kind": "museum"
+    },
+    {
+      "name": "John Alexander Logan Monument",
+      "lat": 41.87062,
+      "lon": -87.623463,
+      "kind": "artwork"
+    },
+    {
+      "name": "National Hellenic Museum",
+      "lat": 41.877002,
+      "lon": -87.646845,
+      "kind": "museum"
+    },
+    {
+      "name": "Agora",
+      "lat": 41.86828,
+      "lon": -87.623571,
+      "kind": "artwork"
+    },
+    {
+      "name": "Navy Pier",
+      "lat": 41.891731,
+      "lon": -87.604147,
+      "kind": "attraction"
+    },
+    {
+      "name": "Big Beaver Totem Pole",
+      "lat": 41.867218,
+      "lon": -87.61707,
+      "kind": "artwork"
+    },
+    {
+      "name": "Brachiosaurus Replica",
+      "lat": 41.866658,
+      "lon": -87.618471,
+      "kind": "artwork"
+    },
+    {
+      "name": "Field Museum",
+      "lat": 41.866211,
+      "lon": -87.616897,
+      "kind": "museum"
+    },
+    {
+      "name": "Intuit Art Museum",
+      "lat": 41.895375,
+      "lon": -87.654604,
+      "kind": "museum"
+    },
+    {
+      "name": "Charnley-Pesky House Museum",
+      "lat": 41.907665,
+      "lon": -87.627534,
+      "kind": "museum"
+    },
+    {
+      "name": "Tadeusz Ko\u015bciuszko Monument",
+      "lat": 41.866282,
+      "lon": -87.612518,
+      "kind": "monument"
+    },
+    {
+      "name": "Credit Union 1 Arena",
+      "lat": 41.874835,
+      "lon": -87.656162,
+      "kind": "stadium"
+    },
+    {
+      "name": "Karel Havl\u00ed\u010dek Monument",
+      "lat": 41.866312,
+      "lon": -87.610469,
+      "kind": "monument"
+    },
+    {
+      "name": "International Museum of Surgical Science",
+      "lat": 41.910219,
+      "lon": -87.62674,
+      "kind": "museum"
+    },
+    {
+      "name": "Nicolaus Copernicus Monument",
+      "lat": 41.866352,
+      "lon": -87.6078,
+      "kind": "monument"
+    },
+    {
+      "name": "Soldier Field",
+      "lat": 41.86247,
+      "lon": -87.616724,
+      "kind": "stadium"
+    },
+    {
+      "name": "Chicago History Museum",
+      "lat": 41.911991,
+      "lon": -87.631521,
+      "kind": "museum"
+    },
+    {
+      "name": "Italo Balbo Monument",
+      "lat": 41.861501,
+      "lon": -87.613574,
+      "kind": "monument"
+    },
+    {
+      "name": "Polish Museum of America",
+      "lat": 41.899674,
+      "lon": -87.66105,
+      "kind": "museum"
+    },
+    {
+      "name": "National Public Housing Museum",
+      "lat": 41.869869,
+      "lon": -87.659774,
+      "kind": "museum"
+    },
+    {
+      "name": "Chicago Harbor Lighthouse",
+      "lat": 41.889345,
+      "lon": -87.590554,
+      "kind": "lighthouse"
+    },
+    {
+      "name": "Glessner House Museum",
+      "lat": 41.857722,
+      "lon": -87.621223,
+      "kind": "museum"
+    },
+    {
+      "name": "Henry B. Clarke House",
+      "lat": 41.857067,
+      "lon": -87.621877,
+      "kind": "house"
+    },
+    {
+      "name": "Ulysses S. Grant Monument",
+      "lat": 41.917545,
+      "lon": -87.630827,
+      "kind": "monument"
+    },
+    {
+      "name": "Chess Studio",
+      "lat": 41.853614,
+      "lon": -87.624219,
+      "kind": "museum"
+    },
+    {
+      "name": "Wintrust Arena",
+      "lat": 41.85366,
+      "lon": -87.621376,
+      "kind": "stadium"
+    },
+    {
+      "name": "United Center",
+      "lat": 41.880679,
+      "lon": -87.674183,
+      "kind": "stadium"
+    },
+    {
+      "name": "Chinese American Museum of Chicago",
+      "lat": 41.851203,
+      "lon": -87.633525,
+      "kind": "museum"
+    },
+    {
+      "name": "The Peggy Notebaert Nature Museum",
+      "lat": 41.926787,
+      "lon": -87.635194,
+      "kind": "museum"
+    },
+    {
+      "name": "Ukrainian National Museum",
+      "lat": 41.894607,
+      "lon": -87.684007,
+      "kind": "museum"
+    },
+    {
+      "name": "Biograph Theatre",
+      "lat": 41.926521,
+      "lon": -87.649801,
+      "kind": "attraction"
+    },
+    {
+      "name": "Paseo Bourica Gateway Flags",
+      "lat": 41.90302,
+      "lon": -87.688152,
+      "kind": "flagpole"
+    },
+    {
+      "name": "Waller Apartments",
+      "lat": 41.885631,
+      "lon": -87.69839,
+      "kind": "attraction"
+    },
+    {
+      "name": "Stephen A. Douglas Tomb",
+      "lat": 41.831761,
+      "lon": -87.608412,
+      "kind": "monument"
+    },
+    {
+      "name": "Rate Field",
+      "lat": 41.829674,
+      "lon": -87.633793,
+      "kind": "stadium"
+    },
+    {
+      "name": "The Light of Truth Ida B. Wells National Monument",
+      "lat": 41.82663,
+      "lon": -87.610129,
+      "kind": "monument"
+    },
+    {
+      "name": "Wrigley Field",
+      "lat": 41.948167,
+      "lon": -87.655557,
+      "kind": "stadium"
+    },
+    {
+      "name": "Illinois Centennial Monument",
+      "lat": 41.928391,
+      "lon": -87.707327,
+      "kind": "monument"
+    },
+    {
+      "name": "Byline Bank Aragon Ballroom",
+      "lat": 41.969431,
+      "lon": -87.658026,
+      "kind": "attraction"
+    },
+    {
+      "name": "Governor Henry Horner Memorial",
+      "lat": 41.961091,
+      "lon": -87.698234,
+      "kind": "monument"
+    },
+    {
+      "name": "Nuclear Energy",
+      "lat": 41.792489,
+      "lon": -87.601057,
+      "kind": "heritage"
+    },
+    {
+      "name": "Cicero Stadium",
+      "lat": 41.854294,
+      "lon": -87.753819,
+      "kind": "stadium"
+    },
+    {
+      "name": "Frederick C. Robie House",
+      "lat": 41.789809,
+      "lon": -87.595932,
+      "kind": "heritage"
+    },
+    {
+      "name": "U-505 Submarine",
+      "lat": 41.791881,
+      "lon": -87.581247,
+      "kind": "heritage"
+    },
+    {
+      "name": "Hawthorne Race Course",
+      "lat": 41.826527,
+      "lon": -87.74857,
+      "kind": "stadium"
+    },
+    {
+      "name": "Stony Island Arts Bank",
+      "lat": 41.77169,
+      "lon": -87.586656,
+      "kind": "heritage"
+    },
+    {
+      "name": "Drake Fountain",
+      "lat": 41.728094,
+      "lon": -87.552749,
+      "kind": "monument"
+    },
+    {
+      "name": "Weber Arch",
+      "lat": 42.051262,
+      "lon": -87.677049,
+      "kind": "monument"
+    },
+    {
+      "name": "Schiller Woods Magic Water Pump",
+      "lat": 41.952119,
+      "lon": -87.84398,
+      "kind": "water_well"
+    },
+    {
+      "name": "SeatGeek Stadium",
+      "lat": 41.764814,
+      "lon": -87.806137,
+      "kind": "stadium"
+    },
+    {
+      "name": "Grosse Point Lighthouse",
+      "lat": 42.063895,
+      "lon": -87.676021,
+      "kind": "lighthouse"
+    },
+    {
+      "name": "McGaw Memorial Hall",
+      "lat": 42.066968,
+      "lon": -87.692442,
+      "kind": "stadium"
+    },
+    {
+      "name": "Illinois/Indiana State Line Boundary Marker",
+      "lat": 41.707833,
+      "lon": -87.524481,
+      "kind": "obelisk"
+    },
+    {
+      "name": "Impact Field",
+      "lat": 41.978066,
+      "lon": -87.871057,
+      "kind": "stadium"
+    },
+    {
+      "name": "Western Springs Water Tower",
+      "lat": 41.809753,
+      "lon": -87.90092,
+      "kind": "water_tower"
+    },
+    {
+      "name": "Allstate Arena",
+      "lat": 42.005277,
+      "lon": -87.887772,
+      "kind": "stadium"
+    },
+    {
+      "name": "1000 gecs tree",
+      "lat": 42.030281,
+      "lon": -87.912277,
+      "kind": "attraction"
+    },
+    {
+      "name": "Shrine of Our Lady of Guadalupe",
+      "lat": 42.068596,
+      "lon": -87.894764,
+      "kind": "attraction"
+    },
+    {
+      "name": "Chicago Pile 1 Plot M",
+      "lat": 41.707287,
+      "lon": -87.910555,
+      "kind": "monument"
+    },
+    {
+      "name": "Chicago Pile 1 Site A",
+      "lat": 41.702159,
+      "lon": -87.912148,
+      "kind": "monument"
+    },
+    {
+      "name": "Genesis Convention Center",
+      "lat": 41.602815,
+      "lon": -87.338806,
+      "kind": "attraction"
+    },
+    {
+      "name": "U.S. Steel Yard",
+      "lat": 41.602942,
+      "lon": -87.332397,
+      "kind": "stadium"
+    },
+    {
+      "name": "Michael Jackson Childhood Home",
+      "lat": 41.576709,
+      "lon": -87.343816,
+      "kind": "attraction"
+    },
+    {
+      "name": "Medieval Times",
+      "lat": 42.064944,
+      "lon": -88.07618,
+      "kind": "attraction"
+    },
+    {
+      "name": "Wintrust Field",
+      "lat": 41.993119,
+      "lon": -88.117683,
+      "kind": "stadium"
+    },
+    {
+      "name": "NOW Arena",
+      "lat": 42.069297,
+      "lon": -88.212835,
+      "kind": "stadium"
+    },
+    {
+      "name": "Duly Health and Care Field",
+      "lat": 41.526011,
+      "lon": -88.077689,
+      "kind": "stadium"
+    },
+    {
+      "name": "Joliet Memorial Stadium",
+      "lat": 41.520305,
+      "lon": -88.152542,
+      "kind": "stadium"
+    },
+    {
+      "name": "Gemini Giant",
+      "lat": 41.306104,
+      "lon": -88.14966,
+      "kind": "attraction"
+    },
+    {
+      "name": "SkyDeck Chicago Willis Tower",
+      "lat": 41.878505,
+      "lon": -87.635887,
+      "kind": "attraction"
+    },
+    {
+      "name": "Centennial Wheel",
+      "lat": 41.891702,
+      "lon": -87.607475,
+      "kind": "attraction"
+    },
+    {
+      "name": "Southeast Guidewall Light",
+      "lat": 41.888336,
+      "lon": -87.602593,
+      "kind": "lighthouse"
+    },
+    {
+      "name": "Fifth Third Arena",
+      "lat": 41.877058,
+      "lon": -87.673594,
+      "kind": "stadium"
+    },
+    {
+      "name": "Cacciatore Stadium",
+      "lat": 41.924214,
+      "lon": -87.652112,
+      "kind": "stadium"
+    },
+    {
+      "name": "Parente Field at De La Salle",
+      "lat": 41.832321,
+      "lon": -87.624487,
+      "kind": "stadium"
+    },
+    {
+      "name": "Little Cubs Field",
+      "lat": 41.906149,
+      "lon": -87.705057,
+      "kind": "stadium"
+    },
+    {
+      "name": "DePaul College Prep Stadium",
+      "lat": 41.943238,
+      "lon": -87.691385,
+      "kind": "stadium"
+    },
+    {
+      "name": "Kerry Wood Cubs Field",
+      "lat": 41.943946,
+      "lon": -87.693003,
+      "kind": "stadium"
+    },
+    {
+      "name": "Lane Stadium",
+      "lat": 41.945484,
+      "lon": -87.692498,
+      "kind": "stadium"
+    },
+    {
+      "name": "Knute Rockne Field",
+      "lat": 41.866836,
+      "lon": -87.76328,
+      "kind": "stadium"
+    },
+    {
+      "name": "Indiana Harbor East Breakwater Lighthouse",
+      "lat": 41.680852,
+      "lon": -87.441091,
+      "kind": "lighthouse"
+    }
+  ],
+  "bridges": [
+    {
+      "name": "Chicago Skyway Bridge",
+      "points": [
+        [
+          41.725351,
+          -87.551526
+        ],
+        [
+          41.725189,
+          -87.551736
+        ],
+        [
+          41.724989,
+          -87.551466
+        ],
+        [
+          41.724621,
+          -87.550997
+        ],
+        [
+          41.724392,
+          -87.550711
+        ],
+        [
+          41.724151,
+          -87.550433
+        ],
+        [
+          41.723911,
+          -87.550162
+        ],
+        [
+          41.723663,
+          -87.549894
+        ],
+        [
+          41.723405,
+          -87.549632
+        ],
+        [
+          41.722918,
+          -87.549157
+        ],
+        [
+          41.722552,
+          -87.54882
+        ],
+        [
+          41.722092,
+          -87.548395
+        ],
+        [
+          41.721592,
+          -87.54794
+        ],
+        [
+          41.721101,
+          -87.547474
+        ],
+        [
+          41.72053,
+          -87.546877
+        ],
+        [
+          41.720068,
+          -87.546355
+        ],
+        [
+          41.719642,
+          -87.545831
+        ],
+        [
+          41.719235,
+          -87.545301
+        ],
+        [
+          41.718833,
+          -87.544734
+        ],
+        [
+          41.718652,
+          -87.544465
+        ],
+        [
+          41.718335,
+          -87.544003
+        ],
+        [
+          41.716701,
+          -87.541606
+        ],
+        [
+          41.716426,
+          -87.541202
+        ],
+        [
+          41.716094,
+          -87.540713
+        ],
+        [
+          41.715782,
+          -87.54021
+        ],
+        [
+          41.71548,
+          -87.53967
+        ],
+        [
+          41.715293,
+          -87.539285
+        ],
+        [
+          41.71507,
+          -87.538784
+        ],
+        [
+          41.714901,
+          -87.538379
+        ],
+        [
+          41.714736,
+          -87.537989
+        ],
+        [
+          41.714563,
+          -87.53758
+        ],
+        [
+          41.714387,
+          -87.537191
+        ],
+        [
+          41.714173,
+          -87.536766
+        ],
+        [
+          41.713948,
+          -87.536362
+        ],
+        [
+          41.71355,
+          -87.535745
+        ],
+        [
+          41.713123,
+          -87.535171
+        ],
+        [
+          41.712529,
+          -87.534544
+        ],
+        [
+          41.712168,
+          -87.534155
+        ],
+        [
+          41.71189,
+          -87.533856
+        ],
+        [
+          41.711256,
+          -87.533172
+        ],
+        [
+          41.711426,
+          -87.532887
+        ],
+        [
+          41.71206,
+          -87.533574
+        ],
+        [
+          41.712703,
+          -87.534265
+        ],
+        [
+          41.71317,
+          -87.534823
+        ],
+        [
+          41.71343,
+          -87.535156
+        ],
+        [
+          41.713631,
+          -87.535425
+        ],
+        [
+          41.71384,
+          -87.535724
+        ],
+        [
+          41.714016,
+          -87.535999
+        ],
+        [
+          41.714233,
+          -87.536368
+        ],
+        [
+          41.714581,
+          -87.537027
+        ],
+        [
+          41.714753,
+          -87.537407
+        ],
+        [
+          41.714929,
+          -87.537818
+        ],
+        [
+          41.715101,
+          -87.538233
+        ],
+        [
+          41.715268,
+          -87.538635
+        ],
+        [
+          41.715437,
+          -87.539016
+        ],
+        [
+          41.71567,
+          -87.539502
+        ],
+        [
+          41.715961,
+          -87.540025
+        ],
+        [
+          41.716266,
+          -87.540515
+        ],
+        [
+          41.7166,
+          -87.541
+        ],
+        [
+          41.716977,
+          -87.541555
+        ],
+        [
+          41.718579,
+          -87.54391
+        ],
+        [
+          41.718825,
+          -87.544272
+        ],
+        [
+          41.719002,
+          -87.544534
+        ],
+        [
+          41.719395,
+          -87.545091
+        ],
+        [
+          41.719799,
+          -87.545618
+        ],
+        [
+          41.720219,
+          -87.546131
+        ],
+        [
+          41.720674,
+          -87.546643
+        ],
+        [
+          41.721064,
+          -87.547049
+        ],
+        [
+          41.721725,
+          -87.54769
+        ],
+        [
+          41.722221,
+          -87.548148
+        ],
+        [
+          41.722683,
+          -87.548568
+        ],
+        [
+          41.722869,
+          -87.54874
+        ],
+        [
+          41.723407,
+          -87.549251
+        ],
+        [
+          41.723806,
+          -87.549661
+        ],
+        [
+          41.724056,
+          -87.549929
+        ],
+        [
+          41.724302,
+          -87.550205
+        ],
+        [
+          41.724541,
+          -87.550485
+        ],
+        [
+          41.724778,
+          -87.550775
+        ],
+        [
+          41.725171,
+          -87.551286
+        ],
+        [
+          41.725351,
+          -87.551526
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 4470.7,
+      "waterSpanM": 120.2
+    },
+    {
+      "name": "Des Plaines River Valley Bridge",
+      "points": [
+        [
+          41.681893,
+          -88.030945
+        ],
+        [
+          41.681013,
+          -88.030974
+        ],
+        [
+          41.680302,
+          -88.030954
+        ],
+        [
+          41.679362,
+          -88.030894
+        ],
+        [
+          41.678775,
+          -88.030838
+        ],
+        [
+          41.678257,
+          -88.030763
+        ],
+        [
+          41.677487,
+          -88.030648
+        ],
+        [
+          41.676609,
+          -88.030466
+        ],
+        [
+          41.675614,
+          -88.030232
+        ],
+        [
+          41.674693,
+          -88.029963
+        ],
+        [
+          41.673802,
+          -88.029674
+        ],
+        [
+          41.673547,
+          -88.029588
+        ],
+        [
+          41.672516,
+          -88.029281
+        ],
+        [
+          41.671894,
+          -88.029088
+        ],
+        [
+          41.670677,
+          -88.028699
+        ],
+        [
+          41.669623,
+          -88.028319
+        ],
+        [
+          41.668709,
+          -88.027937
+        ],
+        [
+          41.66801,
+          -88.027598
+        ],
+        [
+          41.667212,
+          -88.027132
+        ],
+        [
+          41.666434,
+          -88.026662
+        ],
+        [
+          41.665417,
+          -88.025951
+        ],
+        [
+          41.664418,
+          -88.025166
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 2026.7,
+      "waterSpanM": 300.4
+    },
+    {
+      "name": "Mile-Long Bridge",
+      "points": [
+        [
+          41.754186,
+          -87.872933
+        ],
+        [
+          41.7471,
+          -87.857523
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 1503.4,
+      "waterSpanM": 160.4
+    },
+    {
+      "name": "Tri-State Tollway",
+      "points": [
+        [
+          41.753938,
+          -87.872442
+        ],
+        [
+          41.751771,
+          -87.867605
+        ],
+        [
+          41.74935,
+          -87.862397
+        ],
+        [
+          41.748011,
+          -87.85964
+        ],
+        [
+          41.747382,
+          -87.858233
+        ],
+        [
+          41.74704,
+          -87.857382
+        ]
+      ],
+      "widthM": 18.6,
+      "lengthM": 1467.9,
+      "waterSpanM": 160.9
+    },
+    {
+      "name": "West 9th Street",
+      "points": [
+        [
+          41.590081,
+          -88.060237
+        ],
+        [
+          41.590173,
+          -88.060644
+        ],
+        [
+          41.590281,
+          -88.061213
+        ],
+        [
+          41.591264,
+          -88.066985
+        ],
+        [
+          41.591372,
+          -88.067527
+        ],
+        [
+          41.591489,
+          -88.067988
+        ],
+        [
+          41.591669,
+          -88.068519
+        ],
+        [
+          41.59185,
+          -88.068991
+        ],
+        [
+          41.59205,
+          -88.06941
+        ],
+        [
+          41.592195,
+          -88.069725
+        ],
+        [
+          41.592859,
+          -88.071109
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 966.2,
+      "waterSpanM": 322.4
+    },
+    {
+      "name": "South Central Avenue",
+      "points": [
+        [
+          41.812256,
+          -87.762762
+        ],
+        [
+          41.813173,
+          -87.762807
+        ],
+        [
+          41.820247,
+          -87.763026
+        ],
+        [
+          41.820759,
+          -87.763031
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 946.8,
+      "waterSpanM": 100.5
+    },
+    {
+      "name": "Houbolt Road (Toll Bridge)",
+      "points": [
+        [
+          41.470032,
+          -88.151347
+        ],
+        [
+          41.474921,
+          -88.154115
+        ]
+      ],
+      "widthM": 18.6,
+      "lengthM": 591.2,
+      "waterSpanM": 264.5
+    },
+    {
+      "name": "South Briggs Street",
+      "points": [
+        [
+          41.528194,
+          -88.043226
+        ],
+        [
+          41.523735,
+          -88.043093
+        ]
+      ],
+      "widthM": 18.6,
+      "lengthM": 496.5,
+      "waterSpanM": 123.8
+    },
+    {
+      "name": "1st Avenue",
+      "points": [
+        [
+          41.794473,
+          -87.823202
+        ],
+        [
+          41.794942,
+          -87.824465
+        ],
+        [
+          41.796343,
+          -87.828275
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 469.7,
+      "waterSpanM": 245.2
+    },
+    {
+      "name": "East Romeo Road",
+      "points": [
+        [
+          41.640724,
+          -88.057303
+        ],
+        [
+          41.640601,
+          -88.062479
+        ]
+      ],
+      "widthM": 18.6,
+      "lengthM": 430.9,
+      "waterSpanM": 123.3
+    },
+    {
+      "name": "Ronald Reagan Memorial Tollway",
+      "points": [
+        [
+          41.795961,
+          -88.322167
+        ],
+        [
+          41.796251,
+          -88.317023
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 428.2,
+      "waterSpanM": 122.5
+    },
+    {
+      "name": "Jane Addams Memorial Tollway",
+      "points": [
+        [
+          42.06661,
+          -88.26836
+        ],
+        [
+          42.066639,
+          -88.273314
+        ]
+      ],
+      "widthM": 18.6,
+      "lengthM": 409.4,
+      "waterSpanM": 123.0
+    },
+    {
+      "name": "Fabyan Parkway",
+      "points": [
+        [
+          41.866176,
+          -88.307789
+        ],
+        [
+          41.864745,
+          -88.312236
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 401.6,
+      "waterSpanM": 120.6
+    },
+    {
+      "name": "Lake Cook Road",
+      "points": [
+        [
+          42.153725,
+          -88.034357
+        ],
+        [
+          42.153687,
+          -88.029511
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 400.0,
+      "waterSpanM": 340.5
+    },
+    {
+      "name": "DesPlaines Railroad River Bridge",
+      "points": [
+        [
+          41.520429,
+          -88.088652
+        ],
+        [
+          41.521309,
+          -88.086966
+        ],
+        [
+          41.520429,
+          -88.088652
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 366.2,
+      "waterSpanM": 241.9
+    },
+    {
+      "name": "Stearns Road",
+      "points": [
+        [
+          41.977706,
+          -88.291834
+        ],
+        [
+          41.977861,
+          -88.29554
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 307.2,
+      "waterSpanM": 123.1
+    },
+    {
+      "name": "IL 83",
+      "points": [
+        [
+          41.702752,
+          -87.940493
+        ],
+        [
+          41.702278,
+          -87.94013
+        ],
+        [
+          41.701674,
+          -87.939668
+        ],
+        [
+          41.700486,
+          -87.938752
+        ]
+      ],
+      "widthM": 18.6,
+      "lengthM": 290.8,
+      "waterSpanM": 165.9
+    },
+    {
+      "name": "143rd Street",
+      "points": [
+        [
+          41.623418,
+          -88.19922
+        ],
+        [
+          41.623629,
+          -88.195746
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 290.1,
+      "waterSpanM": 124.5
+    },
+    {
+      "name": "South Shore 130th Street Bridge",
+      "points": [
+        [
+          41.658099,
+          -87.573211
+        ],
+        [
+          41.658107,
+          -87.571631
+        ],
+        [
+          41.657996,
+          -87.573227
+        ],
+        [
+          41.658099,
+          -87.573211
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 287.1,
+      "waterSpanM": 170.2
+    },
+    {
+      "name": "Grundy County Line Road",
+      "points": [
+        [
+          41.365691,
+          -88.248897
+        ],
+        [
+          41.368257,
+          -88.248956
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 285.7,
+      "waterSpanM": 244.3
+    },
+    {
+      "name": "Franklin Delano Roosevelt Memorial Bridge",
+      "points": [
+        [
+          41.888728,
+          -87.614292
+        ],
+        [
+          41.8889,
+          -87.614001
+        ],
+        [
+          41.888691,
+          -87.613848
+        ],
+        [
+          41.888247,
+          -87.613851
+        ],
+        [
+          41.887954,
+          -87.613913
+        ],
+        [
+          41.887948,
+          -87.614239
+        ],
+        [
+          41.888728,
+          -87.614292
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 285.4,
+      "waterSpanM": 147.8
+    },
+    {
+      "name": "95th Street Bridge",
+      "points": [
+        [
+          41.722997,
+          -87.543767
+        ],
+        [
+          41.722991,
+          -87.54277
+        ],
+        [
+          41.72287,
+          -87.542515
+        ],
+        [
+          41.722743,
+          -87.543513
+        ],
+        [
+          41.722969,
+          -87.543766
+        ],
+        [
+          41.722997,
+          -87.543767
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 284.7,
+      "waterSpanM": 145.2
+    },
+    {
+      "name": "State Street",
+      "points": [
+        [
+          41.675599,
+          -88.002103
+        ],
+        [
+          41.675113,
+          -88.002145
+        ],
+        [
+          41.67486,
+          -88.002168
+        ],
+        [
+          41.67463,
+          -88.002174
+        ],
+        [
+          41.67421,
+          -88.002154
+        ],
+        [
+          41.67398,
+          -88.002097
+        ],
+        [
+          41.673609,
+          -88.001949
+        ],
+        [
+          41.673203,
+          -88.001721
+        ]
+      ],
+      "widthM": 18.6,
+      "lengthM": 273.0,
+      "waterSpanM": 125.7
+    },
+    {
+      "name": "106th Street Bridge",
+      "points": [
+        [
+          41.702875,
+          -87.546553
+        ],
+        [
+          41.702862,
+          -87.545467
+        ],
+        [
+          41.702685,
+          -87.546395
+        ],
+        [
+          41.702875,
+          -87.546553
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 265.5,
+      "waterSpanM": 129.9
+    },
+    {
+      "name": "Calumet Sag Channel Canadian National Railroad Bridge",
+      "points": [
+        [
+          41.696238,
+          -87.941711
+        ],
+        [
+          41.696997,
+          -87.940654
+        ],
+        [
+          41.696238,
+          -87.941711
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 265.3,
+      "waterSpanM": 264.1
+    },
+    {
+      "name": "Lemont Railroad Bridge",
+      "points": [
+        [
+          41.678854,
+          -87.999946
+        ],
+        [
+          41.679942,
+          -87.999887
+        ],
+        [
+          41.678854,
+          -87.999946
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 262.0,
+      "waterSpanM": 120.9
+    },
+    {
+      "name": "DuSable Bridge",
+      "points": [
+        [
+          41.88852,
+          -87.624292
+        ],
+        [
+          41.888415,
+          -87.624603
+        ],
+        [
+          41.88865,
+          -87.6246
+        ],
+        [
+          41.888933,
+          -87.624533
+        ],
+        [
+          41.889168,
+          -87.624478
+        ],
+        [
+          41.889281,
+          -87.624214
+        ],
+        [
+          41.889058,
+          -87.624166
+        ],
+        [
+          41.888792,
+          -87.624229
+        ],
+        [
+          41.888564,
+          -87.624282
+        ],
+        [
+          41.88852,
+          -87.624292
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 256.1,
+      "waterSpanM": 183.1
+    },
+    {
+      "name": "Leithton Subdivision",
+      "points": [
+        [
+          41.554339,
+          -88.076791
+        ],
+        [
+          41.555918,
+          -88.078891
+        ]
+      ],
+      "widthM": 12.0,
+      "lengthM": 248.0,
+      "waterSpanM": 185.9
+    },
+    {
+      "name": "Bishop Ford Freeway",
+      "points": [
+        [
+          41.642223,
+          -87.578566
+        ],
+        [
+          41.640048,
+          -87.578555
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 242.1,
+      "waterSpanM": 241.5
+    },
+    {
+      "name": "Cicero Avenue Railroad Bridge",
+      "points": [
+        [
+          41.820584,
+          -87.738691
+        ],
+        [
+          41.821511,
+          -87.738509
+        ],
+        [
+          41.820584,
+          -87.738691
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 239.5,
+      "waterSpanM": 229.0
+    },
+    {
+      "name": "Norfolk Southern Railroad Calumet River Bridge",
+      "points": [
+        [
+          41.719852,
+          -87.543413
+        ],
+        [
+          41.719217,
+          -87.542534
+        ],
+        [
+          41.719728,
+          -87.54343
+        ],
+        [
+          41.719852,
+          -87.543413
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 232.0,
+      "waterSpanM": 230.2
+    },
+    {
+      "name": "BNSF Chillicothe Subdivision",
+      "points": [
+        [
+          41.682088,
+          -87.999294
+        ],
+        [
+          41.682586,
+          -87.999069
+        ],
+        [
+          41.682808,
+          -87.998951
+        ],
+        [
+          41.683106,
+          -87.998782
+        ],
+        [
+          41.683382,
+          -87.998614
+        ],
+        [
+          41.683649,
+          -87.998434
+        ],
+        [
+          41.683991,
+          -87.998186
+        ]
+      ],
+      "widthM": 12.0,
+      "lengthM": 231.5,
+      "waterSpanM": 126.1
+    },
+    {
+      "name": "Damen Avenue Bridge",
+      "points": [
+        [
+          41.927626,
+          -87.67801
+        ],
+        [
+          41.927891,
+          -87.678265
+        ],
+        [
+          41.928355,
+          -87.678281
+        ],
+        [
+          41.927823,
+          -87.678003
+        ],
+        [
+          41.927626,
+          -87.67801
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 230.9,
+      "waterSpanM": 194.8
+    },
+    {
+      "name": "Indiana Harbor Belt Sanitary and Ship Canal Bridge",
+      "points": [
+        [
+          41.783431,
+          -87.826595
+        ],
+        [
+          41.782815,
+          -87.825758
+        ],
+        [
+          41.783431,
+          -87.826595
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 227.9,
+      "waterSpanM": 217.1
+    },
+    {
+      "name": "Fullerton Avenue Bridge",
+      "points": [
+        [
+          41.925175,
+          -87.674934
+        ],
+        [
+          41.924964,
+          -87.674756
+        ],
+        [
+          41.924972,
+          -87.674208
+        ],
+        [
+          41.924977,
+          -87.673891
+        ],
+        [
+          41.925188,
+          -87.67405
+        ],
+        [
+          41.92518,
+          -87.674567
+        ],
+        [
+          41.925175,
+          -87.674934
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 220.1,
+      "waterSpanM": 221.8
+    },
+    {
+      "name": "Calumet Expressway",
+      "points": [
+        [
+          41.58023,
+          -87.581516
+        ],
+        [
+          41.580611,
+          -87.581593
+        ],
+        [
+          41.58102,
+          -87.581703
+        ],
+        [
+          41.581475,
+          -87.581846
+        ],
+        [
+          41.581799,
+          -87.581973
+        ],
+        [
+          41.582131,
+          -87.582122
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 217.9,
+      "waterSpanM": 108.7
+    },
+    {
+      "name": "Diversey Parkway Bridge",
+      "points": [
+        [
+          41.932147,
+          -87.682108
+        ],
+        [
+          41.932144,
+          -87.68242
+        ],
+        [
+          41.932141,
+          -87.68284
+        ],
+        [
+          41.932138,
+          -87.683162
+        ],
+        [
+          41.932331,
+          -87.682958
+        ],
+        [
+          41.932337,
+          -87.682542
+        ],
+        [
+          41.932341,
+          -87.68222
+        ],
+        [
+          41.932147,
+          -87.682108
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 217.2,
+      "waterSpanM": 155.1
+    },
+    {
+      "name": "Illinois Central Sanitary and Ship Canal Bridge",
+      "points": [
+        [
+          41.828212,
+          -87.714464
+        ],
+        [
+          41.829076,
+          -87.714476
+        ],
+        [
+          41.828213,
+          -87.714344
+        ],
+        [
+          41.828212,
+          -87.714464
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 212.6,
+      "waterSpanM": 222.7
+    },
+    {
+      "name": "Orchard Road",
+      "points": [
+        [
+          41.674523,
+          -88.377144
+        ],
+        [
+          41.674823,
+          -88.3773
+        ],
+        [
+          41.675052,
+          -88.377434
+        ],
+        [
+          41.675296,
+          -88.377589
+        ],
+        [
+          41.675493,
+          -88.37775
+        ],
+        [
+          41.675817,
+          -88.378035
+        ],
+        [
+          41.67617,
+          -88.378405
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 212.4,
+      "waterSpanM": 148.5
+    },
+    {
+      "name": "Sullivan Road",
+      "points": [
+        [
+          41.789117,
+          -88.316021
+        ],
+        [
+          41.789054,
+          -88.316789
+        ],
+        [
+          41.788966,
+          -88.318
+        ],
+        [
+          41.788932,
+          -88.318511
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 207.7,
+      "waterSpanM": 104.0
+    },
+    {
+      "name": "Irv Kupcinet Bridge",
+      "points": [
+        [
+          41.888251,
+          -87.626898
+        ],
+        [
+          41.888154,
+          -87.62718
+        ],
+        [
+          41.887592,
+          -87.626864
+        ],
+        [
+          41.887625,
+          -87.626548
+        ],
+        [
+          41.888242,
+          -87.626893
+        ],
+        [
+          41.888251,
+          -87.626898
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 206.7,
+      "waterSpanM": 217.1
+    },
+    {
+      "name": "Brandon Road",
+      "points": [
+        [
+          41.500616,
+          -88.103819
+        ],
+        [
+          41.498873,
+          -88.103015
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 205.2,
+      "waterSpanM": 163.9
+    },
+    {
+      "name": "West Renwick Road",
+      "points": [
+        [
+          41.59373,
+          -88.224116
+        ],
+        [
+          41.593776,
+          -88.221656
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 204.8,
+      "waterSpanM": 102.6
+    },
+    {
+      "name": "Ogden Avenue",
+      "points": [
+        [
+          41.820506,
+          -87.812146
+        ],
+        [
+          41.820669,
+          -87.8114
+        ],
+        [
+          41.820833,
+          -87.810798
+        ],
+        [
+          41.820928,
+          -87.810482
+        ],
+        [
+          41.821146,
+          -87.809863
+        ]
+      ],
+      "widthM": 18.6,
+      "lengthM": 202.7,
+      "waterSpanM": 121.8
+    },
+    {
+      "name": "West Balitmore Street",
+      "points": [
+        [
+          41.305884,
+          -88.150324
+        ],
+        [
+          41.305676,
+          -88.150727
+        ],
+        [
+          41.305568,
+          -88.151019
+        ],
+        [
+          41.305462,
+          -88.151369
+        ],
+        [
+          41.305325,
+          -88.152012
+        ],
+        [
+          41.305281,
+          -88.152523
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 198.7,
+      "waterSpanM": 220.9
+    },
+    {
+      "name": "Martin Luther King Jr Memorial Highway",
+      "points": [
+        [
+          42.020214,
+          -88.273925
+        ],
+        [
+          42.02023,
+          -88.274536
+        ],
+        [
+          42.020266,
+          -88.275052
+        ],
+        [
+          42.020322,
+          -88.275663
+        ],
+        [
+          42.020393,
+          -88.276291
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 196.9,
+      "waterSpanM": 109.5
+    },
+    {
+      "name": "Division Street North Branch Canal Bridge",
+      "points": [
+        [
+          41.903543,
+          -87.649989
+        ],
+        [
+          41.903552,
+          -87.649235
+        ],
+        [
+          41.903691,
+          -87.649781
+        ],
+        [
+          41.903543,
+          -87.649989
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 193.2,
+      "waterSpanM": 156.8
+    },
+    {
+      "name": "Kingery Highway Sanitary and Ship Canal Bridge",
+      "points": [
+        [
+          41.702306,
+          -87.940068
+        ],
+        [
+          41.70171,
+          -87.939586
+        ],
+        [
+          41.702226,
+          -87.940248
+        ],
+        [
+          41.702306,
+          -87.940068
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 192.7,
+      "waterSpanM": 196.2
+    },
+    {
+      "name": "Canal Street Railroad Bridge",
+      "points": [
+        [
+          41.855681,
+          -87.63707
+        ],
+        [
+          41.855258,
+          -87.637064
+        ],
+        [
+          41.855621,
+          -87.636943
+        ],
+        [
+          41.856051,
+          -87.636944
+        ],
+        [
+          41.855681,
+          -87.63707
+        ]
+      ],
+      "widthM": 16.0,
+      "lengthM": 191.0,
+      "waterSpanM": 201.2
+    },
+    {
+      "name": "Joliet Subdivision",
+      "points": [
+        [
+          41.310682,
+          -88.151494
+        ],
+        [
+          41.311369,
+          -88.14945
+        ]
+      ],
+      "widthM": 12.0,
+      "lengthM": 187.3,
+      "waterSpanM": 145.8
     }
   ],
   "places": [
@@ -2247,6 +5565,7 @@
   "attribution": [
     "Map data \u00a9 OpenStreetMap contributors, ODbL (openstreetmap.org/copyright).",
     "Elevation: USGS 3D Elevation Program (3DEP), public domain.",
-    "Airport and runway data: FAA Aeronautical Information Services, public domain."
+    "Airport and runway data: FAA Aeronautical Information Services, public domain.",
+    "Some building heights: Wikidata (CC0), property P2048."
   ]
 }
