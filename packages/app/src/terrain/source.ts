@@ -176,6 +176,43 @@ export interface TerrainSource {
   /** Elevation and surface type at a world coordinate. */
   sample(x: number, z: number): TerrainSample
   readonly airfields: readonly Airfield[]
+  /**
+   * Everything standing on the terrain, as boxes. Read once, never per frame.
+   *
+   * Optional because a map is allowed not to have any, and because making it
+   * optional is what let the real regions arrive without every existing caller
+   * being touched.
+   *
+   * It belongs on the seam rather than in the renderer for the reason §8.2 exists
+   * at all: `city.ts` used to reach past the interface and import the authored
+   * map's own `CITY` rectangle, so it could only ever draw one city. Asking the
+   * source instead means the authored map hands over its procedural grid, a real
+   * region hands over twenty-four thousand surveyed footprints, and the renderer
+   * cannot tell the difference — which is precisely the promise the terrain seam
+   * was written to keep.
+   */
+  buildings?(): BuildingInstance[]
+}
+
+/**
+ * One building, as the renderer wants it: a box on the ground.
+ *
+ * Deliberately not a footprint. The renderer draws boxes, so the fitting of an
+ * outline to a rectangle happens once, offline, rather than on every load — and a
+ * map that has no outlines to fit can still describe its buildings this way.
+ *
+ * No colour. Shade is derived from position by the renderer, which keeps it out of
+ * the region blob where it would cost four bytes times twenty-four thousand to say
+ * something a hash can say for nothing.
+ */
+export interface BuildingInstance {
+  x: number
+  z: number
+  halfLengthM: number
+  halfWidthM: number
+  /** Degrees, in the same convention as `Airfield.headingDeg`. */
+  headingDeg: number
+  heightM: number
 }
 
 // ---------------------------------------------------------------------------

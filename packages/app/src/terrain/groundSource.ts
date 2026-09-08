@@ -1,5 +1,5 @@
 /**
- * The authored map, seen from the physics package.
+ * The terrain, seen from the physics package.
  *
  * Two seams meet here and they use different units. `TerrainSource` (§8.2) answers
  * in three.js world space — metres, X east, Z south, Y up — because it exists for
@@ -12,6 +12,11 @@
  *
  * The axis flip is the same one `loop.ts` does when it places a spawn: the renderer
  * puts north at -Z, so `pn = -z` and `pe = +x`.
+ *
+ * It takes a `TerrainSource`, so it has always worked for any map — it was called
+ * `AuthoredGroundSource` only because there was one. Renamed when there were two:
+ * a class named for the authored map while wrapping New York is the kind of small
+ * lie that costs somebody an afternoon later.
  */
 
 import { ftToM, mToFt, type GroundSample, type GroundSource } from '@retro-flyer/physics'
@@ -36,7 +41,7 @@ function material(surface: Surface): Omit<GroundSample, 'elevation'> {
   }
 }
 
-export class AuthoredGroundSource implements GroundSource {
+export class TerrainGroundSource implements GroundSource {
   constructor(private readonly terrain: TerrainSource) {}
 
   sample(pn: number, pe: number): GroundSample {

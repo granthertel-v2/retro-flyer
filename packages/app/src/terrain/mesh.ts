@@ -39,7 +39,7 @@ import {
   MeshLambertMaterial,
   Object3D,
 } from 'three'
-import { Surface, hash2, type TerrainSource } from './source.js'
+import { Surface, clamp, hash2, type TerrainSource } from './source.js'
 
 /** Cells across each ring. Every ring uses the same count; only the cell size grows. */
 const RES = 64
@@ -117,7 +117,15 @@ function groundColour(out: Color, height: number, surface: Surface, jitter: numb
     case Surface.Water: {
       // Shallows read lighter, which is what makes a coastline legible from
       // altitude rather than a flat blue edge.
-      const t = Math.min(1, -height / 120)
+      //
+      // Clamped at both ends, and the lower clamp is not defensive tidying. The
+      // authored map's water is all below zero, so `-height` is positive there and
+      // the ramp behaves. Real regions carry the *water surface* rather than a
+      // depth: New York's sea reads 0 m and Lake Michigan reads 176. Unclamped,
+      // 176 m of lake gives t = -1.47, every channel is extrapolated past white,
+      // and the largest lake in the region turns bright cyan. Chicago is mostly
+      // that lake.
+      const t = clamp(-height / 120, 0, 1)
       out.setRGB(0.06 + 0.05 * (1 - t), 0.20 + 0.22 * (1 - t), 0.34 + 0.20 * (1 - t))
       break
     }

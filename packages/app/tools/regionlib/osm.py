@@ -208,8 +208,6 @@ LAND_COVER: tuple[Layer, ...] = (
         (
             'way["landuse"~"^(commercial|retail|industrial|port|railway)$"]',
             'rel["landuse"~"^(commercial|retail|industrial|port|railway)$"]',
-            'way["aeroway"="aerodrome"]',
-            'rel["aeroway"="aerodrome"]',
         ),
     ),
     Layer(
@@ -237,6 +235,17 @@ LAND_COVER: tuple[Layer, ...] = (
         "sand",
         6,
         ('way["natural"~"^(beach|sand|shingle)$"]', 'rel["natural"~"^(beach|sand)$"]'),
+    ),
+    # Aerodromes go down after the green layers, not with the other built-up land,
+    # and the order is the whole point. Airports contain large mapped grass polygons;
+    # painted in tag order the grass wins, the airfield reads as parkland, and
+    # `scatter.ts` — which spares water, runway, city and sand, but not grass — grows
+    # a forest across the infield at Kennedy. Painting the aerodrome last means an
+    # airport stays an airport.
+    Layer(
+        "aerodromes",
+        2,
+        ('way["aeroway"="aerodrome"]', 'rel["aeroway"="aerodrome"]'),
     ),
     Layer(
         "inland water",

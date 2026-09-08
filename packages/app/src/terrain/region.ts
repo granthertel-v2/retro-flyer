@@ -50,9 +50,12 @@ import {
   onRunway,
   runwayLift,
   type Airfield,
+  type BuildingInstance,
   type TerrainSample,
   type TerrainSource,
 } from './source.js'
+
+export type { BuildingInstance }
 
 /** One elevation grid. Square, axis-aligned, centred anywhere in the region. */
 export interface TerrainTier {
@@ -118,16 +121,6 @@ export interface RegionManifest {
   airfields: RegionAirfield[]
   /** Licence and provenance lines, rendered wherever the region is. */
   attribution: string[]
-}
-
-/** One building, as the renderer wants it: a box on the ground. */
-export interface BuildingInstance {
-  x: number
-  z: number
-  halfLengthM: number
-  halfWidthM: number
-  headingDeg: number
-  heightM: number
 }
 
 /** Floats per building in the blob: x, z, halfLength, halfWidth, heading, height. */

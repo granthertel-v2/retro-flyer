@@ -18,6 +18,24 @@ press any key to dismiss it, `/` to bring it back.
 Desktop browser and a keyboard. There is no touch control scheme and the HUD is laid
 out for a landscape window, so a phone will load it and you will not be able to fly it.
 
+### Real places
+
+Add `?region=new-york` or `?region=chicago` to the URL to fly a real one instead of
+the designed map. The terrain is USGS survey elevation, the coastline and buildings
+are OpenStreetMap, and the runways are FAA records — Kennedy's 13R/31L is 14,511 ft
+long and lies on 120.8 degrees true because that is what the FAA says, not because
+anyone placed it. You start on the longest runway in the region.
+
+They are about three megabytes each and load on demand, which is why they are opt-in:
+the designed map needs no network and is what everything here was flown against
+first. If a region fails to load you get the designed map and a line in the console
+rather than a black screen.
+
+Expect scenery, not a chart. Buildings are every OpenStreetMap footprint over twenty
+metres, fitted to a box; the ground is coloured by land cover at 120 m; there are no
+roads, no bridges and no modelled landmarks. It is enough to recognise where you are
+from the air, which is what it is for.
+
 The short version:
 
 | | |

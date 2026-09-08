@@ -48,7 +48,7 @@ import { describe, expect, it } from 'vitest'
 import { PHYSICS_DT, fpsToKt } from '@retro-flyer/physics'
 import { NEUTRAL_INPUT, type RawInput } from '@retro-flyer/control'
 import { Simulation } from '../src/loop.js'
-import { AuthoredGroundSource } from '../src/terrain/groundSource.js'
+import { TerrainGroundSource } from '../src/terrain/groundSource.js'
 import { authoredMap } from '../src/terrain/authored.js'
 import { runwayStart } from '../src/spawn.js'
 import { buildCourse } from '../src/course.js'
@@ -146,7 +146,7 @@ interface Flight {
 // ---------------------------------------------------------------------------
 
 function flyAcceptanceRun(startNudgeM = 0): Flight {
-  const ground = new AuthoredGroundSource(authoredMap)
+  const ground = new TerrainGroundSource(authoredMap)
   const bayside = authoredMap.airfields.find((a) => a.name === 'Bayside')!
   const ridgeview = authoredMap.airfields.find((a) => a.name === 'Ridgeview')!
 

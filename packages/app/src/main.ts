@@ -33,9 +33,12 @@ import { Hud, type SteerCue } from './hud/hud.js'
 import { bearingTo } from './hud/symbology.js'
 import { HelpCard } from './help.js'
 import { Clouds, SUN_DIRECTION, buildSun, positionSun } from './sky.js'
-import { MAP_EXTENT, authoredMap } from './terrain/authored.js'
-import { AuthoredGroundSource } from './terrain/groundSource.js'
+import { authoredMap } from './terrain/authored.js'
+import { isRegionId, loadRegion } from './terrain/load.js'
+import type { TerrainSource } from './terrain/source.js'
+import { TerrainGroundSource } from './terrain/groundSource.js'
 import { SPAWN, runwayStart } from './spawn.js'
+import type { Airfield } from './terrain/source.js'
 import { buildCourse } from './course.js'
 import { buildGates } from './terrain/gates.js'
 import { captureSituation, parseSituation, applySlew, speedOf } from './situation.js'
@@ -52,11 +55,15 @@ import { Scatter } from './terrain/scatter.js'
  * computed there would be for the wrong altitude. The field you are going to is the
  * one whose air you will be landing in.
  */
-function nearestFieldElevationFt(x: number, z: number): number {
-  let best = authoredMap.airfields[0]
+function nearestFieldElevationFt(
+  airfields: readonly Airfield[],
+  x: number,
+  z: number,
+): number {
+  let best = airfields[0]
   let bestDistance = Infinity
 
-  for (const field of authoredMap.airfields) {
+  for (const field of airfields) {
     const d = Math.hypot(field.x - x, field.z - z)
     if (d < bestDistance) {
       bestDistance = d
@@ -73,7 +80,44 @@ const VIEW_DISTANCE = 34_000
 const SKY = 0x86b0d6
 const HAZE = 0xb3c8d6
 
-function main(): void {
+/**
+ * Which world to fly in.
+ *
+ * `?region=new-york` or `?region=chicago` loads a real one; anything else, including
+ * no query at all, gets the authored map. Opt-in rather than default on purpose:
+ * the authored map is deterministic, needs no network, and is what every existing
+ * test and the whole of Days 1-4 were flown against. A real region is three
+ * megabytes over the wire and should be something you asked for.
+ *
+ * A failed load falls back rather than showing a blank page. Being dropped into the
+ * authored map with a line in the console is a much better outcome than a black
+ * screen, and the message says which region failed and why.
+ */
+async function chooseMap(): Promise<TerrainSource> {
+  const requested = new URLSearchParams(location.search).get('region')
+  if (!requested) return authoredMap
+
+  if (!isRegionId(requested)) {
+    console.warn(`unknown region "${requested}"; falling back to the authored map`)
+    return authoredMap
+  }
+
+  try {
+    return await loadRegion(requested)
+  } catch (error) {
+    console.error(`failed to load region "${requested}"`, error)
+    return authoredMap
+  }
+}
+
+async function main(): Promise<void> {
+  const map = await chooseMap()
+
+  // A region starts on its longest runway; the authored map keeps the airborne spawn
+  // Day 2 chose, whose coordinates only mean anything there. `airfields` is ordered
+  // longest first by the builder, so "the first one" is Kennedy in New York and
+  // O'Hare in Chicago rather than whichever GA strip happened to sort first.
+  const start = map === authoredMap ? SPAWN : runwayStart(map.airfields[0]!)
   const canvas = document.createElement('canvas')
   canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;display:block'
   document.body.style.cssText = 'margin:0;overflow:hidden;background:#000'
@@ -108,7 +152,7 @@ function main(): void {
 
   // The sea. Terrain below zero is seabed; this is the surface over it.
   const sea = new Mesh(
-    new PlaneGeometry(MAP_EXTENT * 6, MAP_EXTENT * 6),
+    new PlaneGeometry(map.extent * 6, map.extent * 6),
     new MeshBasicMaterial({ color: 0x1b4a68 }),
   )
   sea.rotation.x = -Math.PI / 2
@@ -116,13 +160,13 @@ function main(): void {
   sea.renderOrder = -10
   scene.add(sea)
 
-  const terrain = new TerrainMesh(authoredMap)
-  terrain.buildAll(SPAWN.x, SPAWN.z)
+  const terrain = new TerrainMesh(map)
+  terrain.buildAll(start.x, start.z)
   scene.add(terrain.object)
-  scene.add(buildCity(authoredMap))
-  scene.add(buildRunways(authoredMap))
+  scene.add(buildCity(map))
+  scene.add(buildRunways(map))
 
-  const scatter = new Scatter(authoredMap)
+  const scatter = new Scatter(map)
   scene.add(scatter.mesh)
 
   const sun = buildSun()
@@ -144,14 +188,14 @@ function main(): void {
 
   // §8.2 says the renderer asks the terrain for height. The physics now asks too,
   // and in different units — this adapter is the whole cost of keeping them apart.
-  const groundSource = new AuthoredGroundSource(authoredMap)
+  const groundSource = new TerrainGroundSource(map)
 
-  const simulation = new Simulation(SPAWN, undefined, groundSource)
+  const simulation = new Simulation(start, undefined, groundSource)
   const input = new InputReader()
   input.setThrottle(simulation.trimThrottle)
 
-  const course = buildCourse(authoredMap.airfields)
-  scene.add(buildGates())
+  const course = buildCourse(map.airfields)
+  scene.add(buildGates(course.waypoints))
 
   let slewing = false
   let fieldIndex = 0
@@ -173,7 +217,9 @@ function main(): void {
   // Down for a runway start, up for an airborne one. Starting the Day 2 spawn with
   // the wheels hanging out is not a small thing to get wrong: it is the first thing
   // anyone sees, and it says the aircraft has just taken off when it has not.
-  let gearDown = SPAWN.onGround === true
+  // From the spawn actually used, not from `SPAWN`. A region starts on a runway, and
+  // starting on a runway with the gear retracted is a wheels-up departure.
+  let gearDown = start.onGround === true
   let parkingBrake = false
   /**
    * Whether the aircraft is rolling out after a landing.
@@ -246,8 +292,8 @@ function main(): void {
       parkingBrake = false
       // Cycle the airfields, starting on the runway at each. This is how a takeoff
       // gets flown without first flying to the field.
-      fieldIndex = (fieldIndex + 1) % authoredMap.airfields.length
-      simulation.reset(runwayStart(authoredMap.airfields[fieldIndex]!))
+      fieldIndex = (fieldIndex + 1) % map.airfields.length
+      simulation.reset(runwayStart(map.airfields[fieldIndex]!))
       course.reset()
       gearDown = true
       input.setThrottle(0)
@@ -382,7 +428,7 @@ function main(): void {
       // Derived from the aero tables at the nearest field's elevation, so it follows
       // weight and altitude rather than being a constant that goes quietly wrong.
       // See `speeds.ts`.
-      referenceSpeed(nearestFieldElevationFt(state.position[0], state.position[2])),
+      referenceSpeed(nearestFieldElevationFt(map.airfields, state.position[0], state.position[2])),
     )
 
     overlay.update(
@@ -484,15 +530,15 @@ function main(): void {
       simulation,
       terrain,
       input,
-      map: authoredMap,
+      map,
       course,
       groundSource,
       step,
       startAt: (name: string) => {
-        const i = authoredMap.airfields.findIndex((a) => a.name === name)
+        const i = map.airfields.findIndex((a) => a.name === name)
         if (i < 0) return false
         fieldIndex = i
-        simulation.reset(runwayStart(authoredMap.airfields[i]!))
+        simulation.reset(runwayStart(map.airfields[i]!))
         course.reset()
         gearDown = true
         input.setThrottle(0)
@@ -507,4 +553,4 @@ function main(): void {
   })
 }
 
-main()
+void main()

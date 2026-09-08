@@ -8,6 +8,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { COURSE_WAYPOINTS, Course, buildCourse } from '../src/course.js'
+import type { Airfield } from '../src/terrain/source.js'
 import { authoredMap } from '../src/terrain/authored.js'
 
 const DT = 1 / 60
@@ -239,5 +240,50 @@ describe('the gates sit where the map says they should', () => {
 
     expect(gapFt).toBeLessThan(pass.maxAltFt)
     expect(ridgeFt, 'the ridge is no longer a wall').toBeGreaterThan(pass.maxAltFt + 1_500)
+  })
+})
+
+/**
+ * A course for a map that has never heard of Bayside.
+ *
+ * The designed course names two of the authored map's airfields and puts three gates
+ * at world coordinates that mean something only in that terrain — the pass exists
+ * because the course needed a place the ridge had to be flown through. Handed a real
+ * region's airfields, `buildCourse` threw, and because it is called during bootstrap
+ * it took the whole page down: New York loaded, built its terrain, and then showed a
+ * black screen.
+ */
+describe('a course on a map without the authored airfields', () => {
+  const field = (name: string, x: number, z: number, lengthM: number): Airfield => ({
+    name, x, z, lengthM, elevation: 10, headingDeg: 90, widthM: 45,
+  })
+
+  it('runs from the longest runway to the field furthest from it', () => {
+    const course = buildCourse([
+      field('Short strip', 0, 0, 1_000),
+      field('Long, and near', 500, 0, 4_000),
+      field('Far away', 40_000, 0, 2_000),
+    ])
+
+    expect(course.start.name).toBe('Long, and near')
+    expect(course.destination.name).toBe('Far away')
+  })
+
+  it('has no gates, because inventing them would be inventing terrain', () => {
+    const course = buildCourse([field('A', 0, 0, 3_000), field('B', 20_000, 0, 2_000)])
+    expect(course.waypoints).toHaveLength(0)
+
+    // An empty gate list must still complete: `Course` should fall straight through
+    // to the landing condition rather than waiting for a gate that never comes.
+    const sample = { x: 20_000, z: 0, altFt: 10, onGround: true, speedFps: 0 }
+    course.update({ ...sample, onGround: false }, 0.1)
+    const progress = course.update(sample, 0.1)
+    expect(progress.status).toBe('complete')
+  })
+
+  it('still gives the authored map its designed course', () => {
+    const authored = buildCourse(authoredMap.airfields)
+    expect(authored.waypoints).toEqual(COURSE_WAYPOINTS)
+    expect(authored.start.name).toBe('Bayside')
   })
 })
