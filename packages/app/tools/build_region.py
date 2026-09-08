@@ -443,7 +443,26 @@ def build(spec_path: Path) -> None:
         print(f"    {names.get(value, value):8} {100 * count / total:5.1f}%")
 
     # -----------------------------------------------------------------------
-    # 6. Write
+    # 6. Places, for labelling
+    # -----------------------------------------------------------------------
+    print("\nplaces")
+    places = [
+        p for p in osm_mod.fetch_places(south, west, north, east)
+        if abs(frame.to_world(p["lat"], p["lon"])[0]) <= extent
+        and abs(frame.to_world(p["lat"], p["lon"])[1]) <= extent
+    ]
+    kinds: dict[int, int] = {}
+    for p in places:
+        kinds[p["rank"]] = kinds.get(p["rank"], 0) + 1
+    print(
+        "  "
+        + ", ".join(
+            f"{kinds.get(i, 0)} {name}" for i, name in enumerate(osm_mod.PLACE_RANKS)
+        )
+    )
+
+    # -----------------------------------------------------------------------
+    # 7. Write
     # -----------------------------------------------------------------------
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     blob = bytearray()
@@ -505,6 +524,15 @@ def build(spec_path: Path) -> None:
                 "source": f.source,
             }
             for f, _, _ in inside
+        ],
+        "places": [
+            {
+                "name": p["name"],
+                "lat": round(p["lat"], 5),
+                "lon": round(p["lon"], 5),
+                "rank": p["rank"],
+            }
+            for p in places
         ],
         "attribution": [osm_mod.ATTRIBUTION, dem_mod.ATTRIBUTION, faa_mod.ATTRIBUTION],
     }

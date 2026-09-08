@@ -26,6 +26,11 @@ are OpenStreetMap, and the runways are FAA records — Kennedy's 13R/31L is 14,5
 long and lies on 120.8 degrees true because that is what the FAA says, not because
 anyone placed it. You start on the longest runway in the region.
 
+Press `M` for the moving map. It cycles in — 4, 12, 30 and 60 km across — and then
+off again, and it names what is under you: cities and towns when you are high, the
+neighbourhood you are actually over when you are low. New York carries three hundred
+names, Chicago two hundred and ninety-five, all from OpenStreetMap.
+
 They are about three megabytes each and load on demand, which is why they are opt-in:
 the designed map needs no network and is what everything here was flown against
 first. If a region fails to load you get the designed map and a line in the console

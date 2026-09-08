@@ -326,6 +326,1808 @@
       "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport 4N1, runway 06/24. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
     }
   ],
+  "places": [
+    {
+      "name": "New York",
+      "lat": 40.71273,
+      "lon": -74.00602,
+      "rank": 0
+    },
+    {
+      "name": "Newark",
+      "lat": 40.73566,
+      "lon": -74.17237,
+      "rank": 0
+    },
+    {
+      "name": "Jersey City",
+      "lat": 40.72157,
+      "lon": -74.04745,
+      "rank": 0
+    },
+    {
+      "name": "Yonkers",
+      "lat": 40.93121,
+      "lon": -73.89875,
+      "rank": 0
+    },
+    {
+      "name": "Paterson",
+      "lat": 40.91677,
+      "lon": -74.17181,
+      "rank": 0
+    },
+    {
+      "name": "Stamford",
+      "lat": 41.05343,
+      "lon": -73.53873,
+      "rank": 0
+    },
+    {
+      "name": "Elizabeth",
+      "lat": 40.66399,
+      "lon": -74.2107,
+      "rank": 0
+    },
+    {
+      "name": "Norwalk",
+      "lat": 41.1176,
+      "lon": -73.4079,
+      "rank": 0
+    },
+    {
+      "name": "New Rochelle",
+      "lat": 40.91154,
+      "lon": -73.78264,
+      "rank": 0
+    },
+    {
+      "name": "Clifton",
+      "lat": 40.85843,
+      "lon": -74.16376,
+      "rank": 0
+    },
+    {
+      "name": "Mount Vernon",
+      "lat": 40.91251,
+      "lon": -73.83865,
+      "rank": 0
+    },
+    {
+      "name": "Passaic",
+      "lat": 40.85669,
+      "lon": -74.12863,
+      "rank": 0
+    },
+    {
+      "name": "White Plains",
+      "lat": 41.03399,
+      "lon": -73.76291,
+      "rank": 0
+    },
+    {
+      "name": "Bayonne",
+      "lat": 40.66871,
+      "lon": -74.11431,
+      "rank": 0
+    },
+    {
+      "name": "New Brunswick",
+      "lat": 40.49361,
+      "lon": -74.44364,
+      "rank": 0
+    },
+    {
+      "name": "Hackensack",
+      "lat": 40.88708,
+      "lon": -74.04107,
+      "rank": 0
+    },
+    {
+      "name": "Long Beach",
+      "lat": 40.58855,
+      "lon": -73.65826,
+      "rank": 0
+    },
+    {
+      "name": "Glen Cove",
+      "lat": 40.8642,
+      "lon": -73.63178,
+      "rank": 0
+    },
+    {
+      "name": "Morristown",
+      "lat": 40.79704,
+      "lon": -74.48099,
+      "rank": 0
+    },
+    {
+      "name": "Edison",
+      "lat": 40.50054,
+      "lon": -74.39839,
+      "rank": 2
+    },
+    {
+      "name": "Woodbridge Township",
+      "lat": 40.55365,
+      "lon": -74.28239,
+      "rank": 2
+    },
+    {
+      "name": "East Orange",
+      "lat": 40.76424,
+      "lon": -74.21501,
+      "rank": 2
+    },
+    {
+      "name": "Middletown Township",
+      "lat": 40.38426,
+      "lon": -74.08988,
+      "rank": 2
+    },
+    {
+      "name": "Old Bridge Township",
+      "lat": 40.41407,
+      "lon": -74.30421,
+      "rank": 2
+    },
+    {
+      "name": "Union City",
+      "lat": 40.77955,
+      "lon": -74.02375,
+      "rank": 2
+    },
+    {
+      "name": "Brentwood",
+      "lat": 40.78121,
+      "lon": -73.24623,
+      "rank": 2
+    },
+    {
+      "name": "Greenwich",
+      "lat": 41.02649,
+      "lon": -73.62846,
+      "rank": 2
+    },
+    {
+      "name": "North Bergen",
+      "lat": 40.80427,
+      "lon": -74.01208,
+      "rank": 2
+    },
+    {
+      "name": "Hempstead",
+      "lat": 40.70928,
+      "lon": -73.62304,
+      "rank": 2
+    },
+    {
+      "name": "Irvington",
+      "lat": 40.72641,
+      "lon": -74.22895,
+      "rank": 2
+    },
+    {
+      "name": "Fairfield",
+      "lat": 41.14121,
+      "lon": -73.26373,
+      "rank": 2
+    },
+    {
+      "name": "Union",
+      "lat": 40.69649,
+      "lon": -74.26981,
+      "rank": 2
+    },
+    {
+      "name": "Wayne",
+      "lat": 40.94917,
+      "lon": -74.23768,
+      "rank": 2
+    },
+    {
+      "name": "Parsippany-Troy Hills",
+      "lat": 40.86465,
+      "lon": -74.41578,
+      "rank": 2
+    },
+    {
+      "name": "Piscataway",
+      "lat": 40.54643,
+      "lon": -74.46605,
+      "rank": 2
+    },
+    {
+      "name": "Levittown",
+      "lat": 40.72596,
+      "lon": -73.51448,
+      "rank": 2
+    },
+    {
+      "name": "West New York",
+      "lat": 40.78561,
+      "lon": -74.00931,
+      "rank": 2
+    },
+    {
+      "name": "Perth Amboy",
+      "lat": 40.51332,
+      "lon": -74.27242,
+      "rank": 2
+    },
+    {
+      "name": "Monroe Township",
+      "lat": 40.33576,
+      "lon": -74.43345,
+      "rank": 2
+    },
+    {
+      "name": "East Brunswick",
+      "lat": 40.42788,
+      "lon": -74.41598,
+      "rank": 2
+    },
+    {
+      "name": "Plainfield",
+      "lat": 40.62014,
+      "lon": -74.42224,
+      "rank": 2
+    },
+    {
+      "name": "Bloomfield",
+      "lat": 40.79348,
+      "lon": -74.19793,
+      "rank": 2
+    },
+    {
+      "name": "Freeport",
+      "lat": 40.65761,
+      "lon": -73.58358,
+      "rank": 2
+    },
+    {
+      "name": "Mount Pleasant",
+      "lat": 41.0963,
+      "lon": -73.79344,
+      "rank": 2
+    },
+    {
+      "name": "North Brunswick",
+      "lat": 40.45392,
+      "lon": -74.47655,
+      "rank": 2
+    },
+    {
+      "name": "Hicksville",
+      "lat": 40.76819,
+      "lon": -73.52382,
+      "rank": 2
+    },
+    {
+      "name": "West Orange",
+      "lat": 40.79871,
+      "lon": -74.23904,
+      "rank": 2
+    },
+    {
+      "name": "West Babylon",
+      "lat": 40.71266,
+      "lon": -73.35368,
+      "rank": 2
+    },
+    {
+      "name": "Sayreville",
+      "lat": 40.46354,
+      "lon": -74.36185,
+      "rank": 2
+    },
+    {
+      "name": "Cortlandt",
+      "lat": 41.24465,
+      "lon": -73.92596,
+      "rank": 2
+    },
+    {
+      "name": "Valley Stream",
+      "lat": 40.66314,
+      "lon": -73.7057,
+      "rank": 2
+    },
+    {
+      "name": "Fort Lee",
+      "lat": 40.85093,
+      "lon": -73.97014,
+      "rank": 2
+    },
+    {
+      "name": "Linden",
+      "lat": 40.62205,
+      "lon": -74.24459,
+      "rank": 2
+    },
+    {
+      "name": "Hoboken",
+      "lat": 40.74331,
+      "lon": -74.03238,
+      "rank": 2
+    },
+    {
+      "name": "Marlboro Township",
+      "lat": 40.31539,
+      "lon": -74.24626,
+      "rank": 2
+    },
+    {
+      "name": "Teaneck",
+      "lat": 40.88602,
+      "lon": -74.00726,
+      "rank": 2
+    },
+    {
+      "name": "Kearny",
+      "lat": 40.76843,
+      "lon": -74.14542,
+      "rank": 2
+    },
+    {
+      "name": "East Meadow",
+      "lat": 40.71423,
+      "lon": -73.55951,
+      "rank": 2
+    },
+    {
+      "name": "Montclair",
+      "lat": 40.81645,
+      "lon": -74.22106,
+      "rank": 2
+    },
+    {
+      "name": "Manalapan",
+      "lat": 40.28529,
+      "lon": -74.33349,
+      "rank": 2
+    },
+    {
+      "name": "Commack",
+      "lat": 40.84288,
+      "lon": -73.29289,
+      "rank": 2
+    },
+    {
+      "name": "Elmont",
+      "lat": 40.70764,
+      "lon": -73.7093,
+      "rank": 2
+    },
+    {
+      "name": "Fair Lawn",
+      "lat": 40.93584,
+      "lon": -74.11751,
+      "rank": 2
+    },
+    {
+      "name": "Huntington Station",
+      "lat": 40.85343,
+      "lon": -73.41151,
+      "rank": 2
+    },
+    {
+      "name": "Belleville",
+      "lat": 40.79371,
+      "lon": -74.15014,
+      "rank": 2
+    },
+    {
+      "name": "New City",
+      "lat": 41.14699,
+      "lon": -73.9903,
+      "rank": 2
+    },
+    {
+      "name": "Baldwin",
+      "lat": 40.65078,
+      "lon": -73.61241,
+      "rank": 2
+    },
+    {
+      "name": "Spring Valley",
+      "lat": 41.11302,
+      "lon": -74.04378,
+      "rank": 2
+    },
+    {
+      "name": "Oceanside",
+      "lat": 40.63909,
+      "lon": -73.63998,
+      "rank": 2
+    },
+    {
+      "name": "Uniondale",
+      "lat": 40.70958,
+      "lon": -73.59234,
+      "rank": 2
+    },
+    {
+      "name": "Long Branch",
+      "lat": 40.30428,
+      "lon": -73.99236,
+      "rank": 2
+    },
+    {
+      "name": "Port Chester",
+      "lat": 41.00176,
+      "lon": -73.66568,
+      "rank": 2
+    },
+    {
+      "name": "Franklin Square",
+      "lat": 40.70747,
+      "lon": -73.67594,
+      "rank": 2
+    },
+    {
+      "name": "Orange",
+      "lat": 40.77095,
+      "lon": -74.22646,
+      "rank": 2
+    },
+    {
+      "name": "Westfield",
+      "lat": 40.65173,
+      "lon": -74.34831,
+      "rank": 2
+    },
+    {
+      "name": "Garfield",
+      "lat": 40.88149,
+      "lon": -74.1132,
+      "rank": 2
+    },
+    {
+      "name": "Bay Shore",
+      "lat": 40.7251,
+      "lon": -73.24539,
+      "rank": 2
+    },
+    {
+      "name": "Deer Park",
+      "lat": 40.76177,
+      "lon": -73.32929,
+      "rank": 2
+    },
+    {
+      "name": "Livingston",
+      "lat": 40.79593,
+      "lon": -74.31487,
+      "rank": 2
+    },
+    {
+      "name": "Harrison",
+      "lat": 40.96899,
+      "lon": -73.71263,
+      "rank": 2
+    },
+    {
+      "name": "West Milford",
+      "lat": 41.13121,
+      "lon": -74.36737,
+      "rank": 2
+    },
+    {
+      "name": "Rahway",
+      "lat": 40.60816,
+      "lon": -74.27765,
+      "rank": 2
+    },
+    {
+      "name": "Englewood",
+      "lat": 40.89293,
+      "lon": -73.97265,
+      "rank": 2
+    },
+    {
+      "name": "Lindenhurst",
+      "lat": 40.68677,
+      "lon": -73.37345,
+      "rank": 2
+    },
+    {
+      "name": "Plainview",
+      "lat": 40.7765,
+      "lon": -73.467,
+      "rank": 2
+    },
+    {
+      "name": "West Islip",
+      "lat": 40.70586,
+      "lon": -73.30773,
+      "rank": 2
+    },
+    {
+      "name": "Nutley",
+      "lat": 40.82232,
+      "lon": -74.15987,
+      "rank": 2
+    },
+    {
+      "name": "Monsey",
+      "lat": 41.11121,
+      "lon": -74.06848,
+      "rank": 2
+    },
+    {
+      "name": "Paramus",
+      "lat": 40.94529,
+      "lon": -74.07359,
+      "rank": 2
+    },
+    {
+      "name": "Westport",
+      "lat": 41.14149,
+      "lon": -73.3579,
+      "rank": 2
+    },
+    {
+      "name": "Bergenfield",
+      "lat": 40.9276,
+      "lon": -73.99736,
+      "rank": 2
+    },
+    {
+      "name": "Dix Hills",
+      "lat": 40.80482,
+      "lon": -73.33623,
+      "rank": 2
+    },
+    {
+      "name": "Rockville Centre",
+      "lat": 40.65742,
+      "lon": -73.64507,
+      "rank": 2
+    },
+    {
+      "name": "Vernon Township",
+      "lat": 41.19843,
+      "lon": -74.48321,
+      "rank": 2
+    },
+    {
+      "name": "Rockaway Township",
+      "lat": 40.93022,
+      "lon": -74.48718,
+      "rank": 2
+    },
+    {
+      "name": "Ridgewood",
+      "lat": 40.97967,
+      "lon": -74.11944,
+      "rank": 2
+    },
+    {
+      "name": "Mahwah",
+      "lat": 41.08871,
+      "lon": -74.14376,
+      "rank": 2
+    },
+    {
+      "name": "Lodi",
+      "lat": 40.88232,
+      "lon": -74.0832,
+      "rank": 2
+    },
+    {
+      "name": "Cliffside Park",
+      "lat": 40.82149,
+      "lon": -73.98764,
+      "rank": 2
+    },
+    {
+      "name": "Copiague",
+      "lat": 40.68405,
+      "lon": -73.40081,
+      "rank": 2
+    },
+    {
+      "name": "Garden City",
+      "lat": 40.72665,
+      "lon": -73.63431,
+      "rank": 2
+    },
+    {
+      "name": "Scotch Plains",
+      "lat": 40.65538,
+      "lon": -74.38987,
+      "rank": 2
+    },
+    {
+      "name": "Brooklyn",
+      "lat": 40.6526,
+      "lon": -73.94972,
+      "rank": 3
+    },
+    {
+      "name": "Queens",
+      "lat": 40.71351,
+      "lon": -73.82831,
+      "rank": 3
+    },
+    {
+      "name": "Manhattan",
+      "lat": 40.75796,
+      "lon": -73.98553,
+      "rank": 3
+    },
+    {
+      "name": "The Bronx",
+      "lat": 40.84665,
+      "lon": -73.87859,
+      "rank": 3
+    },
+    {
+      "name": "Staten Island",
+      "lat": 40.58346,
+      "lon": -74.1496,
+      "rank": 3
+    },
+    {
+      "name": "Woodbridge",
+      "lat": 40.55365,
+      "lon": -74.28239,
+      "rank": 3
+    },
+    {
+      "name": "Iselin",
+      "lat": 40.57249,
+      "lon": -74.31633,
+      "rank": 3
+    },
+    {
+      "name": "Colonia",
+      "lat": 40.59992,
+      "lon": -74.31523,
+      "rank": 3
+    },
+    {
+      "name": "Avenel",
+      "lat": 40.5765,
+      "lon": -74.27498,
+      "rank": 3
+    },
+    {
+      "name": "Fords",
+      "lat": 40.52921,
+      "lon": -74.3161,
+      "rank": 3
+    },
+    {
+      "name": "Little Silver",
+      "lat": 40.33678,
+      "lon": -74.04708,
+      "rank": 3
+    },
+    {
+      "name": "Hawthorne",
+      "lat": 41.10736,
+      "lon": -73.79579,
+      "rank": 3
+    },
+    {
+      "name": "Thornwood",
+      "lat": 41.12348,
+      "lon": -73.77939,
+      "rank": 3
+    },
+    {
+      "name": "Port Reading",
+      "lat": 40.56537,
+      "lon": -74.26071,
+      "rank": 3
+    },
+    {
+      "name": "Hartsdale",
+      "lat": 41.01906,
+      "lon": -73.79841,
+      "rank": 3
+    },
+    {
+      "name": "Bedford Hills",
+      "lat": 41.23666,
+      "lon": -73.70019,
+      "rank": 3
+    },
+    {
+      "name": "Fairview",
+      "lat": 41.04338,
+      "lon": -73.79707,
+      "rank": 3
+    },
+    {
+      "name": "Valhalla",
+      "lat": 41.07453,
+      "lon": -73.77491,
+      "rank": 3
+    },
+    {
+      "name": "Keasbey",
+      "lat": 40.51677,
+      "lon": -74.30515,
+      "rank": 3
+    },
+    {
+      "name": "Sewaren",
+      "lat": 40.55205,
+      "lon": -74.25876,
+      "rank": 3
+    },
+    {
+      "name": "Hopelawn",
+      "lat": 40.52705,
+      "lon": -74.29292,
+      "rank": 3
+    },
+    {
+      "name": "Chappaqua",
+      "lat": 41.15954,
+      "lon": -73.76485,
+      "rank": 3
+    },
+    {
+      "name": "Yorktown Heights",
+      "lat": 41.27093,
+      "lon": -73.77763,
+      "rank": 3
+    },
+    {
+      "name": "Katonah",
+      "lat": 41.25876,
+      "lon": -73.6854,
+      "rank": 3
+    },
+    {
+      "name": "Banksville",
+      "lat": 41.14153,
+      "lon": -73.63981,
+      "rank": 3
+    },
+    {
+      "name": "Black Rock",
+      "lat": 41.15868,
+      "lon": -73.22527,
+      "rank": 3
+    },
+    {
+      "name": "Byram",
+      "lat": 41.00279,
+      "lon": -73.65592,
+      "rank": 3
+    },
+    {
+      "name": "City Island",
+      "lat": 40.8473,
+      "lon": -73.78657,
+      "rank": 3
+    },
+    {
+      "name": "Cos Cob",
+      "lat": 41.03904,
+      "lon": -73.59782,
+      "rank": 3
+    },
+    {
+      "name": "Fort Monmouth",
+      "lat": 40.31186,
+      "lon": -74.04508,
+      "rank": 3
+    },
+    {
+      "name": "Free Acres",
+      "lat": 40.66066,
+      "lon": -74.44376,
+      "rank": 3
+    },
+    {
+      "name": "Glenbrook",
+      "lat": 41.07123,
+      "lon": -73.5207,
+      "rank": 3
+    },
+    {
+      "name": "Glenville",
+      "lat": 41.0386,
+      "lon": -73.6648,
+      "rank": 3
+    },
+    {
+      "name": "Haskell",
+      "lat": 41.0285,
+      "lon": -74.29665,
+      "rank": 3
+    },
+    {
+      "name": "Homestead Park",
+      "lat": 40.6901,
+      "lon": -74.45015,
+      "rank": 3
+    },
+    {
+      "name": "Macopin",
+      "lat": 41.05232,
+      "lon": -74.38876,
+      "rank": 3
+    },
+    {
+      "name": "Maurer",
+      "lat": 40.53705,
+      "lon": -74.26903,
+      "rank": 3
+    },
+    {
+      "name": "Morgan",
+      "lat": 40.46759,
+      "lon": -74.27239,
+      "rank": 3
+    },
+    {
+      "name": "Mount Bethel",
+      "lat": 40.6376,
+      "lon": -74.5146,
+      "rank": 3
+    },
+    {
+      "name": "Mountain View",
+      "lat": 40.91392,
+      "lon": -74.2658,
+      "rank": 3
+    },
+    {
+      "name": "North Greenwich",
+      "lat": 41.09593,
+      "lon": -73.6893,
+      "rank": 3
+    },
+    {
+      "name": "North Stamford",
+      "lat": 41.13815,
+      "lon": -73.54346,
+      "rank": 3
+    },
+    {
+      "name": "Old Greenwich",
+      "lat": 41.03185,
+      "lon": -73.56787,
+      "rank": 3
+    },
+    {
+      "name": "Old Wayne",
+      "lat": 40.92836,
+      "lon": -74.27623,
+      "rank": 3
+    },
+    {
+      "name": "Packanack Lake",
+      "lat": 40.93708,
+      "lon": -74.25645,
+      "rank": 3
+    },
+    {
+      "name": "Parlin",
+      "lat": 40.46282,
+      "lon": -74.3105,
+      "rank": 3
+    },
+    {
+      "name": "Pines Lake",
+      "lat": 40.99085,
+      "lon": -74.25847,
+      "rank": 3
+    },
+    {
+      "name": "Pompton Plains",
+      "lat": 40.96815,
+      "lon": -74.2957,
+      "rank": 3
+    },
+    {
+      "name": "Port-au-Peck",
+      "lat": 40.31511,
+      "lon": -74.00792,
+      "rank": 3
+    },
+    {
+      "name": "The Ironbound",
+      "lat": 40.72635,
+      "lon": -74.15963,
+      "rank": 4
+    },
+    {
+      "name": "Old Bridge",
+      "lat": 40.39132,
+      "lon": -74.3328,
+      "rank": 4
+    },
+    {
+      "name": "Mineola",
+      "lat": 40.74927,
+      "lon": -73.64068,
+      "rank": 4
+    },
+    {
+      "name": "Kings Park",
+      "lat": 40.88621,
+      "lon": -73.25734,
+      "rank": 4
+    },
+    {
+      "name": "Westbury",
+      "lat": 40.75566,
+      "lon": -73.58763,
+      "rank": 4
+    },
+    {
+      "name": "Edgewater",
+      "lat": 40.82704,
+      "lon": -73.97569,
+      "rank": 4
+    },
+    {
+      "name": "Lake Hiawatha",
+      "lat": 40.88071,
+      "lon": -74.38216,
+      "rank": 4
+    },
+    {
+      "name": "Maywood",
+      "lat": 40.9026,
+      "lon": -74.06181,
+      "rank": 4
+    },
+    {
+      "name": "South Amboy",
+      "lat": 40.48211,
+      "lon": -74.28288,
+      "rank": 4
+    },
+    {
+      "name": "River Vale",
+      "lat": 40.99538,
+      "lon": -74.01208,
+      "rank": 4
+    },
+    {
+      "name": "Kinnelon",
+      "lat": 41.00176,
+      "lon": -74.3671,
+      "rank": 4
+    },
+    {
+      "name": "Leonia",
+      "lat": 40.86174,
+      "lon": -73.98805,
+      "rank": 4
+    },
+    {
+      "name": "North Haledon",
+      "lat": 40.9551,
+      "lon": -74.18598,
+      "rank": 4
+    },
+    {
+      "name": "East Rutherford",
+      "lat": 40.83399,
+      "lon": -74.09709,
+      "rank": 4
+    },
+    {
+      "name": "Matawan",
+      "lat": 40.41483,
+      "lon": -74.22959,
+      "rank": 4
+    },
+    {
+      "name": "Closter",
+      "lat": 40.97315,
+      "lon": -73.96153,
+      "rank": 4
+    },
+    {
+      "name": "Upper Saddle River",
+      "lat": 41.05854,
+      "lon": -74.09848,
+      "rank": 4
+    },
+    {
+      "name": "Cresskill",
+      "lat": 40.94149,
+      "lon": -73.9593,
+      "rank": 4
+    },
+    {
+      "name": "Haledon",
+      "lat": 40.93565,
+      "lon": -74.18626,
+      "rank": 4
+    },
+    {
+      "name": "West Long Branch",
+      "lat": 40.29042,
+      "lon": -74.01726,
+      "rank": 4
+    },
+    {
+      "name": "Spotswood",
+      "lat": 40.39177,
+      "lon": -74.39848,
+      "rank": 4
+    },
+    {
+      "name": "Bogota",
+      "lat": 40.87621,
+      "lon": -74.02986,
+      "rank": 4
+    },
+    {
+      "name": "Butler",
+      "lat": 41.00371,
+      "lon": -74.34154,
+      "rank": 4
+    },
+    {
+      "name": "Oradell",
+      "lat": 40.95439,
+      "lon": -74.03085,
+      "rank": 4
+    },
+    {
+      "name": "Glen Ridge",
+      "lat": 40.80538,
+      "lon": -74.20376,
+      "rank": 4
+    },
+    {
+      "name": "Easton",
+      "lat": 41.25287,
+      "lon": -73.29734,
+      "rank": 4
+    },
+    {
+      "name": "Bloomingdale",
+      "lat": 41.00215,
+      "lon": -74.32633,
+      "rank": 4
+    },
+    {
+      "name": "Wood-Ridge",
+      "lat": 40.84566,
+      "lon": -74.08792,
+      "rank": 4
+    },
+    {
+      "name": "Williston Park",
+      "lat": 40.75649,
+      "lon": -73.64485,
+      "rank": 4
+    },
+    {
+      "name": "Keyport",
+      "lat": 40.43316,
+      "lon": -74.19959,
+      "rank": 4
+    },
+    {
+      "name": "Emerson",
+      "lat": 40.97621,
+      "lon": -74.02625,
+      "rank": 4
+    },
+    {
+      "name": "East Hills",
+      "lat": 40.79584,
+      "lon": -73.62407,
+      "rank": 4
+    },
+    {
+      "name": "North Caldwell",
+      "lat": 40.86482,
+      "lon": -74.2582,
+      "rank": 4
+    },
+    {
+      "name": "Rumson",
+      "lat": 40.37205,
+      "lon": -73.99903,
+      "rank": 4
+    },
+    {
+      "name": "Milltown",
+      "lat": 40.45622,
+      "lon": -74.44321,
+      "rank": 4
+    },
+    {
+      "name": "Dunellen",
+      "lat": 40.58927,
+      "lon": -74.47182,
+      "rank": 4
+    },
+    {
+      "name": "Midland Park",
+      "lat": 40.98931,
+      "lon": -74.1401,
+      "rank": 4
+    },
+    {
+      "name": "Allendale",
+      "lat": 41.04132,
+      "lon": -74.12914,
+      "rank": 4
+    },
+    {
+      "name": "Borough Park",
+      "lat": 40.63399,
+      "lon": -73.99681,
+      "rank": 5
+    },
+    {
+      "name": "Canarsie",
+      "lat": 40.64372,
+      "lon": -73.90069,
+      "rank": 5
+    },
+    {
+      "name": "Park Slope",
+      "lat": 40.6701,
+      "lon": -73.98597,
+      "rank": 5
+    },
+    {
+      "name": "Brownsville",
+      "lat": 40.66531,
+      "lon": -73.91248,
+      "rank": 5
+    },
+    {
+      "name": "Gravesend",
+      "lat": 40.59613,
+      "lon": -73.97394,
+      "rank": 5
+    },
+    {
+      "name": "Arverne By The Sea",
+      "lat": 40.59003,
+      "lon": -73.79645,
+      "rank": 5
+    },
+    {
+      "name": "Castle Hill",
+      "lat": 40.81891,
+      "lon": -73.84992,
+      "rank": 5
+    },
+    {
+      "name": "East Gate",
+      "lat": 40.31803,
+      "lon": -74.03829,
+      "rank": 5
+    },
+    {
+      "name": "Academy Heights",
+      "lat": 40.74263,
+      "lon": -74.25986,
+      "rank": 5
+    },
+    {
+      "name": "Acorn Ponds at North Hills",
+      "lat": 40.7699,
+      "lon": -73.67466,
+      "rank": 5
+    },
+    {
+      "name": "Alphabet City",
+      "lat": 40.7251,
+      "lon": -73.97958,
+      "rank": 5
+    },
+    {
+      "name": "Annadale",
+      "lat": 40.54455,
+      "lon": -74.17653,
+      "rank": 5
+    },
+    {
+      "name": "Anthem Place",
+      "lat": 40.29447,
+      "lon": -74.08307,
+      "rank": 5
+    },
+    {
+      "name": "Apple Ridge",
+      "lat": 41.07704,
+      "lon": -74.12201,
+      "rank": 5
+    },
+    {
+      "name": "Apshawa",
+      "lat": 41.0176,
+      "lon": -74.36293,
+      "rank": 5
+    },
+    {
+      "name": "Arcola",
+      "lat": 40.92617,
+      "lon": -74.08916,
+      "rank": 5
+    },
+    {
+      "name": "Arlington",
+      "lat": 40.63233,
+      "lon": -74.16514,
+      "rank": 5
+    },
+    {
+      "name": "Arrochar",
+      "lat": 40.59844,
+      "lon": -74.07264,
+      "rank": 5
+    },
+    {
+      "name": "Arthur Manor",
+      "lat": 40.97676,
+      "lon": -73.79291,
+      "rank": 5
+    },
+    {
+      "name": "Arverne View",
+      "lat": 40.59073,
+      "lon": -73.78747,
+      "rank": 5
+    },
+    {
+      "name": "Astoria",
+      "lat": 40.77201,
+      "lon": -73.93027,
+      "rank": 5
+    },
+    {
+      "name": "Baldwin Harbor",
+      "lat": 40.63703,
+      "lon": -73.60416,
+      "rank": 5
+    },
+    {
+      "name": "Bar Harbour",
+      "lat": 40.65853,
+      "lon": -73.45202,
+      "rank": 5
+    },
+    {
+      "name": "Bath Beach",
+      "lat": 40.60185,
+      "lon": -74.0005,
+      "rank": 5
+    },
+    {
+      "name": "Battery Park City",
+      "lat": 40.71102,
+      "lon": -74.01694,
+      "rank": 5
+    },
+    {
+      "name": "Bay Colony",
+      "lat": 40.62955,
+      "lon": -73.59541,
+      "rank": 5
+    },
+    {
+      "name": "Bay Ridge",
+      "lat": 40.63201,
+      "lon": -74.02321,
+      "rank": 5
+    },
+    {
+      "name": "Bay Terrace",
+      "lat": 40.55528,
+      "lon": -74.13417,
+      "rank": 5
+    },
+    {
+      "name": "Bayberry Park",
+      "lat": 40.94677,
+      "lon": -73.77402,
+      "rank": 5
+    },
+    {
+      "name": "Bayside",
+      "lat": 40.76844,
+      "lon": -73.77708,
+      "rank": 5
+    },
+    {
+      "name": "Bayswater",
+      "lat": 40.61028,
+      "lon": -73.76722,
+      "rank": 5
+    },
+    {
+      "name": "Bayview",
+      "lat": 40.79599,
+      "lon": -73.70559,
+      "rank": 5
+    },
+    {
+      "name": "Beacon Hill",
+      "lat": 40.83554,
+      "lon": -73.67916,
+      "rank": 5
+    },
+    {
+      "name": "Bear's Cove",
+      "lat": 41.06802,
+      "lon": -74.1301,
+      "rank": 5
+    },
+    {
+      "name": "Beaver Brook Run",
+      "lat": 40.34328,
+      "lon": -74.44629,
+      "rank": 5
+    },
+    {
+      "name": "Bedford Park",
+      "lat": 40.8701,
+      "lon": -73.88569,
+      "rank": 5
+    },
+    {
+      "name": "Bedford-Stuyvesant",
+      "lat": 40.68344,
+      "lon": -73.94125,
+      "rank": 5
+    },
+    {
+      "name": "Beech Hill",
+      "lat": 40.98649,
+      "lon": -73.81652,
+      "rank": 5
+    },
+    {
+      "name": "Beechhurst",
+      "lat": 40.79149,
+      "lon": -73.80458,
+      "rank": 5
+    },
+    {
+      "name": "Beechmont Woods",
+      "lat": 40.93454,
+      "lon": -73.77402,
+      "rank": 5
+    },
+    {
+      "name": "Beekman",
+      "lat": 40.75372,
+      "lon": -73.96501,
+      "rank": 5
+    },
+    {
+      "name": "Belgrave Square",
+      "lat": 40.78411,
+      "lon": -73.72492,
+      "rank": 5
+    },
+    {
+      "name": "Bellaire",
+      "lat": 40.71399,
+      "lon": -73.75402,
+      "rank": 5
+    },
+    {
+      "name": "Bellemont",
+      "lat": 40.36296,
+      "lon": -74.28906,
+      "rank": 5
+    },
+    {
+      "name": "Belltown",
+      "lat": 41.0789,
+      "lon": -73.53424,
+      "rank": 5
+    },
+    {
+      "name": "Belmont",
+      "lat": 40.85528,
+      "lon": -73.88639,
+      "rank": 5
+    },
+    {
+      "name": "Bensonhurst",
+      "lat": 40.60498,
+      "lon": -73.99341,
+      "rank": 5
+    },
+    {
+      "name": "Bergen Beach",
+      "lat": 40.62038,
+      "lon": -73.9068,
+      "rank": 5
+    },
+    {
+      "name": "Biltmore Shores",
+      "lat": 40.65881,
+      "lon": -73.46681,
+      "rank": 5
+    },
+    {
+      "name": "Birchwood at Jericho",
+      "lat": 40.78636,
+      "lon": -73.53732,
+      "rank": 5
+    },
+    {
+      "name": "Black Rock Gardens Historic District",
+      "lat": 41.15787,
+      "lon": -73.22511,
+      "rank": 5
+    },
+    {
+      "name": "Black Rock Historic District",
+      "lat": 41.15565,
+      "lon": -73.22178,
+      "rank": 5
+    },
+    {
+      "name": "Blissville",
+      "lat": 40.73472,
+      "lon": -73.93778,
+      "rank": 5
+    },
+    {
+      "name": "Bloomfield",
+      "lat": 40.61259,
+      "lon": -74.17799,
+      "rank": 5
+    },
+    {
+      "name": "Blossom Heights",
+      "lat": 40.35072,
+      "lon": -74.24739,
+      "rank": 5
+    },
+    {
+      "name": "Bonhamtown",
+      "lat": 40.52344,
+      "lon": -74.35765,
+      "rank": 5
+    },
+    {
+      "name": "Bonnie Crest",
+      "lat": 40.95982,
+      "lon": -73.78597,
+      "rank": 5
+    },
+    {
+      "name": "Boston Post Road Historic District",
+      "lat": 41.08204,
+      "lon": -73.4654,
+      "rank": 5
+    },
+    {
+      "name": "Boxwood at North Hills",
+      "lat": 40.7813,
+      "lon": -73.67821,
+      "rank": 5
+    },
+    {
+      "name": "Brasch Farms",
+      "lat": 40.35892,
+      "lon": -74.12109,
+      "rank": 5
+    },
+    {
+      "name": "Briar-Cliff Park at Merrick",
+      "lat": 40.68841,
+      "lon": -73.56466,
+      "rank": 5
+    },
+    {
+      "name": "Bridgeton Apartments",
+      "lat": 40.56136,
+      "lon": -74.27753,
+      "rank": 5
+    },
+    {
+      "name": "Broadway Junction",
+      "lat": 40.67677,
+      "lon": -73.90014,
+      "rank": 5
+    },
+    {
+      "name": "Bronxdale",
+      "lat": 40.85066,
+      "lon": -73.86652,
+      "rank": 5
+    },
+    {
+      "name": "Bronxville Heights",
+      "lat": 40.96621,
+      "lon": -73.84291,
+      "rank": 5
+    },
+    {
+      "name": "Brooklawn Gardens",
+      "lat": 40.46434,
+      "lon": -74.32739,
+      "rank": 5
+    },
+    {
+      "name": "Brooklyn Manor",
+      "lat": 40.69483,
+      "lon": -73.84764,
+      "rank": 5
+    },
+    {
+      "name": "Brooklyn Navy Yard",
+      "lat": 40.69933,
+      "lon": -73.97556,
+      "rank": 5
+    },
+    {
+      "name": "Browntown",
+      "lat": 40.40115,
+      "lon": -74.30954,
+      "rank": 5
+    },
+    {
+      "name": "Bryn Mawr Park",
+      "lat": 40.94621,
+      "lon": -73.86458,
+      "rank": 5
+    },
+    {
+      "name": "Bulls Head",
+      "lat": 40.60705,
+      "lon": -74.16209,
+      "rank": 5
+    },
+    {
+      "name": "Bullshead",
+      "lat": 41.07312,
+      "lon": -73.54895,
+      "rank": 5
+    },
+    {
+      "name": "Cambria Heights",
+      "lat": 40.69455,
+      "lon": -73.73847,
+      "rank": 5
+    },
+    {
+      "name": "Cambridge Heights",
+      "lat": 41.07236,
+      "lon": -74.12265,
+      "rank": 5
+    },
+    {
+      "name": "Cambridge Heights at Terrace Lake",
+      "lat": 41.01042,
+      "lon": -74.3613,
+      "rank": 5
+    },
+    {
+      "name": "Cannon Hill Farms",
+      "lat": 40.34875,
+      "lon": -74.2044,
+      "rank": 5
+    },
+    {
+      "name": "Carnegie Hill",
+      "lat": 40.7842,
+      "lon": -73.95434,
+      "rank": 5
+    },
+    {
+      "name": "Carroll Gardens",
+      "lat": 40.67842,
+      "lon": -73.9948,
+      "rank": 5
+    },
+    {
+      "name": "Castleton Corners",
+      "lat": 40.61316,
+      "lon": -74.12236,
+      "rank": 5
+    },
+    {
+      "name": "Cecil Park",
+      "lat": 40.9751,
+      "lon": -73.81847,
+      "rank": 5
+    },
+    {
+      "name": "Cedar Falls Manor",
+      "lat": 40.87832,
+      "lon": -74.23652,
+      "rank": 5
+    },
+    {
+      "name": "Cedar Manor",
+      "lat": 40.69076,
+      "lon": -73.79019,
+      "rank": 5
+    },
+    {
+      "name": "Cedar Manor Houses",
+      "lat": 40.685,
+      "lon": -73.78472,
+      "rank": 5
+    },
+    {
+      "name": "Cedar Shores",
+      "lat": 40.6583,
+      "lon": -73.45884,
+      "rank": 5
+    },
+    {
+      "name": "Cedarview Estates",
+      "lat": 40.43869,
+      "lon": -74.30601,
+      "rank": 5
+    },
+    {
+      "name": "Charleston",
+      "lat": 40.53677,
+      "lon": -74.23737,
+      "rank": 5
+    },
+    {
+      "name": "Charlotte Gardens",
+      "lat": 40.83482,
+      "lon": -73.89236,
+      "rank": 5
+    },
+    {
+      "name": "Cheesequake",
+      "lat": 40.42483,
+      "lon": -74.28765,
+      "rank": 5
+    },
+    {
+      "name": "Cheesequake Estates",
+      "lat": 40.42367,
+      "lon": -74.24941,
+      "rank": 5
+    },
+    {
+      "name": "Cheesequake Woods",
+      "lat": 40.42422,
+      "lon": -74.25449,
+      "rank": 5
+    },
+    {
+      "name": "Chelsea",
+      "lat": 40.60066,
+      "lon": -74.19487,
+      "rank": 5
+    },
+    {
+      "name": "Chelsea",
+      "lat": 40.74649,
+      "lon": -74.00153,
+      "rank": 5
+    },
+    {
+      "name": "Cherry Creek",
+      "lat": 40.40657,
+      "lon": -74.26477,
+      "rank": 5
+    },
+    {
+      "name": "Chester Heights",
+      "lat": 40.92565,
+      "lon": -73.80152,
+      "rank": 5
+    },
+    {
+      "name": "Chester Hill Park",
+      "lat": 40.92343,
+      "lon": -73.82236,
+      "rank": 5
+    },
+    {
+      "name": "Chickahominy",
+      "lat": 41.01742,
+      "lon": -73.63973,
+      "rank": 5
+    },
+    {
+      "name": "Chinatown",
+      "lat": 40.71649,
+      "lon": -73.99625,
+      "rank": 5
+    },
+    {
+      "name": "City Line",
+      "lat": 40.67623,
+      "lon": -73.88696,
+      "rank": 5
+    },
+    {
+      "name": "Civic Center",
+      "lat": 40.71368,
+      "lon": -74.0024,
+      "rank": 5
+    },
+    {
+      "name": "Clason Point",
+      "lat": 40.81472,
+      "lon": -73.85996,
+      "rank": 5
+    },
+    {
+      "name": "Claytons Corner",
+      "lat": 40.3313,
+      "lon": -74.28127,
+      "rank": 5
+    },
+    {
+      "name": "Clearview Village",
+      "lat": 40.7899,
+      "lon": -73.49988,
+      "rank": 5
+    },
+    {
+      "name": "Clifton",
+      "lat": 40.6201,
+      "lon": -74.07709,
+      "rank": 5
+    },
+    {
+      "name": "Clinton",
+      "lat": 40.76528,
+      "lon": -73.99389,
+      "rank": 5
+    },
+    {
+      "name": "Clinton Hill",
+      "lat": 40.68972,
+      "lon": -73.96528,
+      "rank": 5
+    },
+    {
+      "name": "Clover Leaf Estates",
+      "lat": 40.29643,
+      "lon": -74.2673,
+      "rank": 5
+    },
+    {
+      "name": "Co-Op City",
+      "lat": 40.87389,
+      "lon": -73.82944,
+      "rank": 5
+    },
+    {
+      "name": "Cobble Hill",
+      "lat": 40.68755,
+      "lon": -73.99734,
+      "rank": 5
+    },
+    {
+      "name": "Colgate Center",
+      "lat": 40.71357,
+      "lon": -74.03483,
+      "rank": 5
+    },
+    {
+      "name": "College Point",
+      "lat": 40.7876,
+      "lon": -73.84597,
+      "rank": 5
+    },
+    {
+      "name": "Colonial Acres",
+      "lat": 40.97538,
+      "lon": -73.75985,
+      "rank": 5
+    }
+  ],
   "attribution": [
     "Map data \u00a9 OpenStreetMap contributors, ODbL (openstreetmap.org/copyright).",
     "Elevation: USGS 3D Elevation Program (3DEP), public domain.",

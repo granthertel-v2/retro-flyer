@@ -122,6 +122,72 @@ export const RUNWAY_RAMP_M = 60
  * at 160 kt. Two implementations of this would eventually be two different ramps, and
  * only one of them would have been flown.
  */
+/**
+ * Per-airfield geometry, computed once.
+ *
+ * `runwayLift` and `onRunway` are the hottest functions in the renderer: every
+ * terrain vertex goes through `sample`, every physics step goes through
+ * `surfaceHeight`, and a single LOD ring rebuild is nine thousand of them. Both used
+ * to convert a heading to radians and take its sine and cosine *per airfield, per
+ * call* — four airfields on the authored map, which nobody noticed, and twenty-two
+ * in New York, which cost 5.6 microseconds a sample and turned a ring rebuild into a
+ * fifty-millisecond hitch.
+ *
+ * The cache is keyed on the airfield object itself, so it needs no invalidation: a
+ * map builds its airfields once and hands out the same objects forever, and one that
+ * did not would simply get a fresh entry.
+ */
+interface RunwayRect {
+  sin: number
+  cos: number
+  halfLength: number
+  halfWidth: number
+  /** Radius beyond which no point can be within `RUNWAY_RAMP_M` of the strip. */
+  reachSq: number
+}
+
+const RUNWAY_RECTS = new WeakMap<Airfield, RunwayRect>()
+
+function rectOf(f: Airfield): RunwayRect {
+  let rect = RUNWAY_RECTS.get(f)
+  if (!rect) {
+    const heading = (f.headingDeg * Math.PI) / 180
+    const halfLength = f.lengthM / 2
+    const halfWidth = f.widthM / 2
+    const reach = Math.hypot(halfLength + RUNWAY_RAMP_M, halfWidth + RUNWAY_RAMP_M)
+    rect = {
+      sin: Math.sin(heading),
+      cos: Math.cos(heading),
+      halfLength,
+      halfWidth,
+      reachSq: reach * reach,
+    }
+    RUNWAY_RECTS.set(f, rect)
+  }
+  return rect
+}
+
+/** Signed distance to a runway rectangle whose trigonometry is already known. */
+function distanceToRunway(x: number, z: number, f: Airfield, rect: RunwayRect): number {
+  const dx = x - f.x
+  const dz = z - f.z
+  const along = dx * rect.sin - dz * rect.cos
+  const across = dx * rect.cos + dz * rect.sin
+  const ox = Math.abs(along) - rect.halfLength
+  const oz = Math.abs(across) - rect.halfWidth
+  if (ox > 0 || oz > 0) return Math.hypot(Math.max(ox, 0), Math.max(oz, 0))
+  return Math.max(ox, oz)
+}
+
+/**
+ * How much a runway lifts the surface at a point, metres.
+ *
+ * Shared rather than reimplemented per source. Every `TerrainSource` owes callers the
+ * same answer here, because the number it produces is what the landing gear stands on
+ * — and the ramp is the reason there is no step at the runway edge for a wheel to hit
+ * at 160 kt. Two implementations of this would eventually be two different ramps, and
+ * only one of them would have been flown.
+ */
 export function runwayLift(
   x: number,
   z: number,
@@ -130,13 +196,15 @@ export function runwayLift(
   let lift = 0
 
   for (const f of airfields) {
-    const d = signedDistanceToRect(
-      x, z,
-      f.x, f.z,
-      f.lengthM / 2,
-      f.widthM / 2,
-      (f.headingDeg * Math.PI) / 180,
-    )
+    // Almost every point in a region is nowhere near a runway, so reject on a
+    // squared distance before doing any rotation at all. This is the whole
+    // optimisation; the rest is bookkeeping.
+    const dx = x - f.x
+    const dz = z - f.z
+    const rect = rectOf(f)
+    if (dx * dx + dz * dz > rect.reachSq) continue
+
+    const d = distanceToRunway(x, z, f, rect)
     if (d >= RUNWAY_RAMP_M) continue
     // Full lift on the strip (d <= 0), fading to nothing over the apron.
     lift = Math.max(lift, RUNWAY_SURFACE_OFFSET_M * smoothstep(RUNWAY_RAMP_M, 0, d))
@@ -148,14 +216,11 @@ export function runwayLift(
 /** Whether a point is on a runway strip. The same rectangle `runwayLift` uses. */
 export function onRunway(x: number, z: number, airfields: readonly Airfield[]): boolean {
   for (const f of airfields) {
-    const d = signedDistanceToRect(
-      x, z,
-      f.x, f.z,
-      f.lengthM / 2,
-      f.widthM / 2,
-      (f.headingDeg * Math.PI) / 180,
-    )
-    if (d < 0) return true
+    const dx = x - f.x
+    const dz = z - f.z
+    const rect = rectOf(f)
+    if (dx * dx + dz * dz > rect.reachSq) continue
+    if (distanceToRunway(x, z, f, rect) < 0) return true
   }
   return false
 }
@@ -192,6 +257,28 @@ export interface TerrainSource {
    * was written to keep.
    */
   buildings?(): BuildingInstance[]
+  /**
+   * Named places, for labelling a map. Most prominent first.
+   *
+   * Optional for the same reason `buildings` is: a map is allowed to have none, and
+   * optional is what let real regions arrive without touching every caller.
+   */
+  readonly places?: readonly Place[]
+}
+
+/**
+ * A named place, in world metres.
+ *
+ * `rank` is 0 for a city and rises through borough, town, suburb, village and
+ * neighbourhood — a drawing priority rather than a fact about the world. It exists
+ * because a map the size of a postcard cannot show two hundred and fifty labels and
+ * has to have an opinion about which fifteen matter.
+ */
+export interface Place {
+  name: string
+  x: number
+  z: number
+  rank: number
 }
 
 /**

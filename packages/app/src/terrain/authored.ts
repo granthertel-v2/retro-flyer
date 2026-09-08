@@ -46,6 +46,7 @@ import {
   smoothstep,
   type Airfield,
   type BuildingInstance,
+  type Place,
   type Polyline,
   Surface,
   type TerrainSample,
@@ -337,6 +338,19 @@ const BLOCK_SIZE = 92
 class AuthoredMap implements TerrainSource {
   readonly extent = MAP_EXTENT
   readonly airfields: readonly Airfield[]
+
+  /**
+   * The authored world's named features.
+   *
+   * Three, against a real region's two hundred and fifty, and that is the right
+   * proportion — this map has three things in it worth naming. They exist so the
+   * minimap has no idea which kind of map it is drawing.
+   */
+  readonly places: readonly Place[] = [
+    { name: 'THE CITY', x: CITY.x, z: CITY.z, rank: 0 },
+    { name: 'THE RIDGE', x: 20_600, z: -14_000, rank: 2 },
+    { name: 'THE PASS', x: 20_600, z: -8_700, rank: 3 },
+  ]
 
   constructor() {
     this.airfields = AIRFIELD_SITES.map((site) => ({

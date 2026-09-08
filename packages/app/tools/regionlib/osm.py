@@ -429,3 +429,90 @@ def oriented_box(points: list[Point]) -> tuple[float, float, float, float, float
 
     _, cx, cy, ha, hb, angle = best
     return cx, cy, max(0.5, ha), max(0.5, hb), angle
+
+
+# ---------------------------------------------------------------------------
+# Places
+# ---------------------------------------------------------------------------
+
+#: Place kinds worth a label, most prominent first. The index is the rank stored in
+#: the manifest, and it is what the minimap uses to decide what to draw as it zooms.
+#:
+#: `neighbourhood` is included, and is the one that earns its place least obviously.
+#: Over open country the towns are what orient you; over a city they are useless,
+#: because the whole view is one town. Flying across New York it is Astoria, Flatbush
+#: and Red Hook that tell you where you are.
+PLACE_RANKS = ("city", "borough", "town", "suburb", "village", "neighbourhood")
+
+#: How many of each kind to keep, by rank. `[A]`
+#:
+#: A quota per kind rather than one cap over the ranked list, and the difference is
+#: not subtle. New York's box holds 20 cities and 314 towns, so a flat cut at 250
+#: filled up on towns and kept **no neighbourhoods at all** — which are exactly the
+#: labels that matter over a city, where every name for fifty kilometres is "New
+#: York" and what you actually want to know is that you are over Astoria.
+#:
+#: Each kind is taken by population, so the quota keeps the largest rather than the
+#: alphabetically luckiest. The total is about 350 names, which is 30 KB of manifest
+#: and more than the map will ever draw at once — thinning at draw time needs
+#: material at every zoom, and this is what supplies it.
+PLACE_QUOTAS = {
+    "city": 40,
+    "borough": 20,
+    "town": 90,
+    "suburb": 50,
+    "village": 40,
+    "neighbourhood": 120,
+}
+
+
+def fetch_places(
+    south: float, west: float, north: float, east: float
+) -> list[dict]:
+    """Named places, ranked, for labelling a map."""
+    kinds = "|".join(PLACE_RANKS)
+    body = f"""[out:json][timeout:300];
+node["place"~"^({kinds})$"]["name"]({south},{west},{north},{east});
+out;"""   # `out tags` omits coordinates; a place without a position is not a place.
+    data = query(body, "places")
+
+    out: list[dict] = []
+    for element in data.get("elements", []):
+        tags = element.get("tags", {})
+        kind = tags.get("place")
+        if kind not in PLACE_RANKS:
+            continue
+
+        population = 0
+        raw = tags.get("population")
+        if raw:
+            match = _NUMBER.search(raw)
+            if match:
+                population = int(float(match.group()))
+
+        out.append(
+            {
+                "name": tags["name"],
+                "lat": element["lat"],
+                "lon": element["lon"],
+                "rank": PLACE_RANKS.index(kind),
+                "population": population,
+            }
+        )
+
+    # Largest first within each kind, then the quota applied per kind. A city with no
+    # population tag still outranks a neighbourhood with one, which is what keeps
+    # Newark on the map and a named cul-de-sac off it.
+    out.sort(key=lambda p: (p["rank"], -p["population"], p["name"]))
+
+    kept: list[dict] = []
+    taken: dict[int, int] = {}
+    for place in out:
+        rank = place["rank"]
+        quota = PLACE_QUOTAS[PLACE_RANKS[rank]]
+        if taken.get(rank, 0) >= quota:
+            continue
+        taken[rank] = taken.get(rank, 0) + 1
+        kept.append(place)
+
+    return kept

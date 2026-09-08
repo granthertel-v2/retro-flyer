@@ -41,13 +41,27 @@ import {
 } from 'three'
 import { Surface, clamp, hash2, type TerrainSource } from './source.js'
 
-/** Cells across each ring. Every ring uses the same count; only the cell size grows. */
-const RES = 64
+/**
+ * Cells across each ring. Every ring uses the same count; only the cell size grows.
+ *
+ * Raised from 64 because the *transitions* were the visible problem, not the detail.
+ * Each ring's half-extent is `RES * BASE_CELL * 2^n / 2`, so at 64 the ground changed
+ * resolution at 1.9, 3.8, 7.7 and 15.4 km — every one of them in clear air, since fog
+ * does not begin until nineteen. Over the authored map's ridges that reads as relief;
+ * over the flat ground of a real region it reads as the world assembling itself a few
+ * kilometres ahead.
+ *
+ * At 96 the same transitions move to 2.9, 5.8, 11.5 and 23 km, which puts the last of
+ * them into the haze and the rest far enough out to stop announcing themselves. The
+ * cost is about 49,000 more triangles — on a New York frame already drawing 414,000,
+ * of which the buildings alone are 289,000.
+ */
+const RES = 96
 
 /** Cell size of the innermost ring, metres. */
 const BASE_CELL = 60
 
-/** Number of rings. Six doublings from 60 m reaches ~123 km — the whole map. */
+/** Number of rings. Six doublings from 60 m at 96 cells reaches ~184 km. */
 const LEVELS = 6
 
 /**

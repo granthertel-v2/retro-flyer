@@ -246,6 +246,42 @@ for (const spec of REGIONS) {
       })
     })
 
+    describe('places', () => {
+      it('knows what things are called', () => {
+        // The map is unusable without them: a real region is 111 km of ground that
+        // all looks alike, and the airfields are the only other labelled thing in it.
+        expect(manifest.places?.length ?? 0).toBeGreaterThan(150)
+      })
+
+      it('keeps a spread of kinds, not just the biggest', () => {
+        // A flat cap on a rank-sorted list filled up on towns and kept no
+        // neighbourhoods at all — which are the labels that matter over a city,
+        // where every name for fifty kilometres is the same one.
+        const ranks = new Set((manifest.places ?? []).map((p) => p.rank))
+        expect(ranks.size).toBeGreaterThanOrEqual(4)
+        expect(Math.min(...ranks)).toBe(0)
+      })
+
+      it('puts every place inside the region, with a name', () => {
+        for (const p of region.places) {
+          expect(p.name.length).toBeGreaterThan(0)
+          expect(Math.abs(p.x)).toBeLessThanOrEqual(region.extent)
+          expect(Math.abs(p.z)).toBeLessThanOrEqual(region.extent)
+          expect(p.rank).toBeGreaterThanOrEqual(0)
+        }
+      })
+
+      it('projects them the same way it projects everything else', () => {
+        // One projection, used once, in the constructor. Two callers projecting the
+        // same coordinate is two chances to do it differently.
+        const first = manifest.places?.[0]
+        expect(first).toBeDefined()
+        const w = frame.toWorld(first!.lat, first!.lon)
+        expect(region.places[0]!.x).toBeCloseTo(w.x, 6)
+        expect(region.places[0]!.z).toBeCloseTo(w.z, 6)
+      })
+    })
+
     describe('buildings', () => {
       const buildings = region.buildings()
 

@@ -32,6 +32,7 @@ import { Overlay, speedCue } from './overlay.js'
 import { Hud, type SteerCue } from './hud/hud.js'
 import { bearingTo } from './hud/symbology.js'
 import { HelpCard } from './help.js'
+import { Minimap } from './minimap.js'
 import { Clouds, SUN_DIRECTION, buildSun, positionSun } from './sky.js'
 import { authoredMap } from './terrain/authored.js'
 import { isRegionId, loadRegion } from './terrain/load.js'
@@ -75,7 +76,7 @@ function nearestFieldElevationFt(
 }
 
 /** How far you can see, metres. The outer LOD ring goes further; fog hides its edge. */
-const VIEW_DISTANCE = 34_000
+const VIEW_DISTANCE = 42_000
 
 const SKY = 0x86b0d6
 const HAZE = 0xb3c8d6
@@ -139,7 +140,7 @@ async function main(): Promise<void> {
   // close — from 14,000 ft the coastline, the city and the ridge all sat inside the
   // haze and the map might as well not have been designed. Haze should hide the far
   // edge of the world, not the world.
-  scene.fog = new Fog(HAZE, VIEW_DISTANCE * 0.55, VIEW_DISTANCE)
+  scene.fog = new Fog(HAZE, VIEW_DISTANCE * 0.45, VIEW_DISTANCE)
 
   const camera = new PerspectiveCamera(58, 1, 2, VIEW_DISTANCE * 1.3)
 
@@ -168,6 +169,10 @@ async function main(): Promise<void> {
 
   const scatter = new Scatter(map)
   scene.add(scatter.mesh)
+
+  // Rasterised once from the terrain source, so it costs a blit a frame afterwards.
+  const minimap = new Minimap(map)
+  document.body.append(minimap.canvas)
 
   const sun = buildSun()
   scene.add(sun)
@@ -279,6 +284,7 @@ async function main(): Promise<void> {
       chase.reset()
     }
     if (commands.resetCourse) course.reset()
+    if (commands.cycleMap) minimap.cycle()
     if (commands.toggleParkingBrake) parkingBrake = !parkingBrake
     if (commands.toggleHud) hud.visible = !hud.visible
     if (commands.toggleOverlay) overlay.visible = !overlay.visible
@@ -454,6 +460,10 @@ async function main(): Promise<void> {
       },
     )
     renderer.render(scene, camera)
+
+    // After the scene, before the HUD: it is a 2D overlay and shares nothing with
+    // the WebGL context, so where it goes only affects what sits on top of what.
+    minimap.draw(state.position[0], state.position[2], state.headingDeg)
 
     // The HUD is drawn from the same matrix the terrain went through, which is the
     // whole reason the flight path marker lands on real ground rather than near it.

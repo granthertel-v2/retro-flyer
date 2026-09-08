@@ -472,6 +472,1778 @@
       "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport 3HO, runway 18/36. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
     }
   ],
+  "places": [
+    {
+      "name": "Chicago",
+      "lat": 41.87556,
+      "lon": -87.62442,
+      "rank": 0
+    },
+    {
+      "name": "Aurora",
+      "lat": 41.75717,
+      "lon": -88.31475,
+      "rank": 0
+    },
+    {
+      "name": "Joliet",
+      "lat": 41.52636,
+      "lon": -88.08402,
+      "rank": 0
+    },
+    {
+      "name": "Naperville",
+      "lat": 41.77287,
+      "lon": -88.14793,
+      "rank": 0
+    },
+    {
+      "name": "Elgin",
+      "lat": 42.03726,
+      "lon": -88.2811,
+      "rank": 0
+    },
+    {
+      "name": "Evanston",
+      "lat": 42.047,
+      "lon": -87.68461,
+      "rank": 0
+    },
+    {
+      "name": "Hammond",
+      "lat": 41.6174,
+      "lon": -87.52201,
+      "rank": 0
+    },
+    {
+      "name": "Gary",
+      "lat": 41.6021,
+      "lon": -87.33706,
+      "rank": 0
+    },
+    {
+      "name": "Cicero",
+      "lat": 41.84554,
+      "lon": -87.75402,
+      "rank": 2
+    },
+    {
+      "name": "Schaumburg",
+      "lat": 42.03336,
+      "lon": -88.08341,
+      "rank": 2
+    },
+    {
+      "name": "Arlington Heights",
+      "lat": 42.08116,
+      "lon": -87.98022,
+      "rank": 2
+    },
+    {
+      "name": "Bolingbrook",
+      "lat": 41.70033,
+      "lon": -88.07177,
+      "rank": 2
+    },
+    {
+      "name": "Palatine",
+      "lat": 42.11055,
+      "lon": -88.04343,
+      "rank": 2
+    },
+    {
+      "name": "Skokie",
+      "lat": 42.0263,
+      "lon": -87.75211,
+      "rank": 2
+    },
+    {
+      "name": "Des Plaines",
+      "lat": 42.04158,
+      "lon": -87.88739,
+      "rank": 2
+    },
+    {
+      "name": "Oak Lawn",
+      "lat": 41.71087,
+      "lon": -87.75811,
+      "rank": 2
+    },
+    {
+      "name": "Orland Park",
+      "lat": 41.63066,
+      "lon": -87.85363,
+      "rank": 2
+    },
+    {
+      "name": "Berwyn",
+      "lat": 41.85059,
+      "lon": -87.79367,
+      "rank": 2
+    },
+    {
+      "name": "Mount Prospect",
+      "lat": 42.06642,
+      "lon": -87.93729,
+      "rank": 2
+    },
+    {
+      "name": "Tinley Park",
+      "lat": 41.57337,
+      "lon": -87.78449,
+      "rank": 2
+    },
+    {
+      "name": "Oak Park",
+      "lat": 41.88781,
+      "lon": -87.78876,
+      "rank": 2
+    },
+    {
+      "name": "Wheaton",
+      "lat": 41.8647,
+      "lon": -88.11017,
+      "rank": 2
+    },
+    {
+      "name": "Downers Grove",
+      "lat": 41.79368,
+      "lon": -88.01023,
+      "rank": 2
+    },
+    {
+      "name": "Glenview",
+      "lat": 42.07007,
+      "lon": -87.8114,
+      "rank": 2
+    },
+    {
+      "name": "Elmhurst",
+      "lat": 41.89947,
+      "lon": -87.94034,
+      "rank": 2
+    },
+    {
+      "name": "Plainfield",
+      "lat": 41.60867,
+      "lon": -88.20543,
+      "rank": 2
+    },
+    {
+      "name": "Lombard",
+      "lat": 41.88647,
+      "lon": -88.02015,
+      "rank": 2
+    },
+    {
+      "name": "Buffalo Grove",
+      "lat": 42.15442,
+      "lon": -87.95896,
+      "rank": 2
+    },
+    {
+      "name": "Bartlett",
+      "lat": 41.99085,
+      "lon": -88.185,
+      "rank": 2
+    },
+    {
+      "name": "Crystal Lake",
+      "lat": 42.24113,
+      "lon": -88.3162,
+      "rank": 2
+    },
+    {
+      "name": "Carol Stream",
+      "lat": 41.91253,
+      "lon": -88.13479,
+      "rank": 2
+    },
+    {
+      "name": "Romeoville",
+      "lat": 41.64753,
+      "lon": -88.08951,
+      "rank": 2
+    },
+    {
+      "name": "Park Ridge",
+      "lat": 42.01123,
+      "lon": -87.8406,
+      "rank": 2
+    },
+    {
+      "name": "Streamwood",
+      "lat": 42.02558,
+      "lon": -88.17841,
+      "rank": 2
+    },
+    {
+      "name": "Wheeling",
+      "lat": 42.13889,
+      "lon": -87.93109,
+      "rank": 2
+    },
+    {
+      "name": "Carpentersville",
+      "lat": 42.12114,
+      "lon": -88.25786,
+      "rank": 2
+    },
+    {
+      "name": "Portage",
+      "lat": 41.57587,
+      "lon": -87.17615,
+      "rank": 2
+    },
+    {
+      "name": "Hanover Park",
+      "lat": 41.99947,
+      "lon": -88.14507,
+      "rank": 2
+    },
+    {
+      "name": "Merrillville",
+      "lat": 41.48281,
+      "lon": -87.33281,
+      "rank": 2
+    },
+    {
+      "name": "Calumet City",
+      "lat": 41.61602,
+      "lon": -87.52958,
+      "rank": 2
+    },
+    {
+      "name": "Addison",
+      "lat": 41.9317,
+      "lon": -87.98896,
+      "rank": 2
+    },
+    {
+      "name": "Northbrook",
+      "lat": 42.1287,
+      "lon": -87.82651,
+      "rank": 2
+    },
+    {
+      "name": "Oswego",
+      "lat": 41.68348,
+      "lon": -88.35257,
+      "rank": 2
+    },
+    {
+      "name": "Crown Point",
+      "lat": 41.41698,
+      "lon": -87.36531,
+      "rank": 2
+    },
+    {
+      "name": "Glendale Heights",
+      "lat": 41.91895,
+      "lon": -88.07657,
+      "rank": 2
+    },
+    {
+      "name": "Woodridge",
+      "lat": 41.75633,
+      "lon": -88.04556,
+      "rank": 2
+    },
+    {
+      "name": "Elk Grove Village",
+      "lat": 42.00356,
+      "lon": -88.00377,
+      "rank": 2
+    },
+    {
+      "name": "St. Charles",
+      "lat": 41.91398,
+      "lon": -88.31282,
+      "rank": 2
+    },
+    {
+      "name": "Mundelein",
+      "lat": 42.26308,
+      "lon": -88.00397,
+      "rank": 2
+    },
+    {
+      "name": "Niles",
+      "lat": 42.02893,
+      "lon": -87.81223,
+      "rank": 2
+    },
+    {
+      "name": "Highland Park",
+      "lat": 42.18367,
+      "lon": -87.79932,
+      "rank": 2
+    },
+    {
+      "name": "Hobart",
+      "lat": 41.53226,
+      "lon": -87.25504,
+      "rank": 2
+    },
+    {
+      "name": "Algonquin",
+      "lat": 42.16558,
+      "lon": -88.29425,
+      "rank": 2
+    },
+    {
+      "name": "Schererville",
+      "lat": 41.49223,
+      "lon": -87.4499,
+      "rank": 2
+    },
+    {
+      "name": "Burbank",
+      "lat": 41.74141,
+      "lon": -87.76861,
+      "rank": 2
+    },
+    {
+      "name": "Lake in the Hills",
+      "lat": 42.18169,
+      "lon": -88.33036,
+      "rank": 2
+    },
+    {
+      "name": "Lansing",
+      "lat": 41.56622,
+      "lon": -87.53816,
+      "rank": 2
+    },
+    {
+      "name": "Glen Ellyn",
+      "lat": 41.87753,
+      "lon": -88.06701,
+      "rank": 2
+    },
+    {
+      "name": "Oak Forest",
+      "lat": 41.60281,
+      "lon": -87.74394,
+      "rank": 2
+    },
+    {
+      "name": "New Lenox",
+      "lat": 41.51198,
+      "lon": -87.96561,
+      "rank": 2
+    },
+    {
+      "name": "West Chicago",
+      "lat": 41.88475,
+      "lon": -88.20396,
+      "rank": 2
+    },
+    {
+      "name": "Chicago Heights",
+      "lat": 41.50628,
+      "lon": -87.63571,
+      "rank": 2
+    },
+    {
+      "name": "East Chicago",
+      "lat": 41.63979,
+      "lon": -87.45485,
+      "rank": 2
+    },
+    {
+      "name": "Batavia",
+      "lat": 41.85003,
+      "lon": -88.31257,
+      "rank": 2
+    },
+    {
+      "name": "Lockport",
+      "lat": 41.58948,
+      "lon": -88.05784,
+      "rank": 2
+    },
+    {
+      "name": "Vernon Hills",
+      "lat": 42.23732,
+      "lon": -87.96495,
+      "rank": 2
+    },
+    {
+      "name": "Melrose Park",
+      "lat": 41.9003,
+      "lon": -87.85697,
+      "rank": 2
+    },
+    {
+      "name": "Elmwood Park",
+      "lat": 41.92059,
+      "lon": -87.81602,
+      "rank": 2
+    },
+    {
+      "name": "Westmont",
+      "lat": 41.79505,
+      "lon": -87.9752,
+      "rank": 2
+    },
+    {
+      "name": "Lisle",
+      "lat": 41.80116,
+      "lon": -88.07477,
+      "rank": 2
+    },
+    {
+      "name": "Rolling Meadows",
+      "lat": 42.08419,
+      "lon": -88.01313,
+      "rank": 2
+    },
+    {
+      "name": "Highland",
+      "lat": 41.55365,
+      "lon": -87.45205,
+      "rank": 2
+    },
+    {
+      "name": "Munster",
+      "lat": 41.56448,
+      "lon": -87.51254,
+      "rank": 2
+    },
+    {
+      "name": "South Elgin",
+      "lat": 41.99419,
+      "lon": -88.2923,
+      "rank": 2
+    },
+    {
+      "name": "Maywood",
+      "lat": 41.87899,
+      "lon": -87.84364,
+      "rank": 2
+    },
+    {
+      "name": "Roselle",
+      "lat": 41.98526,
+      "lon": -88.07996,
+      "rank": 2
+    },
+    {
+      "name": "Blue Island",
+      "lat": 41.6573,
+      "lon": -87.67987,
+      "rank": 2
+    },
+    {
+      "name": "Bloomingdale",
+      "lat": 41.95753,
+      "lon": -88.0809,
+      "rank": 2
+    },
+    {
+      "name": "Villa Park",
+      "lat": 41.88931,
+      "lon": -87.97784,
+      "rank": 2
+    },
+    {
+      "name": "Darien",
+      "lat": 41.75087,
+      "lon": -87.97396,
+      "rank": 2
+    },
+    {
+      "name": "Dolton",
+      "lat": 41.63892,
+      "lon": -87.60727,
+      "rank": 2
+    },
+    {
+      "name": "Geneva",
+      "lat": 41.88753,
+      "lon": -88.30535,
+      "rank": 2
+    },
+    {
+      "name": "South Holland",
+      "lat": 41.60087,
+      "lon": -87.60699,
+      "rank": 2
+    },
+    {
+      "name": "Libertyville",
+      "lat": 42.28308,
+      "lon": -87.95313,
+      "rank": 2
+    },
+    {
+      "name": "Crest Hill",
+      "lat": 41.55475,
+      "lon": -88.09867,
+      "rank": 2
+    },
+    {
+      "name": "St. John",
+      "lat": 41.45004,
+      "lon": -87.47004,
+      "rank": 2
+    },
+    {
+      "name": "Frankfort",
+      "lat": 41.49795,
+      "lon": -87.84959,
+      "rank": 2
+    },
+    {
+      "name": "Evergreen Park",
+      "lat": 41.72014,
+      "lon": -87.70133,
+      "rank": 2
+    },
+    {
+      "name": "Mokena",
+      "lat": 41.52614,
+      "lon": -87.88922,
+      "rank": 2
+    },
+    {
+      "name": "Harvey",
+      "lat": 41.61003,
+      "lon": -87.64671,
+      "rank": 2
+    },
+    {
+      "name": "Lake Zurich",
+      "lat": 42.19697,
+      "lon": -88.09341,
+      "rank": 2
+    },
+    {
+      "name": "Homewood",
+      "lat": 41.5574,
+      "lon": -87.66515,
+      "rank": 2
+    },
+    {
+      "name": "Lake Forest",
+      "lat": 42.25865,
+      "lon": -87.84071,
+      "rank": 2
+    },
+    {
+      "name": "Matteson",
+      "lat": 41.50983,
+      "lon": -87.73927,
+      "rank": 2
+    },
+    {
+      "name": "Alsip",
+      "lat": 41.66893,
+      "lon": -87.7387,
+      "rank": 2
+    },
+    {
+      "name": "Near North Side",
+      "lat": 41.89996,
+      "lon": -87.63459,
+      "rank": 3
+    },
+    {
+      "name": "Lake View",
+      "lat": 41.94424,
+      "lon": -87.65417,
+      "rank": 3
+    },
+    {
+      "name": "Austin",
+      "lat": 41.88803,
+      "lon": -87.76486,
+      "rank": 3
+    },
+    {
+      "name": "West Town",
+      "lat": 41.90142,
+      "lon": -87.68617,
+      "rank": 3
+    },
+    {
+      "name": "Belmont Cragin",
+      "lat": 41.93085,
+      "lon": -87.76895,
+      "rank": 3
+    },
+    {
+      "name": "West Ridge",
+      "lat": 42.00355,
+      "lon": -87.69624,
+      "rank": 3
+    },
+    {
+      "name": "Logan Square",
+      "lat": 41.92837,
+      "lon": -87.70676,
+      "rank": 3
+    },
+    {
+      "name": "South Lawndale",
+      "lat": 41.84902,
+      "lon": -87.70229,
+      "rank": 3
+    },
+    {
+      "name": "Lincoln Park",
+      "lat": 41.9217,
+      "lon": -87.64783,
+      "rank": 3
+    },
+    {
+      "name": "Near West Side",
+      "lat": 41.88007,
+      "lon": -87.66676,
+      "rank": 3
+    },
+    {
+      "name": "Portage Park",
+      "lat": 41.95781,
+      "lon": -87.76506,
+      "rank": 3
+    },
+    {
+      "name": "Uptown",
+      "lat": 41.96663,
+      "lon": -87.65555,
+      "rank": 3
+    },
+    {
+      "name": "Edgewater",
+      "lat": 41.98336,
+      "lon": -87.66396,
+      "rank": 3
+    },
+    {
+      "name": "Chicago Lawn",
+      "lat": 41.77503,
+      "lon": -87.69644,
+      "rank": 3
+    },
+    {
+      "name": "Rogers Park",
+      "lat": 42.00904,
+      "lon": -87.67685,
+      "rank": 3
+    },
+    {
+      "name": "Humboldt Park",
+      "lat": 41.90279,
+      "lon": -87.72091,
+      "rank": 3
+    },
+    {
+      "name": "South Shore",
+      "lat": 41.75873,
+      "lon": -87.57528,
+      "rank": 3
+    },
+    {
+      "name": "Irving Park",
+      "lat": 41.95336,
+      "lon": -87.73645,
+      "rank": 3
+    },
+    {
+      "name": "Albany Park",
+      "lat": 41.97033,
+      "lon": -87.71599,
+      "rank": 3
+    },
+    {
+      "name": "Brighton Park",
+      "lat": 41.81892,
+      "lon": -87.69894,
+      "rank": 3
+    },
+    {
+      "name": "Auburn Gresham",
+      "lat": 41.74317,
+      "lon": -87.65373,
+      "rank": 3
+    },
+    {
+      "name": "New City",
+      "lat": 41.80753,
+      "lon": -87.65644,
+      "rank": 3
+    },
+    {
+      "name": "Dunning",
+      "lat": 41.95286,
+      "lon": -87.79652,
+      "rank": 3
+    },
+    {
+      "name": "The Loop",
+      "lat": 41.88161,
+      "lon": -87.62946,
+      "rank": 3
+    },
+    {
+      "name": "Ashburn",
+      "lat": 41.74753,
+      "lon": -87.71116,
+      "rank": 3
+    },
+    {
+      "name": "Lincoln Square",
+      "lat": 41.96859,
+      "lon": -87.68851,
+      "rank": 3
+    },
+    {
+      "name": "Gage Park",
+      "lat": 41.79503,
+      "lon": -87.69616,
+      "rank": 3
+    },
+    {
+      "name": "Roseland",
+      "lat": 41.70198,
+      "lon": -87.62588,
+      "rank": 3
+    },
+    {
+      "name": "Norwood Park",
+      "lat": 41.98807,
+      "lon": -87.80275,
+      "rank": 3
+    },
+    {
+      "name": "Avondale",
+      "lat": 41.93883,
+      "lon": -87.7113,
+      "rank": 3
+    },
+    {
+      "name": "Garfield Ridge",
+      "lat": 41.79257,
+      "lon": -87.78213,
+      "rank": 3
+    },
+    {
+      "name": "North Center",
+      "lat": 41.95418,
+      "lon": -87.67909,
+      "rank": 3
+    },
+    {
+      "name": "North Lawndale",
+      "lat": 41.86003,
+      "lon": -87.71839,
+      "rank": 3
+    },
+    {
+      "name": "Lower West Side",
+      "lat": 41.85257,
+      "lon": -87.66594,
+      "rank": 3
+    },
+    {
+      "name": "Bridgeport",
+      "lat": 41.83531,
+      "lon": -87.6462,
+      "rank": 3
+    },
+    {
+      "name": "West Lawn",
+      "lat": 41.77281,
+      "lon": -87.72227,
+      "rank": 3
+    },
+    {
+      "name": "Chatham",
+      "lat": 41.74115,
+      "lon": -87.61255,
+      "rank": 3
+    },
+    {
+      "name": "Greater Grand Crossing",
+      "lat": 41.75804,
+      "lon": -87.61548,
+      "rank": 3
+    },
+    {
+      "name": "West Englewood",
+      "lat": 41.77809,
+      "lon": -87.66672,
+      "rank": 3
+    },
+    {
+      "name": "Hyde Park",
+      "lat": 41.79445,
+      "lon": -87.59392,
+      "rank": 3
+    },
+    {
+      "name": "Near South Side",
+      "lat": 41.8567,
+      "lon": -87.62477,
+      "rank": 3
+    },
+    {
+      "name": "South Chicago",
+      "lat": 41.73459,
+      "lon": -87.55132,
+      "rank": 3
+    },
+    {
+      "name": "Jefferson Park",
+      "lat": 41.96974,
+      "lon": -87.76312,
+      "rank": 3
+    },
+    {
+      "name": "West Pullman",
+      "lat": 41.67505,
+      "lon": -87.63782,
+      "rank": 3
+    },
+    {
+      "name": "Washington Heights",
+      "lat": 41.70654,
+      "lon": -87.65186,
+      "rank": 3
+    },
+    {
+      "name": "Grand Boulevard",
+      "lat": 41.81392,
+      "lon": -87.61727,
+      "rank": 3
+    },
+    {
+      "name": "Clearing",
+      "lat": 41.78059,
+      "lon": -87.77339,
+      "rank": 3
+    },
+    {
+      "name": "Woodlawn",
+      "lat": 41.77948,
+      "lon": -87.59949,
+      "rank": 3
+    },
+    {
+      "name": "Englewood",
+      "lat": 41.77976,
+      "lon": -87.64588,
+      "rank": 3
+    },
+    {
+      "name": "Hermosa",
+      "lat": 41.92438,
+      "lon": -87.73656,
+      "rank": 3
+    },
+    {
+      "name": "Hoffman Estates",
+      "lat": 42.04273,
+      "lon": -88.07928,
+      "rank": 4
+    },
+    {
+      "name": "Wilmette",
+      "lat": 42.07607,
+      "lon": -87.71156,
+      "rank": 4
+    },
+    {
+      "name": "Morton Grove",
+      "lat": 42.04059,
+      "lon": -87.78257,
+      "rank": 4
+    },
+    {
+      "name": "Homer Glen",
+      "lat": 41.60003,
+      "lon": -87.93811,
+      "rank": 4
+    },
+    {
+      "name": "Park Forest",
+      "lat": 41.48258,
+      "lon": -87.68023,
+      "rank": 4
+    },
+    {
+      "name": "Deerfield",
+      "lat": 42.17114,
+      "lon": -87.84451,
+      "rank": 4
+    },
+    {
+      "name": "Hinsdale",
+      "lat": 41.80246,
+      "lon": -87.92998,
+      "rank": 4
+    },
+    {
+      "name": "Prospect Heights",
+      "lat": 42.0953,
+      "lon": -87.93757,
+      "rank": 4
+    },
+    {
+      "name": "Forest Park",
+      "lat": 41.8795,
+      "lon": -87.8137,
+      "rank": 4
+    },
+    {
+      "name": "Midlothian",
+      "lat": 41.62531,
+      "lon": -87.71755,
+      "rank": 4
+    },
+    {
+      "name": "La Grange Park",
+      "lat": 41.83336,
+      "lon": -87.86773,
+      "rank": 4
+    },
+    {
+      "name": "Lincolnwood",
+      "lat": 42.0056,
+      "lon": -87.73557,
+      "rank": 4
+    },
+    {
+      "name": "Richton Park",
+      "lat": 41.4846,
+      "lon": -87.70905,
+      "rank": 4
+    },
+    {
+      "name": "Justice",
+      "lat": 41.74568,
+      "lon": -87.83919,
+      "rank": 4
+    },
+    {
+      "name": "Winnetka",
+      "lat": 42.10807,
+      "lon": -87.73653,
+      "rank": 4
+    },
+    {
+      "name": "River Forest",
+      "lat": 41.89781,
+      "lon": -87.81395,
+      "rank": 4
+    },
+    {
+      "name": "Burr Ridge",
+      "lat": 41.7503,
+      "lon": -87.91618,
+      "rank": 4
+    },
+    {
+      "name": "Campton Hills",
+      "lat": 41.93613,
+      "lon": -88.39976,
+      "rank": 4
+    },
+    {
+      "name": "River Grove",
+      "lat": 41.92586,
+      "lon": -87.83589,
+      "rank": 4
+    },
+    {
+      "name": "Sauk Village",
+      "lat": 41.48837,
+      "lon": -87.56754,
+      "rank": 4
+    },
+    {
+      "name": "Flossmoor",
+      "lat": 41.54281,
+      "lon": -87.68477,
+      "rank": 4
+    },
+    {
+      "name": "Steger",
+      "lat": 41.47003,
+      "lon": -87.63643,
+      "rank": 4
+    },
+    {
+      "name": "Manhattan",
+      "lat": 41.42253,
+      "lon": -87.98589,
+      "rank": 4
+    },
+    {
+      "name": "Riverside",
+      "lat": 41.83235,
+      "lon": -87.81532,
+      "rank": 4
+    },
+    {
+      "name": "Lowell",
+      "lat": 41.29142,
+      "lon": -87.42059,
+      "rank": 4
+    },
+    {
+      "name": "Willowbrook",
+      "lat": 41.76975,
+      "lon": -87.93589,
+      "rank": 4
+    },
+    {
+      "name": "Aux Sable",
+      "lat": 41.39475,
+      "lon": -88.32868,
+      "rank": 4
+    },
+    {
+      "name": "Lynwood",
+      "lat": 41.52556,
+      "lon": -87.54056,
+      "rank": 4
+    },
+    {
+      "name": "Harwood Heights",
+      "lat": 41.96696,
+      "lon": -87.80767,
+      "rank": 4
+    },
+    {
+      "name": "Glencoe",
+      "lat": 42.13503,
+      "lon": -87.75812,
+      "rank": 4
+    },
+    {
+      "name": "Clarendon Hills",
+      "lat": 41.79612,
+      "lon": -87.95514,
+      "rank": 4
+    },
+    {
+      "name": "Glenwood",
+      "lat": 41.54249,
+      "lon": -87.60228,
+      "rank": 4
+    },
+    {
+      "name": "Crete",
+      "lat": 41.44453,
+      "lon": -87.63138,
+      "rank": 4
+    },
+    {
+      "name": "Itasca",
+      "lat": 41.9713,
+      "lon": -88.01292,
+      "rank": 4
+    },
+    {
+      "name": "Hillside",
+      "lat": 41.87781,
+      "lon": -87.90284,
+      "rank": 4
+    },
+    {
+      "name": "Oak Brook",
+      "lat": 41.83271,
+      "lon": -87.94841,
+      "rank": 4
+    },
+    {
+      "name": "Long Grove",
+      "lat": 42.17836,
+      "lon": -87.99785,
+      "rank": 4
+    },
+    {
+      "name": "Broadview",
+      "lat": 41.86397,
+      "lon": -87.85337,
+      "rank": 4
+    },
+    {
+      "name": "South Chicago Heights",
+      "lat": 41.7267,
+      "lon": -87.56255,
+      "rank": 5
+    },
+    {
+      "name": "Abby Glen",
+      "lat": 41.94804,
+      "lon": -88.38344,
+      "rank": 5
+    },
+    {
+      "name": "Aberdeen",
+      "lat": 41.43893,
+      "lon": -87.11142,
+      "rank": 5
+    },
+    {
+      "name": "Acorn Acres",
+      "lat": 42.21947,
+      "lon": -88.09341,
+      "rank": 5
+    },
+    {
+      "name": "Algonquin Shores",
+      "lat": 42.15055,
+      "lon": -88.28844,
+      "rank": 5
+    },
+    {
+      "name": "Almora",
+      "lat": 42.06084,
+      "lon": -88.33597,
+      "rank": 5
+    },
+    {
+      "name": "Almora Heights",
+      "lat": 42.0428,
+      "lon": -88.34397,
+      "rank": 5
+    },
+    {
+      "name": "Alpine",
+      "lat": 41.58647,
+      "lon": -87.88164,
+      "rank": 5
+    },
+    {
+      "name": "Ambridge",
+      "lat": 41.60456,
+      "lon": -87.36587,
+      "rank": 5
+    },
+    {
+      "name": "Ancient Oaks",
+      "lat": 42.20641,
+      "lon": -88.09563,
+      "rank": 5
+    },
+    {
+      "name": "Ancient Tree",
+      "lat": 42.13028,
+      "lon": -87.86139,
+      "rank": 5
+    },
+    {
+      "name": "Andersonville",
+      "lat": 41.97986,
+      "lon": -87.66828,
+      "rank": 5
+    },
+    {
+      "name": "Andrews and Hurds Subdivision",
+      "lat": 41.6667,
+      "lon": -87.63199,
+      "rank": 5
+    },
+    {
+      "name": "Appaloosa West",
+      "lat": 41.90253,
+      "lon": -88.41619,
+      "rank": 5
+    },
+    {
+      "name": "Arbor Creek",
+      "lat": 41.92788,
+      "lon": -88.37892,
+      "rank": 5
+    },
+    {
+      "name": "Arbor Hill",
+      "lat": 41.55101,
+      "lon": -87.44469,
+      "rank": 5
+    },
+    {
+      "name": "Arboretum Estates",
+      "lat": 41.83447,
+      "lon": -88.06618,
+      "rank": 5
+    },
+    {
+      "name": "Arbury Hills",
+      "lat": 41.53559,
+      "lon": -87.84755,
+      "rank": 5
+    },
+    {
+      "name": "Arcade Row",
+      "lat": 41.69059,
+      "lon": -87.60921,
+      "rank": 5
+    },
+    {
+      "name": "Arcadia Terrace",
+      "lat": 41.98681,
+      "lon": -87.6944,
+      "rank": 5
+    },
+    {
+      "name": "Archer Limits",
+      "lat": 41.80614,
+      "lon": -87.7495,
+      "rank": 5
+    },
+    {
+      "name": "Argyle Street",
+      "lat": 41.9739,
+      "lon": -87.65889,
+      "rank": 5
+    },
+    {
+      "name": "Arizona",
+      "lat": 41.65303,
+      "lon": -87.53808,
+      "rank": 5
+    },
+    {
+      "name": "Arlington Estates",
+      "lat": 41.98287,
+      "lon": -88.38347,
+      "rank": 5
+    },
+    {
+      "name": "Ashby Park",
+      "lat": 41.56142,
+      "lon": -88.26495,
+      "rank": 5
+    },
+    {
+      "name": "Ashland Arts District",
+      "lat": 42.05703,
+      "lon": -87.69415,
+      "rank": 5
+    },
+    {
+      "name": "Auburn Park",
+      "lat": 41.7542,
+      "lon": -87.63672,
+      "rank": 5
+    },
+    {
+      "name": "Avalon Highlands",
+      "lat": 41.74865,
+      "lon": -87.60199,
+      "rank": 5
+    },
+    {
+      "name": "Avalon Trails",
+      "lat": 41.66194,
+      "lon": -87.55445,
+      "rank": 5
+    },
+    {
+      "name": "Bakers Acres",
+      "lat": 41.94753,
+      "lon": -88.34674,
+      "rank": 5
+    },
+    {
+      "name": "Bald Mound",
+      "lat": 41.84614,
+      "lon": -88.40647,
+      "rank": 5
+    },
+    {
+      "name": "Baldwin",
+      "lat": 42.13808,
+      "lon": -88.05869,
+      "rank": 5
+    },
+    {
+      "name": "Ballantrae",
+      "lat": 41.53569,
+      "lon": -87.70762,
+      "rank": 5
+    },
+    {
+      "name": "Barrington Center",
+      "lat": 42.11058,
+      "lon": -88.19424,
+      "rank": 5
+    },
+    {
+      "name": "Barrington Woods",
+      "lat": 42.15225,
+      "lon": -88.05591,
+      "rank": 5
+    },
+    {
+      "name": "Bayside",
+      "lat": 42.07678,
+      "lon": -88.4149,
+      "rank": 5
+    },
+    {
+      "name": "Beacon Hill",
+      "lat": 42.20169,
+      "lon": -88.05091,
+      "rank": 5
+    },
+    {
+      "name": "Becks Park",
+      "lat": 41.771,
+      "lon": -87.63905,
+      "rank": 5
+    },
+    {
+      "name": "Bellchase",
+      "lat": 42.17539,
+      "lon": -88.38952,
+      "rank": 5
+    },
+    {
+      "name": "Belmont",
+      "lat": 41.79275,
+      "lon": -88.03781,
+      "rank": 5
+    },
+    {
+      "name": "Belmont Gardens",
+      "lat": 41.93587,
+      "lon": -87.72954,
+      "rank": 5
+    },
+    {
+      "name": "Belmont Park",
+      "lat": 41.93392,
+      "lon": -87.75284,
+      "rank": 5
+    },
+    {
+      "name": "Berger",
+      "lat": 41.62365,
+      "lon": -87.59199,
+      "rank": 5
+    },
+    {
+      "name": "Bernice",
+      "lat": 41.5792,
+      "lon": -87.5481,
+      "rank": 5
+    },
+    {
+      "name": "Bernice",
+      "lat": 41.58094,
+      "lon": -87.545,
+      "rank": 5
+    },
+    {
+      "name": "Big Timber Acres",
+      "lat": 42.0754,
+      "lon": -88.37626,
+      "rank": 5
+    },
+    {
+      "name": "Binnie Lakes Trail",
+      "lat": 42.11643,
+      "lon": -88.35734,
+      "rank": 5
+    },
+    {
+      "name": "Binnie Woods",
+      "lat": 42.12105,
+      "lon": -88.35338,
+      "rank": 5
+    },
+    {
+      "name": "Binnie's Subdivision",
+      "lat": 42.1146,
+      "lon": -88.31234,
+      "rank": 5
+    },
+    {
+      "name": "Bishops Ridge",
+      "lat": 42.17919,
+      "lon": -88.06841,
+      "rank": 5
+    },
+    {
+      "name": "Bluffs of Sleepy Hollow",
+      "lat": 42.08357,
+      "lon": -88.29966,
+      "rank": 5
+    },
+    {
+      "name": "Bonnie Valley",
+      "lat": 41.92867,
+      "lon": -88.36956,
+      "rank": 5
+    },
+    {
+      "name": "Boschome",
+      "lat": 42.17364,
+      "lon": -88.04952,
+      "rank": 5
+    },
+    {
+      "name": "Boulevard Estates",
+      "lat": 41.53963,
+      "lon": -87.43975,
+      "rank": 5
+    },
+    {
+      "name": "Boulevard Villa",
+      "lat": 42.03859,
+      "lon": -88.31566,
+      "rank": 5
+    },
+    {
+      "name": "Bowes Bend",
+      "lat": 42.01086,
+      "lon": -88.4148,
+      "rank": 5
+    },
+    {
+      "name": "Bowmanville",
+      "lat": 41.97787,
+      "lon": -87.67944,
+      "rank": 5
+    },
+    {
+      "name": "Braeside",
+      "lat": 42.15422,
+      "lon": -87.77343,
+      "rank": 5
+    },
+    {
+      "name": "Brainerd",
+      "lat": 41.73281,
+      "lon": -87.65838,
+      "rank": 5
+    },
+    {
+      "name": "Brantwood",
+      "lat": 41.55376,
+      "lon": -87.47559,
+      "rank": 5
+    },
+    {
+      "name": "Brentwood",
+      "lat": 42.12879,
+      "lon": -88.12855,
+      "rank": 5
+    },
+    {
+      "name": "Briar Cove",
+      "lat": 41.50646,
+      "lon": -87.48565,
+      "rank": 5
+    },
+    {
+      "name": "Briar Gate",
+      "lat": 41.96642,
+      "lon": -88.42202,
+      "rank": 5
+    },
+    {
+      "name": "Briarwood Homes",
+      "lat": 41.55021,
+      "lon": -87.70616,
+      "rank": 5
+    },
+    {
+      "name": "Bricktown",
+      "lat": 41.93956,
+      "lon": -87.68076,
+      "rank": 5
+    },
+    {
+      "name": "Bridlewoods",
+      "lat": 42.23836,
+      "lon": -88.09869,
+      "rank": 5
+    },
+    {
+      "name": "Briergate",
+      "lat": 42.17615,
+      "lon": -87.81483,
+      "rank": 5
+    },
+    {
+      "name": "Brierwoods",
+      "lat": 42.21669,
+      "lon": -88.10202,
+      "rank": 5
+    },
+    {
+      "name": "Brookhaven",
+      "lat": 41.96338,
+      "lon": -88.37965,
+      "rank": 5
+    },
+    {
+      "name": "Brookline",
+      "lat": 41.76226,
+      "lon": -87.6081,
+      "rank": 5
+    },
+    {
+      "name": "Brookside Glen",
+      "lat": 41.53661,
+      "lon": -87.80898,
+      "rank": 5
+    },
+    {
+      "name": "Brynford Park",
+      "lat": 41.98373,
+      "lon": -87.73099,
+      "rank": 5
+    },
+    {
+      "name": "Bucktown",
+      "lat": 41.91777,
+      "lon": -87.67762,
+      "rank": 5
+    },
+    {
+      "name": "Budlong Woods",
+      "lat": 41.9795,
+      "lon": -87.6966,
+      "rank": 5
+    },
+    {
+      "name": "Buena Park",
+      "lat": 41.95781,
+      "lon": -87.65283,
+      "rank": 5
+    },
+    {
+      "name": "Burning Tree",
+      "lat": 41.94586,
+      "lon": -88.40675,
+      "rank": 5
+    },
+    {
+      "name": "Cabrini-Green",
+      "lat": 41.8988,
+      "lon": -87.64094,
+      "rank": 5
+    },
+    {
+      "name": "Calumet",
+      "lat": 41.62658,
+      "lon": -87.46399,
+      "rank": 5
+    },
+    {
+      "name": "Calumet Center",
+      "lat": 41.57258,
+      "lon": -87.50416,
+      "rank": 5
+    },
+    {
+      "name": "Campton Pines",
+      "lat": 41.91754,
+      "lon": -88.38875,
+      "rank": 5
+    },
+    {
+      "name": "Canaryville",
+      "lat": 41.81476,
+      "lon": -87.64033,
+      "rank": 5
+    },
+    {
+      "name": "Capri Village",
+      "lat": 42.14169,
+      "lon": -88.0298,
+      "rank": 5
+    },
+    {
+      "name": "Carrington Courts of Dynasty Lakes",
+      "lat": 41.55583,
+      "lon": -87.71051,
+      "rank": 5
+    },
+    {
+      "name": "Carrington Reserve",
+      "lat": 42.0987,
+      "lon": -88.32605,
+      "rank": 5
+    },
+    {
+      "name": "Castle Knoll",
+      "lat": 42.06876,
+      "lon": -88.37742,
+      "rank": 5
+    },
+    {
+      "name": "Catatoga",
+      "lat": 42.01086,
+      "lon": -88.36345,
+      "rank": 5
+    },
+    {
+      "name": "Catatoga II",
+      "lat": 42.00892,
+      "lon": -88.37075,
+      "rank": 5
+    },
+    {
+      "name": "Catatoga III",
+      "lat": 42.0093,
+      "lon": -88.38096,
+      "rank": 5
+    },
+    {
+      "name": "Cedar Grove",
+      "lat": 42.00762,
+      "lon": -88.39465,
+      "rank": 5
+    },
+    {
+      "name": "Cedar Hill",
+      "lat": 41.5551,
+      "lon": -88.27278,
+      "rank": 5
+    },
+    {
+      "name": "Central Hammond",
+      "lat": 41.61634,
+      "lon": -87.50942,
+      "rank": 5
+    },
+    {
+      "name": "Central Park",
+      "lat": 41.88559,
+      "lon": -87.73061,
+      "rank": 5
+    },
+    {
+      "name": "Central Station",
+      "lat": 41.86415,
+      "lon": -87.62137,
+      "rank": 5
+    },
+    {
+      "name": "Central Street Evanston",
+      "lat": 42.06452,
+      "lon": -87.7152,
+      "rank": 5
+    },
+    {
+      "name": "Century Oaks",
+      "lat": 42.06467,
+      "lon": -88.30979,
+      "rank": 5
+    },
+    {
+      "name": "Century Oaks West",
+      "lat": 42.06602,
+      "lon": -88.32224,
+      "rank": 5
+    },
+    {
+      "name": "Chapel Manor",
+      "lat": 41.47615,
+      "lon": -87.3317,
+      "rank": 5
+    },
+    {
+      "name": "Chatham Fields",
+      "lat": 41.74726,
+      "lon": -87.60986,
+      "rank": 5
+    },
+    {
+      "name": "Cheltenham",
+      "lat": 41.74809,
+      "lon": -87.56116,
+      "rank": 5
+    },
+    {
+      "name": "Cherry Hill",
+      "lat": 41.52329,
+      "lon": -88.01408,
+      "rank": 5
+    },
+    {
+      "name": "Cherub Manor",
+      "lat": 41.54213,
+      "lon": -87.44018,
+      "rank": 5
+    },
+    {
+      "name": "Chester Highlands",
+      "lat": 41.74698,
+      "lon": -87.64644,
+      "rank": 5
+    },
+    {
+      "name": "Chesterfield",
+      "lat": 41.73195,
+      "lon": -87.6144,
+      "rank": 5
+    },
+    {
+      "name": "Chinatown",
+      "lat": 41.85166,
+      "lon": -87.63314,
+      "rank": 5
+    },
+    {
+      "name": "Chippewa",
+      "lat": 42.02142,
+      "lon": -88.41508,
+      "rank": 5
+    },
+    {
+      "name": "Church and Dodge",
+      "lat": 42.04839,
+      "lon": -87.69899,
+      "rank": 5
+    },
+    {
+      "name": "Churchville",
+      "lat": 41.93503,
+      "lon": -87.95395,
+      "rank": 5
+    },
+    {
+      "name": "Claremont Cottages Historic District",
+      "lat": 41.86809,
+      "lon": -87.68478,
+      "rank": 5
+    },
+    {
+      "name": "Clarendon Park",
+      "lat": 41.96547,
+      "lon": -87.65239,
+      "rank": 5
+    },
+    {
+      "name": "Clarkdale",
+      "lat": 41.74281,
+      "lon": -87.71616,
+      "rank": 5
+    },
+    {
+      "name": "Cline Gardens",
+      "lat": 41.59201,
+      "lon": -87.43655,
+      "rank": 5
+    },
+    {
+      "name": "Clintonville",
+      "lat": 42.00058,
+      "lon": -88.27341,
+      "rank": 5
+    }
+  ],
   "attribution": [
     "Map data \u00a9 OpenStreetMap contributors, ODbL (openstreetmap.org/copyright).",
     "Elevation: USGS 3D Elevation Program (3DEP), public domain.",
