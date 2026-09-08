@@ -400,7 +400,12 @@ def build(spec_path: Path) -> None:
     # 5. Buildings, and the dense city they imply
     # -----------------------------------------------------------------------
     print("\nbuildings")
-    min_height = float(spec["buildings"]["minHeightM"])
+    floor_m = float(spec["buildings"]["minHeightM"])
+    budget = int(spec["buildings"]["maxCount"])
+    min_height = osm_mod.choose_building_threshold(
+        south, west, north, east, floor_m, budget
+    )
+    print(f"  threshold {min_height:g} m for a budget of {budget:,}")
     raw = osm_mod.fetch_buildings(south, west, north, east, min_height)
     print(f"  {len(raw)} footprints returned")
 
@@ -458,7 +463,17 @@ def build(spec_path: Path) -> None:
         recovered += 1
 
     print(f"  {recovered} more recovered from Wikidata heights")
-    print(f"  {len(instances)} kept above {min_height:g} m")
+
+    # Tallest first, then cut to the budget. The threshold search aims at the budget
+    # but cannot hit it exactly — Overpass counts whole ways and the Wikidata pass
+    # adds a few afterwards — so this is what actually holds the number.
+    if len(instances) > budget:
+        order = sorted(range(len(instances)), key=lambda i: -instances[i][5])[:budget]
+        keep = set(order)
+        instances = [b for i, b in enumerate(instances) if i in keep]
+        footprints = [f for i, f in enumerate(footprints) if i in keep]
+
+    print(f"  {len(instances)} kept, shortest {min(b[5] for b in instances):.1f} m")
     if instances:
         tall = sorted(i[5] for i in instances)
         print(

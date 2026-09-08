@@ -361,20 +361,38 @@ for (const spec of REGIONS) {
     describe('buildings', () => {
       const buildings = region.buildings()
 
-      it('is a skyline rather than a city plan', () => {
-        expect(buildings.length).toBeGreaterThan(1_000)
-        // Over a million footprints exist in the New York box alone.
-        expect(buildings.length).toBeLessThan(60_000)
+      it('fills the city out, within a budget', () => {
+        // A *count* budget, not a height threshold. A fixed threshold cannot serve
+        // both cities: 20 m gives New York 30,466 buildings and Chicago 291, because
+        // 83% of New York's footprints carry a measured height and almost none of
+        // Chicago's do — Chicago has floor counts instead. The regions are the same
+        // size and similarly built; only the tagging differs. So the budget is fixed
+        // and the threshold is searched per region to fill it.
+        expect(buildings.length).toBeGreaterThan(20_000)
+        expect(buildings.length).toBeLessThanOrEqual(50_000)
 
         for (const b of buildings) {
           expect(Math.abs(b.x)).toBeLessThanOrEqual(region.extent)
           expect(Math.abs(b.z)).toBeLessThanOrEqual(region.extent)
-          expect(b.heightM).toBeGreaterThanOrEqual(20)
+          // The floor below which a building is not visible from an aeroplane.
+          expect(b.heightM).toBeGreaterThanOrEqual(9)
           // Taller than anything on earth means a mis-parsed height tag.
           expect(b.heightM).toBeLessThan(900)
           expect(b.halfLengthM).toBeGreaterThan(0)
           expect(b.halfWidthM).toBeGreaterThan(0)
         }
+      })
+
+      it('has one threshold for the whole region, not a ragged edge', () => {
+        // The search picks a height and everything above it is kept, so the shortest
+        // building in a region is essentially the threshold. A long tail below it
+        // would mean the filter and the query disagree — which they did: the query
+        // admitted `levels >= 6` while the filter demanded 20 m, and 6 x 3.05 is
+        // 18.3, so every six-storey building was fetched and thrown away.
+        const heights = buildings.map((b) => b.heightM).sort((a, b) => a - b)
+        const shortest = heights[0]!
+        const tenth = heights[Math.floor(heights.length * 0.1)]!
+        expect(tenth - shortest).toBeLessThan(6)
       })
 
       it('keeps the tallest buildings where the dense ground is', () => {

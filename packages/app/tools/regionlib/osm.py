@@ -333,6 +333,82 @@ def parse_height(tags: dict[str, str]) -> float | None:
     return None
 
 
+def _building_selectors(box: str, min_height_m: float) -> str:
+    """
+    The two ways a building can declare its height, as one Overpass union.
+
+    `ceil`, not `int`. The filter downstream converts floors to metres at
+    `METRES_PER_LEVEL` and drops anything under the threshold, so a query admitting
+    `levels >= 6` while the filter demands 20 m fetches every six-storey building and
+    throws it all away — 6 x 3.05 is 18.3. The query and the filter have to round the
+    same way or a whole storey band is quietly lost, which is what happened to
+    Chicago, where floor counts are nearly all there is.
+    """
+    levels_cut = max(1, math.ceil(min_height_m / METRES_PER_LEVEL))
+    return (
+        f'  way["building"]["height"](if: number(t["height"]) >= {min_height_m}){box};\n'
+        f'  way["building"]["building:levels"]'
+        f'(if: number(t["building:levels"]) >= {levels_cut}){box};\n'
+    )
+
+
+def count_buildings(
+    south: float, west: float, north: float, east: float, min_height_m: float
+) -> int:
+    """How many buildings a threshold would return. No geometry, so it is cheap."""
+    box = f"({south},{west},{north},{east})"
+    body = (
+        f"[out:json][timeout:600];\n(\n{_building_selectors(box, min_height_m)})->.b;\n"
+        f".b out count;"
+    )
+    data = query(body, f"building count at {min_height_m:g} m")
+    elements = data.get("elements") or [{}]
+    return int(elements[0].get("tags", {}).get("total", 0))
+
+
+def choose_building_threshold(
+    south: float,
+    west: float,
+    north: float,
+    east: float,
+    floor_m: float,
+    budget: int,
+) -> float:
+    """
+    The lowest height threshold whose building count still fits the budget.
+
+    A fixed threshold cannot serve two cities. Twenty metres gives New York 30,466
+    buildings and Chicago 291, because New York's data carries measured heights on 83%
+    of its footprints and Chicago's carries almost none — Chicago has floor counts
+    instead, on a third of its buildings. The cities are the same size and similarly
+    built; only the tagging differs.
+
+    So the number that is fixed and reasoned about is the **budget**, and the
+    threshold is derived from each region's own data to fill it. That is the opposite
+    of tuning per city: it is one rule, applied to two different datasets, producing
+    two different numbers for exactly the reason the datasets differ.
+
+    Binary search over whole metres. Counts are cheap and cached, so this costs about
+    six queries and no geometry at all.
+    """
+    lo = floor_m
+    hi = 60.0
+
+    if count_buildings(south, west, north, east, lo) <= budget:
+        return lo
+
+    for _ in range(7):
+        mid = round((lo + hi) / 2)
+        if count_buildings(south, west, north, east, mid) > budget:
+            lo = mid
+        else:
+            hi = mid
+        if hi - lo <= 1:
+            break
+
+    return hi
+
+
 def fetch_buildings(
     south: float, west: float, north: float, east: float, min_height_m: float
 ) -> list[dict]:
@@ -348,13 +424,9 @@ def fetch_buildings(
     tower that gave its floor count instead of its height is not silently missed.
     """
     box = f"({south},{west},{north},{east})"
-    levels_cut = max(1, int(min_height_m / METRES_PER_LEVEL))
-    body = f"""[out:json][timeout:900];
-(
-  way["building"]["height"](if: number(t["height"]) >= {min_height_m}){box};
-  way["building"]["building:levels"](if: number(t["building:levels"]) >= {levels_cut}){box};
-);
-out geom;"""
+    body = (
+        f"[out:json][timeout:900];\n(\n{_building_selectors(box, min_height_m)});\nout geom;"
+    )
     data = query(body, f"buildings >= {min_height_m:g} m")
     return [e for e in data.get("elements", []) if e.get("geometry")]
 

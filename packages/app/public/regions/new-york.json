@@ -81,7 +81,7 @@
     "byteOffset": 1891832
   },
   "buildings": {
-    "count": 24178,
+    "count": 37517,
     "byteOffset": 2751164
   },
   "airfields": [
@@ -2230,8 +2230,7 @@
       "name": "Execution Rocks Light",
       "lat": 40.878046,
       "lon": -73.737814,
-      "kind": "lighthouse",
-      "markerM": 18.0
+      "kind": "lighthouse"
     },
     {
       "name": "Arnold and Joan Saltzman Fine Arts Building",
@@ -2309,8 +2308,7 @@
       "name": "Tarrytown Light",
       "lat": 41.084053,
       "lon": -73.874242,
-      "kind": "lighthouse",
-      "markerM": 18.0
+      "kind": "lighthouse"
     },
     {
       "name": "Great Captain Island Light",

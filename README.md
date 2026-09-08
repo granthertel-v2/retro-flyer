@@ -46,8 +46,8 @@ the right place. They are markers, not models: there is no statue here, there is
 47 m column on Liberty Island, which is what you can honestly draw knowing only
 where something is and how tall it is.
 
-Expect scenery, not a chart. Buildings are every OpenStreetMap footprint over twenty
-metres, fitted to a box; the ground is coloured by land cover at 120 m; there are no
+Expect scenery, not a chart. Each region ships its fifty thousand tallest buildings,
+fitted to boxes; the ground is coloured by land cover at 120 m; there are no
 roads, and nothing is modelled in detail — landmarks are markers, not likenesses. It is enough to recognise where you are from the air, which is
 what it is for.
 

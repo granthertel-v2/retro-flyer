@@ -123,7 +123,7 @@
     "byteOffset": 2107304
   },
   "buildings": {
-    "count": 2044,
+    "count": 42312,
     "byteOffset": 2966636
   },
   "airfields": [
@@ -1813,8 +1813,7 @@
       "name": "Chicago Harbor Lighthouse",
       "lat": 41.889345,
       "lon": -87.590554,
-      "kind": "lighthouse",
-      "markerM": 20.0
+      "kind": "lighthouse"
     },
     {
       "name": "Glessner House Museum",

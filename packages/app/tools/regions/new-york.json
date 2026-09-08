@@ -34,8 +34,9 @@
     "note": "Twice the finest elevation cell. Land cover is flat colour, so it survives being coarser than the heightfield; a crisper coastline is worth more than a crisper park boundary."
   },
   "buildings": {
-    "minHeightM": 20,
-    "note": "Six storeys and up. The core holds over a million footprints; at 20 m it holds about twenty thousand, which is a skyline rather than a city plan."
+    "maxCount": 50000,
+    "minHeightM": 9,
+    "note": "A count budget, not a height. A fixed threshold cannot serve both cities: 20 m gives New York 30,466 buildings and Chicago 291, because 83% of New York's footprints carry a measured height and almost none of Chicago's do \u2014 Chicago has floor counts instead. The cities are the same size and similarly built; only the tagging differs. So the budget is fixed and the threshold is searched per region to fill it, which is one rule applied to two datasets rather than two rules. 9 m is the floor: below three storeys a building is not visible from an aeroplane. 50,000 rather than a rounder 40,000 because Chicago's heights are quantised by storey: three floors gives 42,358 buildings and four gives 6,477, with nothing in between. A 40,000 budget fell the wrong side of that cliff and cost the city six sevenths of its fabric for the sake of 6% of the budget."
   },
   "cityFromBuildings": {
     "note": "Dense ground is derived from where the tall buildings actually are, rather than from landuse tags. Manhattan is largely tagged residential in OSM and would otherwise render as suburb."

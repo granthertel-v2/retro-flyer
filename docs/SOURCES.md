@@ -341,7 +341,7 @@ These are not measurements. Each is a judgement, and each is recorded because th
 |---|---|---|
 | Storey height, when only a floor count is tagged | 3.05 m | Ten feet, which is how most of the American building stock this will ever see was laid out. Moves a twenty-storey tower by one storey. |
 | Height for a building with no usable height tag | 12 m | Nearly unreachable — such buildings fail the height filter — but a building drawn at zero height is a visible flat plate. |
-| Minimum building height shipped | 20 m | Six storeys. The New York core holds over a million footprints and about twenty-four thousand at this cut: a skyline, not a city plan. |
+| Buildings shipped per region | 50,000, tallest first | A **count budget**, not a height. See below. |
 | Flat pad beyond a runway | 150 m | What `source.ts` already states and the 12 cm runway lift ramps out inside. |
 | Ramp from pad back to real terrain | 350 m | Turns the worst case, eight metres at LaGuardia, into a 2.3% slope well outside the landing roll. |
 | Tall buildings per 3×3 cell before ground counts as dense city | 3 | About 13 hectares, three or four Manhattan blocks. Counting per single cell left downtown speckled. |
@@ -353,7 +353,45 @@ These are not measurements. Each is a judgement, and each is recorded because th
 | Water a bridge must span | 100 m continuous | Not "mostly over water": the Brooklyn Bridge's longest way is 2,165 m of which only the main span crosses the river, and a fraction test threw it away while keeping viaducts running along a shoreline. |
 | Bridge clearance at mid-span | length x 0.055, capped at 60 m | The Verrazzano gives 69 m and a bascule about five; span length is the only signal that separates them. |
 | Shortest landmark drawn as a marker | 15 m | Below that it is a plinth, invisible from an aeroplane. |
-| Region bundle budget | ~3.0-3.3 MB, ~1.4 MB gzipped | New York is 3.33 MB (9 tiers, 24k buildings); Chicago is 3.02 MB (15 tiers, 2k buildings). Dominated by the rasters, not the buildings, so the figure is stable across cities. |
+| Region bundle budget | ~3.7-4.0 MB, ~1.6 MB gzipped | New York 3.65 MB, Chicago 3.98 MB. About 700,000 triangles a frame, of which the buildings are roughly 450-500,000. |
+
+## Why the buildings are budgeted rather than thresholded
+
+A fixed height threshold cannot serve two cities, and the reason is tagging rather
+than architecture. At 20 m it returns **30,466 buildings in New York and 291 in
+Chicago** — but the regions hold almost exactly the same number of mapped footprints,
+1,081,496 against 1,015,768.
+
+The difference is which tag they were imported with:
+
+| | New York | Chicago |
+|---|---|---|
+| footprints mapped | 1,081,496 | 1,015,768 |
+| with `height` in metres | **897,927 (83%)** | **433 (0.04%)** |
+| with `building:levels` | 17,180 | **320,682 (32%)** |
+
+New York received a bulk import of measured heights; Chicago received floor counts.
+Judged on the metric both actually carry, the cities are close — 1,246 buildings of
+ten storeys or more in Chicago against 1,715 in New York, which is about the real
+ratio.
+
+So the fixed, reasoned-about number is the **budget**, and the height threshold is
+searched per region by binary search over cheap count queries until it fills. That is
+one rule applied to two datasets, not two rules: New York settles at 18 m and Chicago
+at 9 m, and the difference between those numbers is exactly the difference between
+the two imports. Chicago went from 2,044 buildings to 42,312.
+
+Two things this exposed:
+
+- **The query and the filter rounded differently.** The Overpass query admitted
+  `building:levels >= 6` while the filter demanded 20 m, and six floors at 3.05 m is
+  18.3 — so every six-storey building was fetched and thrown away. In a city whose
+  heights are almost entirely floor counts that is a whole storey band lost. Both use
+  `ceil` now.
+- **Chicago's heights are quantised by storey.** Three floors gives 42,358 buildings
+  and four gives 6,477, with nothing in between. A 40,000 budget fell the wrong side
+  of that cliff and cost the city six sevenths of its fabric to save 6% of the
+  budget; 50,000 clears it.
 
 ## A known limitation
 
