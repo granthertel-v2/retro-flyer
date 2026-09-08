@@ -24,7 +24,42 @@ export const enum Surface {
   Land = 1,
   City = 2,
   Runway = 3,
+
+  // Land cover, added when the first real region arrived. See the note below.
+  Forest = 4,
+  Grass = 5,
+  Sand = 6,
+  Suburb = 7,
 }
+
+/**
+ * Why the land-cover classes exist, and why they are here rather than in a second raster.
+ *
+ * `mesh.ts` originally coloured `Land` by altitude — olive below 520 m, green to
+ * 1,150, rock, then snow. That works for the authored map, which was built with a
+ * ridge in it precisely so there would be something to colour. It fails completely
+ * for a real city: Manhattan's highest natural ground is about 60 m and the Palisades
+ * top out near 113 m, so every land triangle in the New York region lands in the
+ * bottom eighth of the lowest band and the whole map renders as one uniform olive
+ * plain. Correct elevation, correct coastline, and unreadable.
+ *
+ * The fix is to colour real ground by what it *is* rather than how high it is, which
+ * means the terrain source has to carry land cover. Adding classes to this enum was
+ * chosen over a parallel land-cover raster for one reason: `TerrainSample` is the
+ * §8.2 seam, and every consumer already switches on `surface`. A second raster would
+ * mean a second lookup, a second thing to keep aligned, and a second thing to forget.
+ *
+ * These are deliberately *visual* categories, not a land-use taxonomy. The test is
+ * "does it read differently from five hundred feet", which is why `Forest` and
+ * `Grass` are separate but "school" and "hospital" are not.
+ *
+ * ## What they mean to the physics
+ *
+ * Nothing, and that is intentional. `groundSource.ts` maps `Runway` to paved, `Water`
+ * to water, and everything else to soft ground. A new class is therefore soft ground
+ * automatically, which is the right answer for all four of these — none of them is
+ * something you can land on properly, and none is water.
+ */
 
 export interface TerrainSample {
   /** Ground elevation, metres above sea level. Negative under water. */

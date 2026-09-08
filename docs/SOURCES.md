@@ -204,3 +204,107 @@ bilinear interpolation. They use a `fix`/`sign` index scheme with `abs(da)` weig
 and specific out-of-range index clamping. It is ported literally rather than
 "cleaned up," because the exact edge and clamping behavior is part of the model.
 Tier A golden vectors at 1e-12 are what enforce that.
+
+---
+
+# Region data
+
+Everything above concerns the flight model. This section covers the *world* — the
+real-terrain regions built by `packages/app/tools/build_region.py` and committed
+under `packages/app/public/regions/`.
+
+The same rule applies, with one addition. Values that describe reality are `[V]` and
+must be traceable to a source. Values that are *choices about presentation* are `[A]`
+and are listed here so that changing one is a decision rather than a discovery.
+
+## Primary sources
+
+**[3DEP] USGS 3D Elevation Program**, bare-earth digital elevation model, served as a
+dynamic image service.
+<https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer>
+
+A work of the US government and therefore public domain. Bare earth matters: the
+model is the ground with buildings and vegetation removed, which is what a terrain
+mesh wants, because the buildings arrive separately from OpenStreetMap and would
+otherwise be counted twice.
+
+**[OSM] OpenStreetMap**, via the Overpass API. <https://www.openstreetmap.org/>
+
+Licensed **ODbL**. This is an obligation, not a courtesy, and it travels with derived
+data — which is why the attribution strings live inside each region's manifest rather
+than in a README that a copied file would leave behind.
+
+**[FAA] FAA Aeronautical Information Services**, `Runways` and `US_Airport` layers.
+<https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/ArcGIS/rest/services>
+
+Public domain. The authority for every runway number in a region manifest.
+
+## Verification performed
+
+- **The projection was proved, not reviewed.** The builder needs the inverse
+  projection in Python and the runtime needs the forward one in TypeScript. Rather
+  than trust the port, `tools/gen_projection_fixture.py` emits pairs that
+  `test/geo.test.ts` recomputes through `GeoFrame`, requiring agreement to 0.1 mm
+  across four origins and both hemispheres. A 1 mm divergence fails the suite.
+- **The GeoTIFF decoder was checked against an independent service.** Elevations read
+  out of the raster agree with the USGS point-query service — a different endpoint
+  and a different code path — to 0.2 m at the raster maximum, and to under a metre on
+  flat ground. Larger differences appear only on 30% slopes, where an 8 m cell cannot
+  match a 1 m point query.
+- **The raster's coordinate convention is read from the file, not assumed.** The
+  reader refuses anything that is not geographic WGS 84 with `RasterPixelIsArea`. A
+  Web Mercator raster, which decodes as perfectly valid floats and would be sampled
+  as though metres were degrees, is rejected.
+- **Runway dimensions cross-check between independent sources.** The FAA publishes
+  LaGuardia 13/31 as 7,002 ft; its own runway polygon measures 2,134.3 m against a
+  published 2,134.2 m, and OpenStreetMap, mapped by different people, says 2,135 m.
+- **The coastline was checked against elevation.** OpenStreetMap decides what is
+  water and USGS decides how high the ground is. Water cells in the New York region
+  have a median elevation of 0.0 m and a 90th percentile of 0.5 m, while forest sits
+  at 92 m. The two datasets were assembled independently, so their agreement is
+  evidence rather than restatement.
+
+## A disagreement worth recording
+
+**The elevation model and the FAA disagree about airports, and the FAA wins.**
+
+USGS puts LaGuardia's 13/31 midpoint at 1.96 m, its 04/22 midpoint at 4.38 m and the
+terminal apron at **−1.62 m**. The FAA publishes the field at 20.7 ft, or 6.31 m. Both
+USGS figures were confirmed through the point-query service, so this is the data and
+not a decoding error — the airport is landfill in Flushing Bay and the bare-earth
+model over it is poor. Kennedy shows the same effect more mildly.
+
+Shipping that unaltered means a runway laid across eight metres of slope, which is a
+hill you land on. So the builder flattens each tier to the published field elevation
+across the runway and a pad around it, then ramps out — the same thing `authored.ts`
+does, for the same reason, and what the flat pad in `source.ts` already promises the
+physics. Verified: every one of the 22 runways in the New York region sits on ground
+flat to 0.00 m of spread across its pad.
+
+## Design choices `[A]`
+
+These are not measurements. Each is a judgement, and each is recorded because the
+`[A]` marking is the difference between a decision and an accident.
+
+| Choice | Value | Why |
+|---|---|---|
+| Storey height, when only a floor count is tagged | 3.05 m | Ten feet, which is how most of the American building stock this will ever see was laid out. Moves a twenty-storey tower by one storey. |
+| Height for a building with no usable height tag | 12 m | Nearly unreachable — such buildings fail the height filter — but a building drawn at zero height is a visible flat plate. |
+| Minimum building height shipped | 20 m | Six storeys. The New York core holds over a million footprints and about twenty-four thousand at this cut: a skyline, not a city plan. |
+| Flat pad beyond a runway | 150 m | What `source.ts` already states and the 12 cm runway lift ramps out inside. |
+| Ramp from pad back to real terrain | 350 m | Turns the worst case, eight metres at LaGuardia, into a 2.3% slope well outside the landing roll. |
+| Tall buildings per 3×3 cell before ground counts as dense city | 3 | About 13 hectares, three or four Manhattan blocks. Counting per single cell left downtown speckled. |
+| Finest elevation cell | 60 m | Exactly the innermost LOD ring in `mesh.ts`. Finer cannot be drawn, only stored. |
+| Surface-class cell | 120 m | Land cover is flat colour and survives being coarser than the heightfield. A crisper coastline is worth more than a crisper park boundary. |
+| Region bundle budget | ~3.3 MB, 1.4 MB gzipped | New York: two region-wide tiers, seven small airfield tiers, a surface raster and 24k buildings. |
+
+## Why the land-cover classes exist
+
+`mesh.ts` originally coloured land by altitude — olive below 520 m, then green, rock,
+snow. Manhattan's highest natural ground is about 60 m and the Palisades reach 113 m,
+so every land triangle in the region falls in the bottom eighth of the lowest band
+and the whole map renders as one uniform olive plain: correct elevation, correct
+coastline, unreadable. Real ground is therefore coloured by what it *is*, which is
+why `Surface` gained `Forest`, `Grass`, `Sand` and `Suburb`. They mean nothing to the
+physics — `groundSource.ts` maps everything that is not runway or water to soft
+ground — and that is deliberate.

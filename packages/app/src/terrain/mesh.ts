@@ -89,6 +89,31 @@ function groundColour(out: Color, height: number, surface: Surface, jitter: numb
       out.setRGB(0.34, 0.33, 0.31)
       break
 
+    // Land cover, for regions built from real data. These are flat colours rather
+    // than height ramps on purpose: a real city has a hundred metres of relief
+    // across the whole map, so anything driven by altitude collapses to one shade.
+    // What separates them is hue, and hue survives being seen from three miles up.
+    case Surface.Forest:
+      // Darker and bluer than the open-ground green, which is what makes a park
+      // read as a park from the pattern rather than as a slightly different field.
+      out.setRGB(0.13, 0.22, 0.11)
+      break
+
+    case Surface.Grass:
+      out.setRGB(0.31, 0.42, 0.19)
+      break
+
+    case Surface.Sand:
+      out.setRGB(0.72, 0.66, 0.47)
+      break
+
+    case Surface.Suburb:
+      // Between the city's grey and open ground: enough built surface to read as
+      // developed, enough green left to read as not downtown. Most of the land area
+      // of a real region is this, so it carries a lot of the map's character.
+      out.setRGB(0.35, 0.34, 0.26)
+      break
+
     case Surface.Water: {
       // Shallows read lighter, which is what makes a coastline legible from
       // altitude rather than a flat blue edge.

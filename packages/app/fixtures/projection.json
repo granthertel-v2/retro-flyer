@@ -1,0 +1,217 @@
+{
+  "generatedBy": "tools/gen_projection_fixture.py",
+  "purpose": "Agreement between regionlib/geo.py (the offline builder) and src/terrain/geo.ts (the runtime). Regenerate with the tool; never edit.",
+  "cases": [
+    {
+      "name": "new-york",
+      "why": "Mid-latitude, western hemisphere, and the first real region.",
+      "origin": {
+        "lat": 40.7772,
+        "lon": -73.8726
+      },
+      "points": [
+        {
+          "x": 0.0,
+          "z": 0.0,
+          "lat": 40.7772,
+          "lon": -73.8726,
+          "forwardX": 0.0,
+          "forwardZ": -0.0,
+          "convergenceDeg": 0.0
+        },
+        {
+          "x": 1000.0,
+          "z": 0.0,
+          "lat": 40.77719939202103,
+          "lon": -73.86075416551638,
+          "forwardX": 1000.000000000205,
+          "forwardZ": 1.033707078268442e-09,
+          "convergenceDeg": 0.007736743236585692
+        },
+        {
+          "x": 0.0,
+          "z": 1000.0,
+          "lat": 40.768195008063635,
+          "lon": -73.8726,
+          "forwardX": 1.099351720768027e-10,
+          "forwardZ": 1000.000000000513,
+          "convergenceDeg": 0.0
+        },
+        {
+          "x": -1000.0,
+          "z": -1000.0,
+          "lat": 40.78620436977842,
+          "lon": -73.88444743440793,
+          "forwardX": -1000.0000000003272,
+          "forwardZ": -1000.0000000005238,
+          "convergenceDeg": -0.007739198106410985
+        },
+        {
+          "x": 55560.0,
+          "z": 0.0,
+          "lat": 40.77532321207449,
+          "lon": -73.21444948368573,
+          "forwardX": 55559.99991202401,
+          "forwardZ": 1.9523520364828073e-06,
+          "convergenceDeg": 0.42983449046542366
+        },
+        {
+          "x": 0.0,
+          "z": 55560.0,
+          "lat": 40.27685494141368,
+          "lon": -73.8726,
+          "forwardX": 6.184563972055912e-11,
+          "forwardZ": 55560.00000000065,
+          "convergenceDeg": 0.0
+        },
+        {
+          "x": -55560.0,
+          "z": 0.0,
+          "lat": 40.77532321207448,
+          "lon": -74.53075051631428,
+          "forwardX": -55559.99991202248,
+          "forwardZ": 1.9534413411292917e-06,
+          "convergenceDeg": -0.4298344904654236
+        },
+        {
+          "x": 0.0,
+          "z": -55560.0,
+          "lat": 41.27750153904634,
+          "lon": -73.8726,
+          "forwardX": 1.6007106751203537e-10,
+          "forwardZ": -55559.99999999991,
+          "convergenceDeg": 0.0
+        },
+        {
+          "x": 55560.0,
+          "z": 55560.0,
+          "lat": 40.27499182675026,
+          "lon": -73.21932552656422,
+          "forwardX": 55559.99990934362,
+          "forwardZ": 55559.99983271871,
+          "convergenceDeg": 0.4223137467065971
+        },
+        {
+          "x": -55560.0,
+          "z": 55560.0,
+          "lat": 40.274991826750245,
+          "lon": -74.52587447343582,
+          "forwardX": -55559.99990934552,
+          "forwardZ": 55559.999832720074,
+          "convergenceDeg": -0.4223137467066154
+        },
+        {
+          "x": 55560.0,
+          "z": -55560.0,
+          "lat": 41.27561058361463,
+          "lon": -73.20944935681402,
+          "forwardX": 55559.9999129551,
+          "forwardZ": -55559.99981500688,
+          "convergenceDeg": 0.4374684188210164
+        },
+        {
+          "x": -55560.0,
+          "z": -55560.0,
+          "lat": 41.27561058361463,
+          "lon": -74.53575064318602,
+          "forwardX": -55559.99991295677,
+          "forwardZ": -55559.999815007,
+          "convergenceDeg": -0.43746841882103515
+        }
+      ]
+    },
+    {
+      "name": "chicago",
+      "why": "A second origin, three degrees further north and twelve west.",
+      "origin": {
+        "lat": 41.9803,
+        "lon": -87.909
+      },
+      "points": [
+        {
+          "x": 0.0,
+          "z": 0.0,
+          "lat": 41.9803,
+          "lon": -87.909,
+          "forwardX": 0.0,
+          "forwardZ": -0.0,
+          "convergenceDeg": 0.0
+        },
+        {
+          "x": 55560.0,
+          "z": 55560.0,
+          "lat": 41.478117252560274,
+          "lon": -87.24378917715298,
+          "forwardX": 55559.99989271224,
+          "forwardZ": 55559.99980191926,
+          "convergenceDeg": 0.44059171469855873
+        },
+        {
+          "x": -55560.0,
+          "z": -55560.0,
+          "lat": 42.47852366901342,
+          "lon": -88.58470501142871,
+          "forwardX": -55559.99989694436,
+          "forwardZ": -55559.999780907696,
+          "convergenceDeg": -0.45631292199904006
+        }
+      ]
+    },
+    {
+      "name": "equator-east",
+      "why": "Positive longitude and near-zero latitude, where the two radii nearly coincide and a single-radius implementation would still look right. Present so the fixture cannot be passed by one.",
+      "origin": {
+        "lat": 1.3592,
+        "lon": 103.9894
+      },
+      "points": [
+        {
+          "x": 0.0,
+          "z": 0.0,
+          "lat": 1.3592,
+          "lon": 103.9894,
+          "forwardX": -0.0,
+          "forwardZ": -0.0,
+          "convergenceDeg": 0.0
+        },
+        {
+          "x": 55560.0,
+          "z": 55560.0,
+          "lat": 0.8566758761345733,
+          "lon": 104.48856570705848,
+          "forwardX": 55560.000000000764,
+          "forwardZ": 55560.0,
+          "convergenceDeg": 0.0074631550566610335
+        }
+      ]
+    },
+    {
+      "name": "southern",
+      "why": "Both coordinates negative: sign errors that cancel in the north do not here.",
+      "origin": {
+        "lat": -33.9461,
+        "lon": 151.1772
+      },
+      "points": [
+        {
+          "x": 0.0,
+          "z": 0.0,
+          "lat": -33.9461,
+          "lon": 151.1772,
+          "forwardX": -0.0,
+          "forwardZ": -0.0,
+          "convergenceDeg": -0.0
+        },
+        {
+          "x": 55560.0,
+          "z": -55560.0,
+          "lat": -33.44371935853654,
+          "lon": 151.77474178078208,
+          "forwardX": 55559.99996617557,
+          "forwardZ": -55559.9999379302,
+          "convergenceDeg": -0.3293157967366032
+        }
+      ]
+    }
+  ]
+}

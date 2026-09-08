@@ -12,3 +12,4 @@ packages/physics/tools/vendor/
 
 .DS_Store
 __pycache__/
+packages/app/tools/.cache/

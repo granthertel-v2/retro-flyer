@@ -1,0 +1,334 @@
+{
+  "format": 1,
+  "id": "new-york",
+  "name": "New York",
+  "origin": {
+    "lat": 40.7772,
+    "lon": -73.8726
+  },
+  "extentM": 55560.0,
+  "heightScaleM": 0.25,
+  "tiers": [
+    {
+      "cells": 768,
+      "cellM": 60.0,
+      "centreX": -5692.082494980866,
+      "centreZ": 3018.355360294268,
+      "byteOffset": 0
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": 38782.00796505394,
+      "centreZ": 5207.182043919271,
+      "byteOffset": 1179648
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": 13866.78970887251,
+      "centreZ": -32170.01509119132,
+      "byteOffset": 1215560
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": -45806.03107676633,
+      "centreZ": -2589.5112275026695,
+      "byteOffset": 1251472
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": -34446.053136651186,
+      "centreZ": -10992.158061017515,
+      "byteOffset": 1287384
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": -31477.962236511208,
+      "centreZ": 17672.299924703508,
+      "byteOffset": 1323296
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": -40296.502106091546,
+      "centreZ": 49562.17199194254,
+      "byteOffset": 1359208
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": -39796.47815214322,
+      "centreZ": -39107.823901424104,
+      "byteOffset": 1395120
+    },
+    {
+      "cells": 480,
+      "cellM": 240.0,
+      "centreX": 0.0,
+      "centreZ": 0.0,
+      "byteOffset": 1431032
+    }
+  ],
+  "surface": {
+    "cells": 927,
+    "cellM": 120.0,
+    "centreX": 0.0,
+    "centreZ": 0.0,
+    "byteOffset": 1891832
+  },
+  "buildings": {
+    "count": 24118,
+    "byteOffset": 2751164
+  },
+  "airfields": [
+    {
+      "name": "John F Kennedy Intl 13R/31L",
+      "icao": "KJFK",
+      "lat": 40.6381883,
+      "lon": -73.7942457,
+      "elevationM": 3.962,
+      "headingDeg": 120.753,
+      "lengthM": 4422.95,
+      "widthM": 60.96,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport JFK, runway 13R/31L. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "John F Kennedy Intl 04L/22R",
+      "icao": "KJFK",
+      "lat": 40.636274,
+      "lon": -73.7744569,
+      "elevationM": 3.962,
+      "headingDeg": 30.766,
+      "lengthM": 3681.68,
+      "widthM": 60.96,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport JFK, runway 04L/22R. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Newark Liberty Intl 04L/22R",
+      "icao": "KEWR",
+      "lat": 40.6889793,
+      "lon": -74.1708135,
+      "elevationM": 5.334,
+      "headingDeg": 25.821,
+      "lengthM": 3352.8,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport EWR, runway 04L/22R. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "John F Kennedy Intl 13L/31R",
+      "icao": "KJFK",
+      "lat": 40.6507538,
+      "lon": -73.7747556,
+      "elevationM": 3.962,
+      "headingDeg": 120.765,
+      "lengthM": 3048.0,
+      "widthM": 60.96,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport JFK, runway 13L/31R. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Newark Liberty Intl 04R/22L",
+      "icao": "KEWR",
+      "lat": 40.689945,
+      "lon": -74.1663943,
+      "elevationM": 5.334,
+      "headingDeg": 25.825,
+      "lengthM": 3047.7,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport EWR, runway 04R/22L. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "John F Kennedy Intl 04R/22L",
+      "icao": "KJFK",
+      "lat": 40.6353411,
+      "lon": -73.7626062,
+      "elevationM": 3.962,
+      "headingDeg": 30.773,
+      "lengthM": 2560.32,
+      "widthM": 60.96,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport JFK, runway 04R/22L. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Laguardia 04/22",
+      "icao": "KLGA",
+      "lat": 40.7773081,
+      "lon": -73.8773984,
+      "elevationM": 6.309,
+      "headingDeg": 32.131,
+      "lengthM": 2134.21,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport LGA, runway 04/22. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Laguardia 13/31",
+      "icao": "KLGA",
+      "lat": 40.7771924,
+      "lon": -73.867816,
+      "elevationM": 6.309,
+      "headingDeg": 122.14,
+      "lengthM": 2134.21,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport LGA, runway 13/31. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Teterboro 01/19",
+      "icao": "KTEB",
+      "lat": 40.8482775,
+      "lon": -74.059665,
+      "elevationM": 2.53,
+      "headingDeg": 3.205,
+      "lengthM": 2132.69,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport TEB, runway 01/19. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Republic 14/32",
+      "icao": "KFRG",
+      "lat": 40.7283365,
+      "lon": -73.4126121,
+      "elevationM": 24.872,
+      "headingDeg": 132.248,
+      "lengthM": 2082.7,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport FRG, runway 14/32. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Newark Liberty Intl 11/29",
+      "icao": "KEWR",
+      "lat": 40.7020108,
+      "lon": -74.1686268,
+      "elevationM": 5.334,
+      "headingDeg": 94.988,
+      "lengthM": 2049.78,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport EWR, runway 11/29. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Westchester County 16/34",
+      "icao": "KHPN",
+      "lat": 41.0677855,
+      "lon": -73.7073546,
+      "elevationM": 133.807,
+      "headingDeg": 149.918,
+      "lengthM": 1996.14,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport HPN, runway 16/34. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Teterboro 06/24",
+      "icao": "KTEB",
+      "lat": 40.8522426,
+      "lon": -74.0621961,
+      "elevationM": 2.53,
+      "headingDeg": 48.163,
+      "lengthM": 1833.07,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport TEB, runway 06/24. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Morristown Muni 05/23",
+      "icao": "KMMU",
+      "lat": 40.7997632,
+      "lon": -74.4128604,
+      "elevationM": 56.876,
+      "headingDeg": 36.107,
+      "lengthM": 1828.19,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport MMU, runway 05/23. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Republic 01/19",
+      "icao": "KFRG",
+      "lat": 40.7304543,
+      "lon": -73.4144254,
+      "elevationM": 24.872,
+      "headingDeg": 179.177,
+      "lengthM": 1681.58,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport FRG, runway 01/19. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Essex County 04/22",
+      "icao": "KCDW",
+      "lat": 40.8732001,
+      "lon": -74.2822732,
+      "elevationM": 52.517,
+      "headingDeg": 29.608,
+      "lengthM": 1387.45,
+      "widthM": 24.38,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport CDW, runway 04/22. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Westchester County 11/29",
+      "icao": "KHPN",
+      "lat": 41.0657486,
+      "lon": -73.7078805,
+      "elevationM": 133.807,
+      "headingDeg": 102.405,
+      "lengthM": 1356.66,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport HPN, runway 11/29. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Linden 09/27",
+      "icao": "KLDJ",
+      "lat": 40.6174578,
+      "lon": -74.2445957,
+      "elevationM": 6.706,
+      "headingDeg": 75.681,
+      "lengthM": 1261.87,
+      "widthM": 30.48,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport LDJ, runway 09/27. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Morristown Muni 13/31",
+      "icao": "KMMU",
+      "lat": 40.7987215,
+      "lon": -74.4179361,
+      "elevationM": 56.876,
+      "headingDeg": 113.932,
+      "lengthM": 1218.29,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport MMU, runway 13/31. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Essex County 10/28",
+      "icao": "KCDW",
+      "lat": 40.8777218,
+      "lon": -74.2802236,
+      "elevationM": 52.517,
+      "headingDeg": 83.155,
+      "lengthM": 1133.55,
+      "widthM": 22.86,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport CDW, runway 10/28. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Old Bridge 06/24",
+      "lat": 40.3298908,
+      "lon": -74.3467851,
+      "elevationM": 26.518,
+      "headingDeg": 44.288,
+      "lengthM": 1095.45,
+      "widthM": 15.24,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport 3N6, runway 06/24. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Greenwood Lake 06/24",
+      "lat": 41.1283888,
+      "lon": -74.3465326,
+      "elevationM": 240.67,
+      "headingDeg": 47.832,
+      "lengthM": 1057.96,
+      "widthM": 18.29,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport 4N1, runway 06/24. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    }
+  ],
+  "attribution": [
+    "Map data \u00a9 OpenStreetMap contributors, ODbL (openstreetmap.org/copyright).",
+    "Elevation: USGS 3D Elevation Program (3DEP), public domain.",
+    "Airport and runway data: FAA Aeronautical Information Services, public domain."
+  ]
+}

@@ -93,11 +93,12 @@ export class Scatter {
 
         const roll = hash2(gx * 31, gz * 17)
 
-        // Nothing grows on water or on a runway, and the city has its own blocks.
+        // Nothing grows on water, sand or a runway, and the city has its own blocks.
         const bare =
           sample.surface === Surface.Water ||
           sample.surface === Surface.Runway ||
           sample.surface === Surface.City ||
+          sample.surface === Surface.Sand ||
           roll > 0.72
 
         if (bare) {
