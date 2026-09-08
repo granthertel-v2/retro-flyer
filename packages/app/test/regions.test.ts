@@ -293,6 +293,24 @@ for (const spec of REGIONS) {
         }
       })
 
+      it('draws only the landmarks nothing else represents', () => {
+        // A marker is for a thing the region would otherwise have no geometry for —
+        // a statue, a lighthouse. A bridge is already drawn as a bridge, and a
+        // stadium is a building, so a column through either would be building it
+        // twice. That check runs in the builder; this is the guard on its output.
+        for (const m of region.landmarks) {
+          if (m.markerM === undefined) continue
+          expect(['bridge', 'stadium', 'tower', 'building']).not.toContain(m.kind)
+          expect(m.markerM).toBeGreaterThanOrEqual(15)
+          expect(m.markerM).toBeLessThan(700)
+          // Nothing tall already standing where the marker goes.
+          const crowded = region
+            .buildings()
+            .some((b) => Math.hypot(b.x - m.x, b.z - m.z) < 80 && b.heightM > m.markerM! * 0.6)
+          expect(crowded, `${m.name} already has a building on it`).toBe(false)
+        }
+      })
+
       it('covers several kinds, not one', () => {
         // A single-kind list would mean a quota swallowed everything else — which is
         // what happened when 146 museums crowded out six visible landmarks.
@@ -396,6 +414,19 @@ describe('New York, specifically', () => {
     const names = new Set(region.landmarks.map((m) => m.name))
     expect(names).toContain('Statue of Liberty')
     expect(names).toContain('Empire State Building')
+  })
+
+  it('stands the Statue of Liberty up, at its sourced height', () => {
+    // OpenStreetMap tags it `height=10`, which is the pedestal, so it never reached
+    // the 20 m cut for buildings and the island was empty. The 46.9 m is Wikidata's
+    // P2048 — the statue itself, not the 93 m to the torch that includes the
+    // pedestal. The sourced figure is drawn and the difference is written down,
+    // rather than forty metres being added to make the picture look right.
+    const liberty = region.landmarks.find((m) => m.name === 'Statue of Liberty')!
+    expect(liberty.markerM).toBeGreaterThan(40)
+    expect(liberty.markerM).toBeLessThan(60)
+    // On the island, not in the harbour.
+    expect(region.sample(liberty.x, liberty.z).surface).not.toBe(Surface.Water)
   })
 
   it('has no building taller than the tallest building in New York', () => {

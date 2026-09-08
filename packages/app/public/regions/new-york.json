@@ -1146,7 +1146,8 @@
       "name": "Vessel",
       "lat": 40.753806,
       "lon": -74.002159,
-      "kind": "artwork"
+      "kind": "artwork",
+      "markerM": 45.7
     },
     {
       "name": "Helmsley Building",
@@ -1960,7 +1961,8 @@
       "name": "Blackwell Island Light",
       "lat": 40.772841,
       "lon": -73.940183,
-      "kind": "lighthouse"
+      "kind": "lighthouse",
+      "markerM": 15.0
     },
     {
       "name": "Soldiers' and Sailors' Monument",
@@ -2032,7 +2034,8 @@
       "name": "Statue of Liberty",
       "lat": 40.689239,
       "lon": -74.044535,
-      "kind": "attraction"
+      "kind": "attraction",
+      "markerM": 47.0
     },
     {
       "name": "Soldiers' and Sailors' Arch",
@@ -2158,7 +2161,8 @@
       "name": "Riverdale Monument",
       "lat": 40.889252,
       "lon": -73.908326,
-      "kind": "monument"
+      "kind": "monument",
+      "markerM": 15.0
     },
     {
       "name": "New York, Susquehanna and Western Railroad ALCO Type S-2 Locomotive",
@@ -2182,7 +2186,8 @@
       "name": "Wonder Wheel",
       "lat": 40.574041,
       "lon": -73.979145,
-      "kind": "attraction"
+      "kind": "attraction",
+      "markerM": 45.7
     },
     {
       "name": "Stepping Stones Lighthouse",
@@ -2200,7 +2205,8 @@
       "name": "New Dorp Light",
       "lat": 40.580787,
       "lon": -74.120121,
-      "kind": "lighthouse"
+      "kind": "lighthouse",
+      "markerM": 24.0
     },
     {
       "name": "Staten Island Range Lighthouse",
@@ -2224,7 +2230,8 @@
       "name": "Execution Rocks Light",
       "lat": 40.878046,
       "lon": -73.737814,
-      "kind": "lighthouse"
+      "kind": "lighthouse",
+      "markerM": 18.0
     },
     {
       "name": "Arnold and Joan Saltzman Fine Arts Building",
@@ -2302,13 +2309,15 @@
       "name": "Tarrytown Light",
       "lat": 41.084053,
       "lon": -73.874242,
-      "kind": "lighthouse"
+      "kind": "lighthouse",
+      "markerM": 18.0
     },
     {
       "name": "Great Captain Island Light",
       "lat": 40.9825,
       "lon": -73.623628,
-      "kind": "lighthouse"
+      "kind": "lighthouse",
+      "markerM": 15.5
     },
     {
       "name": "Wantagh Railroad Complex",

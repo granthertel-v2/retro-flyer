@@ -131,7 +131,14 @@ export interface RegionManifest {
    */
   places?: { name: string; lat: number; lon: number; rank: number }[]
   /** Notable named features. Points, in the terms a source names them. */
-  landmarks?: { name: string; lat: number; lon: number; kind: string; heightM?: number }[]
+  landmarks?: {
+    name: string
+    lat: number
+    lon: number
+    kind: string
+    heightM?: number
+    markerM?: number
+  }[]
   /** Bridges, as `[lat, lon]` centrelines. */
   bridges?: { name: string; points: [number, number][]; widthM: number; lengthM: number }[]
   /** Licence and provenance lines, rendered wherever the region is. */
@@ -206,6 +213,7 @@ export class RegionSource implements TerrainSource {
         z: w.z,
         kind: m.kind,
         ...(m.heightM === undefined ? {} : { heightM: m.heightM }),
+        ...(m.markerM === undefined ? {} : { markerM: m.markerM }),
       }
     })
 

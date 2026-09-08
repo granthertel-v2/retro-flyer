@@ -72,6 +72,19 @@ WATER, LAND, CITY, RUNWAY, FOREST, GRASS, SAND, SUBURB = range(8)
 #: excluded so a sloppy park boundary cannot colour the harbour.
 LAND_CLASSES = {LAND, CITY, FOREST, GRASS, SAND, SUBURB}
 
+#: Landmark kinds that are never drawn as a marker.
+#:
+#: A bridge is already drawn as a bridge — its Wikidata height is the height of its
+#: towers, and putting a 102 m column on the Manhattan Bridge would be building it
+#: twice. Stadiums and towers are buildings the region already renders.
+NEVER_A_MARKER = {"bridge", "stadium", "tower", "building"}
+
+#: Shortest landmark worth drawing as a marker, metres. `[A]`
+#:
+#: Below this it is a plinth. The Statue of Liberty is 93 m to the torch, an obelisk
+#: is tens, and a memorial bench is not a thing anyone sees from an aeroplane.
+MIN_MARKER_M = 15.0
+
 #: Continuous water a bridge must span before it counts as one. `[A]`
 #:
 #: A hundred metres of open water under it. Short enough for the Chicago River
@@ -586,6 +599,36 @@ def build(spec_path: Path) -> None:
         seen.add(mark["name"])
         landmarks.append(mark)
 
+    # Heights for the landmarks that are structures in their own right — a statue, an
+    # obelisk, a lighthouse — so they can be drawn rather than merely labelled. The
+    # Statue of Liberty is tagged `height=10` in OpenStreetMap, which is the pedestal;
+    # Wikidata has the 93 m that is actually standing there.
+    #
+    # Only where nothing is drawn already. A landmark sitting on a building the region
+    # renders needs no marker, and giving Navy Pier a column because it is an
+    # "attraction" would be worse than leaving it as a name.
+    marker_qids = [m["wikidata"] for m in landmarks if m.get("wikidata") and "heightM" not in m]
+    marker_heights = wikidata_mod.heights_for(marker_qids)
+
+    markers = 0
+    for mark in landmarks:
+        qid = mark.get("wikidata")
+        height = marker_heights.get(qid or "")
+        if height is None or height < MIN_MARKER_M or "heightM" in mark:
+            continue
+        if mark["kind"] in NEVER_A_MARKER:
+            continue
+        mx, mz = frame.to_world(mark["lat"], mark["lon"])
+        if any(
+            math.hypot(b[0] - mx, b[1] - mz) < 80 and b[5] > height * 0.6
+            for b in instances
+        ):
+            continue
+        mark["markerM"] = round(height, 1)
+        markers += 1
+
+    print(f"  {markers} of them stand on their own and get drawn")
+
     kinds: dict[str, int] = {}
     for mark in landmarks:
         kinds[mark["kind"]] = kinds.get(mark["kind"], 0) + 1
@@ -741,6 +784,7 @@ def build(spec_path: Path) -> None:
                 "lon": round(m["lon"], 6),
                 "kind": m["kind"],
                 **({"heightM": m["heightM"]} if "heightM" in m else {}),
+                **({"markerM": m["markerM"]} if "markerM" in m else {}),
             }
             for m in landmarks
         ],

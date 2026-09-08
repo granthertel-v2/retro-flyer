@@ -45,6 +45,7 @@ import { buildGates } from './terrain/gates.js'
 import { captureSituation, parseSituation, applySlew, speedOf } from './situation.js'
 import { fpsToKt, mToFt, referenceSpeed } from '@retro-flyer/physics'
 import { buildBridges } from './terrain/bridges.js'
+import { buildLandmarks } from './terrain/landmarks.js'
 import { buildCity, buildRunways } from './terrain/city.js'
 import { TerrainMesh } from './terrain/mesh.js'
 import { Scatter } from './terrain/scatter.js'
@@ -168,6 +169,7 @@ async function main(): Promise<void> {
   scene.add(buildCity(map))
   scene.add(buildRunways(map))
   scene.add(buildBridges(map))
+  scene.add(buildLandmarks(map))
 
   const scatter = new Scatter(map)
   scene.add(scatter.mesh)

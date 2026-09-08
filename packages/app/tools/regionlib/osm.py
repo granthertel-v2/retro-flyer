@@ -599,6 +599,10 @@ def fetch_landmarks(south: float, west: float, north: float, east: float) -> lis
                 "lat": centre["lat"],
                 "lon": centre["lon"],
                 "kind": kind,
+                # Kept so the height can be looked up: a landmark that is not a
+                # building has no height anywhere in OpenStreetMap, and this is the
+                # identifier that leads to one.
+                "wikidata": tags.get("wikidata"),
                 # A Wikipedia *article*, not just a Wikidata item. It is the sharper
                 # of the two signals — 12 of Chicago's 42 mapped stadiums have one,
                 # and they are the twelve anyone could name.

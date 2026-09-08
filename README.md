@@ -40,12 +40,15 @@ Landmarks are in: the bridges are real geometry, arched over the water and tower
 where the span earns it — the George Washington, the Brooklyn, the Verrazzano, the
 Chicago Skyway. Everything else notable is named on the map, from the Statue of
 Liberty to Wrigley Field, filtered to things with an encyclopaedia article so you get
-the ones people can name rather than 500 plaques on walls.
+the ones people can name rather than 500 plaques on walls. A few of them stand up in
+the world too — the statue, the lighthouses — as plain markers of the right height in
+the right place. They are markers, not models: there is no statue here, there is a
+47 m column on Liberty Island, which is what you can honestly draw knowing only
+where something is and how tall it is.
 
 Expect scenery, not a chart. Buildings are every OpenStreetMap footprint over twenty
 metres, fitted to a box; the ground is coloured by land cover at 120 m; there are no
-roads, and no individually modelled monuments — the Statue of Liberty is a name on
-the map, not a statue. It is enough to recognise where you are from the air, which is
+roads, and nothing is modelled in detail — landmarks are markers, not likenesses. It is enough to recognise where you are from the air, which is
 what it is for.
 
 The short version:

@@ -1813,7 +1813,8 @@
       "name": "Chicago Harbor Lighthouse",
       "lat": 41.889345,
       "lon": -87.590554,
-      "kind": "lighthouse"
+      "kind": "lighthouse",
+      "markerM": 20.0
     },
     {
       "name": "Glessner House Museum",

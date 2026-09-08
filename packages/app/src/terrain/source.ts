@@ -283,7 +283,16 @@ export interface Landmark {
   x: number
   z: number
   kind: string
+  /** Height of the building this landmark names, where it names one already drawn. */
   heightM?: number
+  /**
+   * Height to draw a marker at, for a landmark nothing else represents.
+   *
+   * Present only where the region knows a sourced height *and* nothing is already
+   * standing there — so a statue gets a marker and a stadium does not get a column
+   * through the middle of it.
+   */
+  markerM?: number
 }
 
 /**

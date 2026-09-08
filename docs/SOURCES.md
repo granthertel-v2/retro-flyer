@@ -243,6 +243,18 @@ city, absent from the skyline because a tag was never filled in. The buildings
 already carry a `wikidata` tag, so this is following an identifier OSM chose, not
 guessing.
 
+It also supplies heights for landmarks that are structures rather than buildings —
+a statue, an obelisk, a lighthouse — which have no height anywhere in OpenStreetMap.
+Those are drawn as a plain tapered column of the right height in the right place, and
+nothing more: there is no model of the Statue of Liberty here, and modelling one
+would be the hand-work that stops landmarks generalising to a second city.
+
+Note what the figure means. The Statue of Liberty comes back as **46.9 m**, which is
+the statue; the 93 m people quote includes the pedestal it stands on. The sourced
+number is what gets drawn, and the difference is recorded here rather than quietly
+corrected — adding forty metres to make the picture look right is exactly the kind of
+unsourced value this document exists to prevent.
+
 Read **SI-normalised** (`psn:`), not raw. Wikidata stores a height in whatever unit
 its source used and returns the bare number: the Empire State Building carries both
 453 (metres) and 1500 (feet), and taking the larger raw figure made it a 1,500 m
@@ -340,6 +352,7 @@ These are not measurements. Each is a judgement, and each is recorded because th
 | Shortest bridge drawn | 60 m | Keeps the Chicago River bascules, which are the character of that riverfront. |
 | Water a bridge must span | 100 m continuous | Not "mostly over water": the Brooklyn Bridge's longest way is 2,165 m of which only the main span crosses the river, and a fraction test threw it away while keeping viaducts running along a shoreline. |
 | Bridge clearance at mid-span | length x 0.055, capped at 60 m | The Verrazzano gives 69 m and a bascule about five; span length is the only signal that separates them. |
+| Shortest landmark drawn as a marker | 15 m | Below that it is a plinth, invisible from an aeroplane. |
 | Region bundle budget | ~3.0-3.3 MB, ~1.4 MB gzipped | New York is 3.33 MB (9 tiers, 24k buildings); Chicago is 3.02 MB (15 tiers, 2k buildings). Dominated by the rasters, not the buildings, so the figure is stable across cities. |
 
 ## A known limitation
