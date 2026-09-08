@@ -1,0 +1,55 @@
+{
+  "id": "chicago",
+  "name": "Chicago",
+
+  "origin": { "lat": 41.78542, "lon": -87.75241 },
+  "originNote": [
+    "Chicago Midway, midpoint of runway 13L/31R, from FAA runway geometry.",
+    "Midway rather than O'Hare for the same reason New York uses LaGuardia: the",
+    "origin wants to be near the city being flown over, not twenty-seven kilometres",
+    "out in the suburbs. O'Hare sits comfortably inside the region either way."
+  ],
+
+  "extentM": 55560,
+  "extentNote": "The same 30 nm half-width as New York, so the LOD rings and §7's spacing rules carry over without a second set of numbers.",
+
+  "tiers": [
+    {
+      "cellM": 60,
+      "spanM": 46000,
+      "centre": { "lat": 41.8800, "lon": -87.7600 },
+      "note": "Centred between the Loop, O'Hare and Midway, which is the ground actually flown."
+    },
+    {
+      "cellM": 240,
+      "spanM": 115000,
+      "note": "Everything else, including the coarse LOD ring that reaches past the map edge."
+    }
+  ],
+
+  "airfieldTier": {
+    "cellM": 60,
+    "spanM": 8000,
+    "note": "Every airfield the tiers above do not reach gets its own 60 m tier. About 20 KB each."
+  },
+
+  "surface": {
+    "cellM": 120,
+    "note": "As New York. Chicago needs it more, not less: the region has about 25 m of relief in total, so land cover is doing essentially all the visual work."
+  },
+
+  "buildings": {
+    "minHeightM": 20,
+    "note": "The same cut as New York, kept deliberately rather than tuned per region — a threshold that moves per city is a threshold nobody can reason about."
+  },
+
+  "waterNote": [
+    "Chicago has no coastline. `natural=coastline` is for the sea, and the Great",
+    "Lakes are mapped as ordinary water polygons — Lake Michigan is one relation",
+    "tagged natural=water, water=lake. So the coastline assembly finds nothing here",
+    "and the region falls back to land-everywhere, after which the inland-water",
+    "layer paints the lake. This is the path New York never exercised, and building",
+    "Chicago is how the builder gets tested as a tool rather than as a script that",
+    "happened to produce one good file."
+  ]
+}

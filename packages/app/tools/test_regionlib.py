@@ -25,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from regionlib.coastline import Rect, clip_chain, close_rings, join_ways  # noqa: E402
 from regionlib.geo import GeoFrame, LatLon  # noqa: E402
+from regionlib.osm import parse_height, stitch_rings  # noqa: E402
 from regionlib.raster import Grid  # noqa: E402
 
 PASSED = 0
@@ -147,6 +148,43 @@ check("island with lake: the lake is water, not land",
       g5.at_world(0.0, 0.0) == 0,
       "non-zero winding must cancel the clockwise ring")
 check("island with lake: outside still sea", g5.at_world(90.0, 0.0) == 0)
+
+# ---------------------------------------------------------------------------
+# Multipolygon stitching — the opposite rule from coastline joining
+# ---------------------------------------------------------------------------
+
+# A square split into four members, two of them drawn backwards. Member direction is
+# meaningless in a multipolygon, so all four must still make one ring. Lake Michigan
+# has 743 outer members and none of them is closed; joining them with the coastline's
+# direction-preserving rule left 44 open chains with gaps of three degrees, and
+# Chicago came out 2.9% water.
+square = [
+    [(0.0, 0.0), (10.0, 0.0)],
+    [(10.0, 10.0), (10.0, 0.0)],     # backwards
+    [(10.0, 10.0), (0.0, 10.0)],
+    [(0.0, 0.0), (0.0, 10.0)],       # backwards
+]
+stitched = stitch_rings(square)
+check("stitch: reversed members still form one ring",
+      len(stitched) == 1 and stitched[0][0] == stitched[0][-1],
+      f"got {len(stitched)} rings, closed={stitched and stitched[0][0] == stitched[0][-1]}")
+check("stitch: the ring has every corner",
+      len(stitched) == 1 and len(set(stitched[0])) == 4,
+      f"got {sorted(set(stitched[0])) if stitched else None}")
+
+# Two separate rings must not be merged into one.
+two = square + [
+    [(20.0, 20.0), (30.0, 20.0)],
+    [(30.0, 20.0), (30.0, 30.0)],
+    [(30.0, 30.0), (20.0, 20.0)],
+]
+check("stitch: disjoint rings stay disjoint", len(stitch_rings(two)) == 2,
+      f"got {len(stitch_rings(two))}")
+
+# A coastline must never be reversed — direction is the entire signal there.
+check("join: coastline joining does not reverse ways",
+      len(join_ways([[(0.0, 0.0), (1.0, 0.0)], [(2.0, 0.0), (1.0, 0.0)]])) == 2,
+      "two ways meeting end-to-end are not one coastline chain")
 
 # ---------------------------------------------------------------------------
 # Clipping: a chain that leaves and re-enters is two pieces, not one

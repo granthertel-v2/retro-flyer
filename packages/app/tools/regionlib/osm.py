@@ -43,27 +43,114 @@ def query(body: str, label: str) -> dict:
     return json.loads(raw)
 
 
-def _geometry(element: dict) -> list[list[Point]]:
+def stitch_rings(fragments: list[list[Point]]) -> list[list[Point]]:
     """
-    Every ring or line an element carries, as `(lon, lat)` lists.
+    Assemble multipolygon member ways into rings, reversing them as needed.
 
-    Handles both shapes Overpass returns under `out geom`: a way has a single
-    `geometry`, a relation has `members`, each with its own. Relation members with
-    role `inner` are returned reversed, so that a multipolygon's holes are wound
-    against its outer ring and cancel under the non-zero rule the rasteriser uses.
+    This is deliberately *not* `join_ways`. The two look like the same problem and
+    are opposite ones:
+
+    - A **coastline** way's direction carries meaning — land is on the left — so a
+      way may never be reversed, and two ways only join when one's end is the other's
+      start.
+    - A **multipolygon member** has no individual direction at all. The ring is
+      whatever the fragments form when laid end to end, and roughly half of them will
+      need turning round to do it.
+
+    Joining multipolygon members with the coastline's rule looks like it nearly
+    works, which is the dangerous part. Lake Michigan's 743 outer members came out as
+    44 open chains with gaps of up to three degrees of latitude — the pieces were all
+    there, half of them simply pointed the other way.
+    """
+    ends: dict[Point, list[int]] = {}
+    for index, fragment in enumerate(fragments):
+        if len(fragment) >= 2:
+            ends.setdefault(fragment[0], []).append(index)
+            ends.setdefault(fragment[-1], []).append(index)
+
+    used: set[int] = set()
+    rings: list[list[Point]] = []
+
+    for seed, fragment in enumerate(fragments):
+        if seed in used or len(fragment) < 2:
+            continue
+        used.add(seed)
+        ring = list(fragment)
+
+        # Grow from the end, then from the start, taking whichever fragment touches
+        # and flipping it if it touches by its own end.
+        for _ in range(2):
+            while ring[0] != ring[-1]:
+                tip = ring[-1]
+                nxt = next((i for i in ends.get(tip, []) if i not in used), None)
+                if nxt is None:
+                    break
+                used.add(nxt)
+                piece = fragments[nxt]
+                ring.extend((piece if piece[0] == tip else piece[::-1])[1:])
+            ring.reverse()
+
+        rings.append(ring)
+
+    return rings
+
+
+def _rings_of(element: dict) -> list[list[Point]]:
+    """
+    Every closed ring an element describes, as `(lon, lat)`.
+
+    A **way** is one ring, closed if it is not already.
+
+    A **relation** is a multipolygon, and this is where the obvious implementation is
+    wrong in a way that only shows up on big features. A multipolygon's outer
+    boundary is not one member — it is an arbitrary number of open fragments, in
+    arbitrary directions, that have to be stitched (see `stitch_rings`). Lake
+    Michigan's relation has 743 outer members and **not one of them is individually
+    closed**. Treating each member as its own ring turns the lake into 743 slivers,
+    which rasterise to almost nothing: the first Chicago build reported the region as
+    2.9% water.
+
+    Small multipolygons hide this completely. A park with one hole usually has a
+    single closed way for its outer ring and another for the hole, so member-per-ring
+    gives the right answer and keeps giving it until a feature is big enough to have
+    been split up.
+
+    Inner rings are reversed so they wind against their outer ring and cancel under
+    the non-zero rule the rasteriser uses, which is what makes a hole a hole.
     """
     if "geometry" in element:
-        return [[(n["lon"], n["lat"]) for n in element["geometry"]]]
+        ring = [(n["lon"], n["lat"]) for n in element["geometry"]]
+        if len(ring) < 3:
+            return []
+        if ring[0] != ring[-1]:
+            ring = ring + [ring[0]]
+        return [ring]
 
-    rings: list[list[Point]] = []
+    by_role: dict[str, list[list[Point]]] = {"outer": [], "inner": []}
     for member in element.get("members", []):
         geom = member.get("geometry")
-        if not geom:
+        if not geom or len(geom) < 2:
             continue
-        pts = [(n["lon"], n["lat"]) for n in geom]
-        if member.get("role") == "inner":
-            pts.reverse()
-        rings.append(pts)
+        role = "inner" if member.get("role") == "inner" else "outer"
+        by_role[role].append([(n["lon"], n["lat"]) for n in geom])
+
+    rings: list[list[Point]] = []
+    for role, fragments in by_role.items():
+        if not fragments:
+            continue
+        for chain in stitch_rings(fragments):
+            if len(chain) < 3:
+                continue
+            # A chain that does not meet itself is a boundary whose remaining pieces
+            # were not returned. Closing it straight across is the standard repair
+            # and is what every renderer of OSM data does; the alternative is to drop
+            # a lake because one pier is missing from the extract.
+            if chain[0] != chain[-1]:
+                chain = chain + [chain[0]]
+            if role == "inner":
+                chain = chain[::-1]
+            rings.append(chain)
+
     return rings
 
 
@@ -79,7 +166,11 @@ out geom;"""
     data = query(body, "coastline")
     lines: list[list[Point]] = []
     for element in data.get("elements", []):
-        lines.extend(g for g in _geometry(element) if len(g) >= 2)
+        geom = element.get("geometry")
+        if geom and len(geom) >= 2:
+            # Raw, unclosed, and in the order the way was drawn: the direction is the
+            # entire signal here, and closing a coastline way would destroy it.
+            lines.append([(n["lon"], n["lat"]) for n in geom])
     return lines
 
 
@@ -175,13 +266,7 @@ out geom;"""
 
     rings: list[list[Point]] = []
     for element in data.get("elements", []):
-        for ring in _geometry(element):
-            if len(ring) >= 3:
-                # Rings from `out geom` are usually closed already; the ones that are
-                # not are areas mapped as unclosed ways, and a fill needs them closed.
-                if ring[0] != ring[-1]:
-                    ring = ring + [ring[0]]
-                rings.append(ring)
+        rings.extend(_rings_of(element))
     return rings
 
 

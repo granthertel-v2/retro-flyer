@@ -1,0 +1,480 @@
+{
+  "format": 1,
+  "id": "chicago",
+  "name": "Chicago",
+  "origin": {
+    "lat": 41.78542,
+    "lon": -87.75241
+  },
+  "extentM": 55560.0,
+  "heightScaleM": 0.25,
+  "tiers": [
+    {
+      "cells": 768,
+      "cellM": 60.0,
+      "centreX": -630.0173563717105,
+      "centreZ": -10505.027064763937,
+      "byteOffset": 0
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": 28123.05073803481,
+      "centreZ": 18634.701245142838,
+      "byteOffset": 1179648
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": -41065.30035804691,
+      "centreZ": -13793.27203863846,
+      "byteOffset": 1215560
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": -28660.69386017852,
+      "centreZ": 19634.564633269954,
+      "byteOffset": 1251472
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": -12361.469427455686,
+      "centreZ": -36590.442858971284,
+      "byteOffset": 1287384
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": 6078.320109153021,
+      "centreZ": 45310.31627287865,
+      "byteOffset": 1323296
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": 29455.910965033218,
+      "centreZ": 29435.705479212626,
+      "byteOffset": 1359208
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": 18585.633754684735,
+      "centreZ": 27756.507853170235,
+      "byteOffset": 1395120
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": -47094.64039790481,
+      "centreZ": -46966.37671276537,
+      "byteOffset": 1431032
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": -28906.178600412673,
+      "centreZ": -22709.207339988625,
+      "byteOffset": 1466944
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": -2419.5858490553337,
+      "centreZ": 39102.30445838605,
+      "byteOffset": 1502856
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": -31389.790167058323,
+      "centreZ": 9871.765216735326,
+      "byteOffset": 1538768
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": -53805.971758099506,
+      "centreZ": -39948.30548837501,
+      "byteOffset": 1574680
+    },
+    {
+      "cells": 134,
+      "cellM": 60.0,
+      "centreX": 40750.7980825616,
+      "centreZ": 25375.38339863455,
+      "byteOffset": 1610592
+    },
+    {
+      "cells": 480,
+      "cellM": 240.0,
+      "centreX": 0.0,
+      "centreZ": 0.0,
+      "byteOffset": 1646504
+    }
+  ],
+  "surface": {
+    "cells": 927,
+    "cellM": 120.0,
+    "centreX": 0.0,
+    "centreZ": 0.0,
+    "byteOffset": 2107304
+  },
+  "buildings": {
+    "count": 2029,
+    "byteOffset": 2966636
+  },
+  "airfields": [
+    {
+      "name": "Chicago O'Hare Intl 10L/28R",
+      "icao": "KORD",
+      "lat": 41.9690429,
+      "lon": -87.9076362,
+      "elevationM": 207.264,
+      "headingDeg": 89.879,
+      "lengthM": 3962.4,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport ORD, runway 10L/28R. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Chicago O'Hare Intl 09R/27L",
+      "icao": "KORD",
+      "lat": 41.9839067,
+      "lon": -87.9108678,
+      "elevationM": 207.264,
+      "headingDeg": 89.987,
+      "lengthM": 3432.05,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport ORD, runway 09R/27L. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Chicago O'Hare Intl 09C/27C",
+      "icao": "KORD",
+      "lat": 41.9883165,
+      "lon": -87.9108965,
+      "elevationM": 207.264,
+      "headingDeg": 89.986,
+      "lengthM": 3427.48,
+      "widthM": 60.96,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport ORD, runway 09C/27C. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Chicago O'Hare Intl 10C/28C",
+      "icao": "KORD",
+      "lat": 41.9657432,
+      "lon": -87.9116718,
+      "elevationM": 207.264,
+      "headingDeg": 89.875,
+      "lengthM": 3291.84,
+      "widthM": 60.96,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport ORD, runway 10C/28C. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Gary/Chicago Intl 12/30",
+      "icao": "KGYY",
+      "lat": 41.6173885,
+      "lon": -87.4139215,
+      "elevationM": 181.905,
+      "headingDeg": 124.159,
+      "lengthM": 2700.22,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport GYY, runway 12/30. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Chicago O'Hare Intl 04R/22L",
+      "icao": "KORD",
+      "lat": 41.9616327,
+      "lon": -87.889588,
+      "elevationM": 207.264,
+      "headingDeg": 41.506,
+      "lengthM": 2461.26,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport ORD, runway 04R/22L. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Dupage 02L/20R",
+      "icao": "KDPA",
+      "lat": 41.9041169,
+      "lon": -88.2501852,
+      "elevationM": 231.191,
+      "headingDeg": 14.014,
+      "lengthM": 2307.64,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport DPA, runway 02L/20R. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Chicago O'Hare Intl 04L/22R",
+      "icao": "KORD",
+      "lat": 41.9896045,
+      "lon": -87.9051514,
+      "elevationM": 207.264,
+      "headingDeg": 39.497,
+      "lengthM": 2286.0,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport ORD, runway 04L/22R. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Chicago O'Hare Intl 09L/27R",
+      "icao": "KORD",
+      "lat": 42.0028401,
+      "lon": -87.9128855,
+      "elevationM": 207.264,
+      "headingDeg": 90.003,
+      "lengthM": 2286.0,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport ORD, runway 09L/27R. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Chicago O'Hare Intl 10R/28L",
+      "icao": "KORD",
+      "lat": 41.9572324,
+      "lon": -87.9140803,
+      "elevationM": 207.264,
+      "headingDeg": 89.874,
+      "lengthM": 2286.0,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport ORD, runway 10R/28L. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Chicago Midway Intl 13L/31R",
+      "icao": "KMDW",
+      "lat": 41.7854157,
+      "lon": -87.7524103,
+      "elevationM": 188.915,
+      "headingDeg": 133.558,
+      "lengthM": 1987.91,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport MDW, runway 13L/31R. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Lewis University 02/20",
+      "icao": "KLOT",
+      "lat": 41.6079033,
+      "lon": -88.0980824,
+      "elevationM": 206.959,
+      "headingDeg": 13.731,
+      "lengthM": 1981.2,
+      "widthM": 30.48,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport LOT, runway 02/20. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Dupage 02R/20L",
+      "icao": "KDPA",
+      "lat": 41.9019492,
+      "lon": -88.2470576,
+      "elevationM": 231.191,
+      "headingDeg": 14.014,
+      "lengthM": 1966.26,
+      "widthM": 30.48,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport DPA, runway 02R/20L. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Chicago Midway Intl 04R/22L",
+      "icao": "KMDW",
+      "lat": 41.785588,
+      "lon": -87.751195,
+      "elevationM": 188.915,
+      "headingDeg": 43.475,
+      "lengthM": 1964.44,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport MDW, runway 04R/22L. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Chicago Midway Intl 04L/22R",
+      "icao": "KMDW",
+      "lat": 41.7868608,
+      "lon": -87.7542548,
+      "elevationM": 188.915,
+      "headingDeg": 43.468,
+      "lengthM": 1678.53,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport MDW, runway 04L/22R. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Lewis University 09/27",
+      "icao": "KLOT",
+      "lat": 41.608343,
+      "lon": -88.0944019,
+      "elevationM": 206.959,
+      "headingDeg": 87.731,
+      "lengthM": 1676.4,
+      "widthM": 22.86,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport LOT, runway 09/27. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Chicago Exec 16/34",
+      "icao": "KPWK",
+      "lat": 42.1169482,
+      "lon": -87.9037712,
+      "elevationM": 196.566,
+      "headingDeg": 158.611,
+      "lengthM": 1524.3,
+      "widthM": 45.72,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport PWK, runway 16/34. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Bult Fld 09/27",
+      "lat": 41.3774319,
+      "lon": -87.6797492,
+      "elevationM": 240.853,
+      "headingDeg": 89.688,
+      "lengthM": 1524.3,
+      "widthM": 22.86,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport C56, runway 09/27. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Griffith-Merrillville 08/26",
+      "lat": 41.5198472,
+      "lon": -87.3995184,
+      "elevationM": 193.243,
+      "headingDeg": 80.035,
+      "lengthM": 1493.22,
+      "widthM": 22.86,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport 05C, runway 08/26. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Dupage 10/28",
+      "icao": "KDPA",
+      "lat": 41.9128025,
+      "lon": -88.249815,
+      "elevationM": 231.191,
+      "headingDeg": 96.02,
+      "lengthM": 1447.8,
+      "widthM": 22.86,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport DPA, runway 10/28. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Chicago Exec 12/30",
+      "icao": "KPWK",
+      "lat": 42.1125599,
+      "lon": -87.8999903,
+      "elevationM": 196.566,
+      "headingDeg": 117.969,
+      "lengthM": 1345.69,
+      "widthM": 22.86,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport PWK, runway 12/30. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Lansing Muni 18/36",
+      "icao": "KIGQ",
+      "lat": 41.5306967,
+      "lon": -87.5276876,
+      "elevationM": 188.885,
+      "headingDeg": 180.142,
+      "lengthM": 1219.81,
+      "widthM": 22.86,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport IGQ, runway 18/36. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Chicago Midway Intl 13R/31L",
+      "icao": "KMDW",
+      "lat": 41.7844285,
+      "lon": -87.7536839,
+      "elevationM": 188.915,
+      "headingDeg": 133.56,
+      "lengthM": 1176.22,
+      "widthM": 18.29,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport MDW, runway 13R/31L. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Lake In The Hills 08/26",
+      "lat": 42.2068594,
+      "lon": -88.3226975,
+      "elevationM": 270.419,
+      "headingDeg": 79.709,
+      "lengthM": 1158.24,
+      "widthM": 22.86,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport 3CK, runway 08/26. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Schaumburg Rgnl 11/29",
+      "lat": 41.989349,
+      "lon": -88.1012485,
+      "elevationM": 244.145,
+      "headingDeg": 105.143,
+      "lengthM": 1158.24,
+      "widthM": 30.48,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport 06C, runway 11/29. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Gary/Chicago Intl 02/20",
+      "icao": "KGYY",
+      "lat": 41.616901,
+      "lon": -87.4160401,
+      "elevationM": 181.905,
+      "headingDeg": 21.183,
+      "lengthM": 1098.5,
+      "widthM": 30.48,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport GYY, runway 02/20. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Meadow Creek 04/22",
+      "lat": 41.4333495,
+      "lon": -87.7813587,
+      "elevationM": 237.744,
+      "headingDeg": 39.408,
+      "lengthM": 1036.32,
+      "widthM": 12.19,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport 2IL9, runway 04/22. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Dupage 15/33",
+      "icao": "KDPA",
+      "lat": 41.9152954,
+      "lon": -88.2423895,
+      "elevationM": 231.191,
+      "headingDeg": 147.564,
+      "lengthM": 1036.02,
+      "widthM": 30.48,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport DPA, runway 15/33. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Lansing Muni 09/27",
+      "icao": "KIGQ",
+      "lat": 41.5398913,
+      "lon": -87.5317043,
+      "elevationM": 188.885,
+      "headingDeg": 90.17,
+      "lengthM": 1034.8,
+      "widthM": 22.86,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport IGQ, runway 09/27. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Bolingbrook's Clow Intl 18/36",
+      "lat": 41.6959201,
+      "lon": -88.1294943,
+      "elevationM": 205.71,
+      "headingDeg": 178.348,
+      "lengthM": 1024.13,
+      "widthM": 22.86,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport 1C5, runway 18/36. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Landings Condominium 13/31",
+      "lat": 42.1432482,
+      "lon": -88.4033183,
+      "elevationM": 270.662,
+      "headingDeg": 132.517,
+      "lengthM": 957.38,
+      "widthM": 15.24,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport 82IS, runway 13/31. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    },
+    {
+      "name": "Hobart Sky Ranch 18/36",
+      "lat": 41.5559078,
+      "lon": -87.2639278,
+      "elevationM": 192.054,
+      "headingDeg": 180.0,
+      "lengthM": 952.5,
+      "widthM": 12.19,
+      "source": "FAA Aeronautical Information Services, Runways and US_Airport layers; airport 3HO, runway 18/36. Length and width as published; heading measured from the FAA runway polygon; elevation is the published field elevation."
+    }
+  ],
+  "attribution": [
+    "Map data \u00a9 OpenStreetMap contributors, ODbL (openstreetmap.org/copyright).",
+    "Elevation: USGS 3D Elevation Program (3DEP), public domain.",
+    "Airport and runway data: FAA Aeronautical Information Services, public domain."
+  ]
+}

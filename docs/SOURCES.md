@@ -258,11 +258,28 @@ Public domain. The authority for every runway number in a region manifest.
 - **Runway dimensions cross-check between independent sources.** The FAA publishes
   LaGuardia 13/31 as 7,002 ft; its own runway polygon measures 2,134.3 m against a
   published 2,134.2 m, and OpenStreetMap, mapped by different people, says 2,135 m.
+- **The builder was tested on a second region, and that is what found the worst
+  bug.** New York is bounded by `natural=coastline`; Chicago has none at all, because
+  the tag is for the sea and the Great Lakes are ordinary water polygons. Building
+  Chicago exercised the fallback path and immediately reported the region as 2.9%
+  water: a multipolygon's outer boundary is not one member but an arbitrary number of
+  open fragments in arbitrary directions, and Lake Michigan's relation has 743 outer
+  members of which **none is closed**. Treating each as its own ring turned the lake
+  into slivers. Small multipolygons hide this completely — a park with one hole
+  usually is one closed way per ring — so no amount of further work on New York would
+  have found it.
 - **The coastline was checked against elevation.** OpenStreetMap decides what is
   water and USGS decides how high the ground is. Water cells in the New York region
   have a median elevation of 0.0 m and a 90th percentile of 0.5 m, while forest sits
   at 92 m. The two datasets were assembled independently, so their agreement is
   evidence rather than restatement.
+
+  Chicago makes the same check sharper. Its water is Lake Michigan, whose surface the
+  region reproduces at **176.0 m** with a 10th-to-90th-percentile spread of 0.8 m.
+  Nothing in the builder knows that figure: OpenStreetMap decided which cells are
+  lake and USGS decided how high they are. Two sources agreeing on a number neither
+  was given is the strongest evidence available that the coastline and the elevation
+  describe the same place.
 
 ## A disagreement worth recording
 
@@ -296,7 +313,15 @@ These are not measurements. Each is a judgement, and each is recorded because th
 | Tall buildings per 3×3 cell before ground counts as dense city | 3 | About 13 hectares, three or four Manhattan blocks. Counting per single cell left downtown speckled. |
 | Finest elevation cell | 60 m | Exactly the innermost LOD ring in `mesh.ts`. Finer cannot be drawn, only stored. |
 | Surface-class cell | 120 m | Land cover is flat colour and survives being coarser than the heightfield. A crisper coastline is worth more than a crisper park boundary. |
-| Region bundle budget | ~3.3 MB, 1.4 MB gzipped | New York: two region-wide tiers, seven small airfield tiers, a surface raster and 24k buildings. |
+| Region bundle budget | ~3.0-3.3 MB, ~1.4 MB gzipped | New York is 3.33 MB (9 tiers, 24k buildings); Chicago is 3.02 MB (15 tiers, 2k buildings). Dominated by the rasters, not the buildings, so the figure is stable across cities. |
+
+## A known limitation
+
+A small number of inland cells are missed by the coastline fill and remain water:
+0.4% of New York and 0.8% of Chicago, isolated and away from any mapped water. At
+120 m they are single stray cells rather than anything a pilot would notice, and
+`test/regions.test.ts` bounds the figure so a regression that scatters the map cannot
+pass as normal. It has not been tracked to a cause.
 
 ## Why the land-cover classes exist
 
