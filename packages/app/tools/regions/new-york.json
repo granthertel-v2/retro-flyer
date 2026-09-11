@@ -1,0 +1,49 @@
+{
+  "id": "new-york",
+  "name": "New York",
+  "origin": {
+    "lat": 40.7772,
+    "lon": -73.8726
+  },
+  "originNote": [
+    "LaGuardia, midpoint of runway 13/31, from FAA runway geometry.",
+    "The origin is an airfield rather than the middle of the map because world (0,0)",
+    "is where the aircraft starts and where floating-point precision is best, and",
+    "because an origin tied to a published surveyed thing can be checked."
+  ],
+  "extentM": 55560,
+  "extentNote": "30 nm half-width: the same 60 nm map the authored world uses, so \u00a77's spacing rules and the LOD rings carry over unchanged.",
+  "tiers": [
+    {
+      "cellM": 60,
+      "spanM": 46000,
+      "centre": {
+        "lat": 40.75,
+        "lon": -73.94
+      },
+      "note": "60 m matches the innermost LOD ring in mesh.ts exactly; finer cannot be drawn. Centred between Manhattan and the three airports, which is the ground actually flown."
+    },
+    {
+      "cellM": 240,
+      "spanM": 115000,
+      "note": "Everything else, including the whole coarse LOD ring, which reaches past the map edge."
+    }
+  ],
+  "surface": {
+    "cellM": 120,
+    "note": "Twice the finest elevation cell. Land cover is flat colour, so it survives being coarser than the heightfield; a crisper coastline is worth more than a crisper park boundary."
+  },
+  "buildings": {
+    "maxCount": 50000,
+    "minHeightM": 9,
+    "note": "A count budget, not a height. A fixed threshold cannot serve both cities: 20 m gives New York 30,466 buildings and Chicago 291, because 83% of New York's footprints carry a measured height and almost none of Chicago's do \u2014 Chicago has floor counts instead. The cities are the same size and similarly built; only the tagging differs. So the budget is fixed and the threshold is searched per region to fill it, which is one rule applied to two datasets rather than two rules. 9 m is the floor: below three storeys a building is not visible from an aeroplane. 50,000 rather than a rounder 40,000 because Chicago's heights are quantised by storey: three floors gives 42,358 buildings and four gives 6,477, with nothing in between. A 40,000 budget fell the wrong side of that cliff and cost the city six sevenths of its fabric for the sake of 6% of the budget."
+  },
+  "cityFromBuildings": {
+    "note": "Dense ground is derived from where the tall buildings actually are, rather than from landuse tags. Manhattan is largely tagged residential in OSM and would otherwise render as suburb."
+  },
+  "airfieldTier": {
+    "cellM": 60,
+    "spanM": 8000,
+    "note": "Every airfield the tiers above do not reach gets its own 60 m tier, 8 km across. A runway resolved only by the 240 m tier cannot be flattened properly \u2014 the flat pad is barely one cell wide \u2014 and Westchester sits at 134 m in hill country. About 20 KB each."
+  }
+}

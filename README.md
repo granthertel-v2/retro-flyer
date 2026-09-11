@@ -18,6 +18,39 @@ press any key to dismiss it, `/` to bring it back.
 Desktop browser and a keyboard. There is no touch control scheme and the HUD is laid
 out for a landscape window, so a phone will load it and you will not be able to fly it.
 
+### Real places
+
+Add `?region=new-york` or `?region=chicago` to the URL to fly a real one instead of
+the designed map. The terrain is USGS survey elevation, the coastline and buildings
+are OpenStreetMap, and the runways are FAA records — Kennedy's 13R/31L is 14,511 ft
+long and lies on 120.8 degrees true because that is what the FAA says, not because
+anyone placed it. You start on the longest runway in the region.
+
+Press `M` for the moving map. It cycles in — 4, 12, 30 and 60 km across — and then
+off again, and it names what is under you: cities and towns when you are high, the
+neighbourhood you are actually over when you are low. New York carries three hundred
+names, Chicago two hundred and ninety-five, all from OpenStreetMap.
+
+They are about three megabytes each and load on demand, which is why they are opt-in:
+the designed map needs no network and is what everything here was flown against
+first. If a region fails to load you get the designed map and a line in the console
+rather than a black screen.
+
+Landmarks are in: the bridges are real geometry, arched over the water and towered
+where the span earns it — the George Washington, the Brooklyn, the Verrazzano, the
+Chicago Skyway. Everything else notable is named on the map, from the Statue of
+Liberty to Wrigley Field, filtered to things with an encyclopaedia article so you get
+the ones people can name rather than 500 plaques on walls. A few of them stand up in
+the world too — the statue, the lighthouses — as plain markers of the right height in
+the right place. They are markers, not models: there is no statue here, there is a
+47 m column on Liberty Island, which is what you can honestly draw knowing only
+where something is and how tall it is.
+
+Expect scenery, not a chart. Each region ships its fifty thousand tallest buildings,
+fitted to boxes; the ground is coloured by land cover at 120 m; there are no
+roads, and nothing is modelled in detail — landmarks are markers, not likenesses. It is enough to recognise where you are from the air, which is
+what it is for.
+
 The short version:
 
 | | |

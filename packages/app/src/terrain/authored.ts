@@ -41,9 +41,12 @@ import {
   fbm,
   lerp,
   positionAlongPolyline,
+  hash2,
   signedDistanceToRect,
   smoothstep,
   type Airfield,
+  type BuildingInstance,
+  type Place,
   type Polyline,
   Surface,
   type TerrainSample,
@@ -326,9 +329,28 @@ function landformHeight(x: number, z: number): number {
   return h
 }
 
+/** Spacing of the street grid, metres. */
+const BLOCK_PITCH = 130
+
+/** Footprint of a block, metres. The remainder of the pitch is street. */
+const BLOCK_SIZE = 92
+
 class AuthoredMap implements TerrainSource {
   readonly extent = MAP_EXTENT
   readonly airfields: readonly Airfield[]
+
+  /**
+   * The authored world's named features.
+   *
+   * Three, against a real region's two hundred and fifty, and that is the right
+   * proportion — this map has three things in it worth naming. They exist so the
+   * minimap has no idea which kind of map it is drawing.
+   */
+  readonly places: readonly Place[] = [
+    { name: 'THE CITY', x: CITY.x, z: CITY.z, rank: 0 },
+    { name: 'THE RIDGE', x: 20_600, z: -14_000, rank: 2 },
+    { name: 'THE PASS', x: 20_600, z: -8_700, rank: 3 },
+  ]
 
   constructor() {
     this.airfields = AIRFIELD_SITES.map((site) => ({
@@ -341,6 +363,55 @@ class AuthoredMap implements TerrainSource {
       // Measured, not asserted. See the note on AIRFIELD_SITES.
       elevation: Math.round(landformHeight(site.x, site.z)),
     }))
+  }
+
+  /**
+   * The city, as blocks on a street grid.
+   *
+   * This used to live in `city.ts`, which reached past the §8.2 seam to import
+   * `CITY` and `inCity` from this file and could therefore only ever draw this one
+   * city. Moving it here is what lets a real region hand over surveyed footprints
+   * through the same call, with the renderer none the wiser.
+   *
+   * Still generated rather than stored, and still a pure function of position with a
+   * fixed integer hash behind it — the same determinism argument that made this map
+   * code instead of a heightmap. There is no seed to lose.
+   */
+  buildings(): BuildingInstance[] {
+    const out: BuildingInstance[] = []
+    const reach = Math.max(CITY.halfLength, CITY.halfWidth) + BLOCK_PITCH
+    const headingDeg = (CITY.headingRad * 180) / Math.PI
+
+    for (let gz = -reach; gz <= reach; gz += BLOCK_PITCH) {
+      for (let gx = -reach; gx <= reach; gx += BLOCK_PITCH) {
+        // Lay the grid out in the city's own rotated frame so the streets line up
+        // with the plateau rather than with the world axes.
+        const c = Math.cos(CITY.headingRad)
+        const sn = Math.sin(CITY.headingRad)
+        const x = CITY.x + gx * c - gz * sn
+        const z = CITY.z + gx * sn + gz * c
+
+        if (!inCity(x, z)) continue
+
+        const r = hash2(Math.round(gx / BLOCK_PITCH), Math.round(gz / BLOCK_PITCH))
+        // A few gaps. A perfectly full grid reads as a texture, not a city.
+        if (r > 0.93) continue
+
+        const fromCentre = Math.hypot(gx, gz) / reach
+        const downtown = Math.max(0, 1 - fromCentre * 1.35)
+
+        out.push({
+          x,
+          z,
+          halfLengthM: BLOCK_SIZE / 2,
+          halfWidthM: BLOCK_SIZE / 2,
+          headingDeg,
+          heightM: 18 + r * 42 + downtown * downtown * 150,
+        })
+      }
+    }
+
+    return out
   }
 
   /** Signed distance to the nearest runway rectangle, and that runway's elevation. */

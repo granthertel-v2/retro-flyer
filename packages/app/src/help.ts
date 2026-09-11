@@ -52,6 +52,7 @@ const GROUPS: readonly Group[] = [
     rows: [
       ['C', 'camera: chase, cockpit, orbit'],
       ['H', 'head-up display'],
+      ['M', 'moving map: zoom in, then off'],
       ['O', 'developer readout'],
       ['P', 'pause'],
       ['/', 'this card'],

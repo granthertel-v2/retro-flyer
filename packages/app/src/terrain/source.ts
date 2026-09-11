@@ -24,7 +24,42 @@ export const enum Surface {
   Land = 1,
   City = 2,
   Runway = 3,
+
+  // Land cover, added when the first real region arrived. See the note below.
+  Forest = 4,
+  Grass = 5,
+  Sand = 6,
+  Suburb = 7,
 }
+
+/**
+ * Why the land-cover classes exist, and why they are here rather than in a second raster.
+ *
+ * `mesh.ts` originally coloured `Land` by altitude — olive below 520 m, green to
+ * 1,150, rock, then snow. That works for the authored map, which was built with a
+ * ridge in it precisely so there would be something to colour. It fails completely
+ * for a real city: Manhattan's highest natural ground is about 60 m and the Palisades
+ * top out near 113 m, so every land triangle in the New York region lands in the
+ * bottom eighth of the lowest band and the whole map renders as one uniform olive
+ * plain. Correct elevation, correct coastline, and unreadable.
+ *
+ * The fix is to colour real ground by what it *is* rather than how high it is, which
+ * means the terrain source has to carry land cover. Adding classes to this enum was
+ * chosen over a parallel land-cover raster for one reason: `TerrainSample` is the
+ * §8.2 seam, and every consumer already switches on `surface`. A second raster would
+ * mean a second lookup, a second thing to keep aligned, and a second thing to forget.
+ *
+ * These are deliberately *visual* categories, not a land-use taxonomy. The test is
+ * "does it read differently from five hundred feet", which is why `Forest` and
+ * `Grass` are separate but "school" and "hospital" are not.
+ *
+ * ## What they mean to the physics
+ *
+ * Nothing, and that is intentional. `groundSource.ts` maps `Runway` to paved, `Water`
+ * to water, and everything else to soft ground. A new class is therefore soft ground
+ * automatically, which is the right answer for all four of these — none of them is
+ * something you can land on properly, and none is water.
+ */
 
 export interface TerrainSample {
   /** Ground elevation, metres above sea level. Negative under water. */
@@ -87,6 +122,72 @@ export const RUNWAY_RAMP_M = 60
  * at 160 kt. Two implementations of this would eventually be two different ramps, and
  * only one of them would have been flown.
  */
+/**
+ * Per-airfield geometry, computed once.
+ *
+ * `runwayLift` and `onRunway` are the hottest functions in the renderer: every
+ * terrain vertex goes through `sample`, every physics step goes through
+ * `surfaceHeight`, and a single LOD ring rebuild is nine thousand of them. Both used
+ * to convert a heading to radians and take its sine and cosine *per airfield, per
+ * call* — four airfields on the authored map, which nobody noticed, and twenty-two
+ * in New York, which cost 5.6 microseconds a sample and turned a ring rebuild into a
+ * fifty-millisecond hitch.
+ *
+ * The cache is keyed on the airfield object itself, so it needs no invalidation: a
+ * map builds its airfields once and hands out the same objects forever, and one that
+ * did not would simply get a fresh entry.
+ */
+interface RunwayRect {
+  sin: number
+  cos: number
+  halfLength: number
+  halfWidth: number
+  /** Radius beyond which no point can be within `RUNWAY_RAMP_M` of the strip. */
+  reachSq: number
+}
+
+const RUNWAY_RECTS = new WeakMap<Airfield, RunwayRect>()
+
+function rectOf(f: Airfield): RunwayRect {
+  let rect = RUNWAY_RECTS.get(f)
+  if (!rect) {
+    const heading = (f.headingDeg * Math.PI) / 180
+    const halfLength = f.lengthM / 2
+    const halfWidth = f.widthM / 2
+    const reach = Math.hypot(halfLength + RUNWAY_RAMP_M, halfWidth + RUNWAY_RAMP_M)
+    rect = {
+      sin: Math.sin(heading),
+      cos: Math.cos(heading),
+      halfLength,
+      halfWidth,
+      reachSq: reach * reach,
+    }
+    RUNWAY_RECTS.set(f, rect)
+  }
+  return rect
+}
+
+/** Signed distance to a runway rectangle whose trigonometry is already known. */
+function distanceToRunway(x: number, z: number, f: Airfield, rect: RunwayRect): number {
+  const dx = x - f.x
+  const dz = z - f.z
+  const along = dx * rect.sin - dz * rect.cos
+  const across = dx * rect.cos + dz * rect.sin
+  const ox = Math.abs(along) - rect.halfLength
+  const oz = Math.abs(across) - rect.halfWidth
+  if (ox > 0 || oz > 0) return Math.hypot(Math.max(ox, 0), Math.max(oz, 0))
+  return Math.max(ox, oz)
+}
+
+/**
+ * How much a runway lifts the surface at a point, metres.
+ *
+ * Shared rather than reimplemented per source. Every `TerrainSource` owes callers the
+ * same answer here, because the number it produces is what the landing gear stands on
+ * — and the ramp is the reason there is no step at the runway edge for a wheel to hit
+ * at 160 kt. Two implementations of this would eventually be two different ramps, and
+ * only one of them would have been flown.
+ */
 export function runwayLift(
   x: number,
   z: number,
@@ -95,13 +196,15 @@ export function runwayLift(
   let lift = 0
 
   for (const f of airfields) {
-    const d = signedDistanceToRect(
-      x, z,
-      f.x, f.z,
-      f.lengthM / 2,
-      f.widthM / 2,
-      (f.headingDeg * Math.PI) / 180,
-    )
+    // Almost every point in a region is nowhere near a runway, so reject on a
+    // squared distance before doing any rotation at all. This is the whole
+    // optimisation; the rest is bookkeeping.
+    const dx = x - f.x
+    const dz = z - f.z
+    const rect = rectOf(f)
+    if (dx * dx + dz * dz > rect.reachSq) continue
+
+    const d = distanceToRunway(x, z, f, rect)
     if (d >= RUNWAY_RAMP_M) continue
     // Full lift on the strip (d <= 0), fading to nothing over the apron.
     lift = Math.max(lift, RUNWAY_SURFACE_OFFSET_M * smoothstep(RUNWAY_RAMP_M, 0, d))
@@ -113,14 +216,11 @@ export function runwayLift(
 /** Whether a point is on a runway strip. The same rectangle `runwayLift` uses. */
 export function onRunway(x: number, z: number, airfields: readonly Airfield[]): boolean {
   for (const f of airfields) {
-    const d = signedDistanceToRect(
-      x, z,
-      f.x, f.z,
-      f.lengthM / 2,
-      f.widthM / 2,
-      (f.headingDeg * Math.PI) / 180,
-    )
-    if (d < 0) return true
+    const dx = x - f.x
+    const dz = z - f.z
+    const rect = rectOf(f)
+    if (dx * dx + dz * dz > rect.reachSq) continue
+    if (distanceToRunway(x, z, f, rect) < 0) return true
   }
   return false
 }
@@ -141,6 +241,109 @@ export interface TerrainSource {
   /** Elevation and surface type at a world coordinate. */
   sample(x: number, z: number): TerrainSample
   readonly airfields: readonly Airfield[]
+  /**
+   * Everything standing on the terrain, as boxes. Read once, never per frame.
+   *
+   * Optional because a map is allowed not to have any, and because making it
+   * optional is what let the real regions arrive without every existing caller
+   * being touched.
+   *
+   * It belongs on the seam rather than in the renderer for the reason §8.2 exists
+   * at all: `city.ts` used to reach past the interface and import the authored
+   * map's own `CITY` rectangle, so it could only ever draw one city. Asking the
+   * source instead means the authored map hands over its procedural grid, a real
+   * region hands over twenty-four thousand surveyed footprints, and the renderer
+   * cannot tell the difference — which is precisely the promise the terrain seam
+   * was written to keep.
+   */
+  buildings?(): BuildingInstance[]
+  /**
+   * Named places, for labelling a map. Most prominent first.
+   *
+   * Optional for the same reason `buildings` is: a map is allowed to have none, and
+   * optional is what let real regions arrive without touching every caller.
+   */
+  readonly places?: readonly Place[]
+  /** Notable named features, for labelling. */
+  readonly landmarks?: readonly Landmark[]
+  /** Bridges, as centrelines in world metres. */
+  readonly bridges?: readonly Bridge[]
+}
+
+/**
+ * Something worth naming that is not a town: a bridge, a stadium, a statue, a tower.
+ *
+ * `kind` is OpenStreetMap's word for it, kept rather than mapped to an enum, because
+ * the renderer only uses it to pick a symbol and a new kind appearing is not an
+ * error. `heightM` is present only where the landmark was matched to a building the
+ * region already draws, and is that building's height.
+ */
+export interface Landmark {
+  name: string
+  x: number
+  z: number
+  kind: string
+  /** Height of the building this landmark names, where it names one already drawn. */
+  heightM?: number
+  /**
+   * Height to draw a marker at, for a landmark nothing else represents.
+   *
+   * Present only where the region knows a sourced height *and* nothing is already
+   * standing there — so a statue gets a marker and a stadium does not get a column
+   * through the middle of it.
+   */
+  markerM?: number
+}
+
+/**
+ * A bridge, as a centreline and a width.
+ *
+ * Not a footprint. The renderer lays a deck along the line and arches it over the
+ * water, which is all a bridge needs to be from an aeroplane — and it means a
+ * structure mapped as a polygon and one mapped as a way arrive in the same shape.
+ */
+export interface Bridge {
+  name: string
+  /** World metres, in order along the span. */
+  points: readonly { x: number; z: number }[]
+  widthM: number
+  lengthM: number
+}
+
+/**
+ * A named place, in world metres.
+ *
+ * `rank` is 0 for a city and rises through borough, town, suburb, village and
+ * neighbourhood — a drawing priority rather than a fact about the world. It exists
+ * because a map the size of a postcard cannot show two hundred and fifty labels and
+ * has to have an opinion about which fifteen matter.
+ */
+export interface Place {
+  name: string
+  x: number
+  z: number
+  rank: number
+}
+
+/**
+ * One building, as the renderer wants it: a box on the ground.
+ *
+ * Deliberately not a footprint. The renderer draws boxes, so the fitting of an
+ * outline to a rectangle happens once, offline, rather than on every load — and a
+ * map that has no outlines to fit can still describe its buildings this way.
+ *
+ * No colour. Shade is derived from position by the renderer, which keeps it out of
+ * the region blob where it would cost four bytes times twenty-four thousand to say
+ * something a hash can say for nothing.
+ */
+export interface BuildingInstance {
+  x: number
+  z: number
+  halfLengthM: number
+  halfWidthM: number
+  /** Degrees, in the same convention as `Airfield.headingDeg`. */
+  headingDeg: number
+  heightM: number
 }
 
 // ---------------------------------------------------------------------------

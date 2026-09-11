@@ -225,13 +225,58 @@ export const COURSE_WAYPOINTS: readonly Waypoint[] = [
   },
 ]
 
-/** Build the course from the map's own airfields, so it moves if they do. */
+/**
+ * Build a course from the map's own airfields, so it moves if they do.
+ *
+ * The authored map gets the designed course: three gates through terrain that was
+ * shaped around them — the pass exists because the course needed somewhere the ridge
+ * had to be flown *through* rather than over. Those waypoints are world coordinates
+ * in that map and mean nothing anywhere else, which is why asking a real region for
+ * an airfield called "Bayside" threw and took the whole page down with it.
+ *
+ * A region gets a cross-country instead: take off from the longest runway, land at
+ * the field furthest from it, no gates in between. `Course` already handles an empty
+ * gate list — it goes straight to the landing condition — so this needs no new rule,
+ * only a different set of waypoints, which is none.
+ *
+ * Designing gates for New York is content work and this is not the place for it. A
+ * course that is honestly "fly to the other airport and land" is better than a
+ * fabricated one, and much better than a crash.
+ */
 export function buildCourse(airfields: readonly Airfield[]): Course {
-  const find = (name: string): Airfield => {
-    const f = airfields.find((a) => a.name === name)
-    if (!f) throw new Error(`course needs an airfield named ${name}`)
-    return f
+  const named = (name: string): Airfield | undefined =>
+    airfields.find((f) => f.name === name)
+
+  const start = named('Bayside')
+  const destination = named('Ridgeview')
+  if (start && destination) return new Course(COURSE_WAYPOINTS, start, destination)
+
+  return crossCountry(airfields)
+}
+
+/**
+ * Longest runway to the field furthest from it, with nothing in between.
+ *
+ * Longest first because it is the one an F-16 most plainly belongs on, and furthest
+ * because two runways at the same airport are not a cross-country — New York's two
+ * longest are both at Kennedy, and a course from one to the other would be a taxi.
+ */
+function crossCountry(airfields: readonly Airfield[]): Course {
+  if (airfields.length === 0) {
+    throw new Error('a course needs at least one airfield')
   }
 
-  return new Course(COURSE_WAYPOINTS, find('Bayside'), find('Ridgeview'))
+  const start = [...airfields].sort((a, b) => b.lengthM - a.lengthM)[0]!
+
+  let destination = start
+  let furthest = -1
+  for (const f of airfields) {
+    const d = Math.hypot(f.x - start.x, f.z - start.z)
+    if (d > furthest) {
+      furthest = d
+      destination = f
+    }
+  }
+
+  return new Course([], start, destination)
 }

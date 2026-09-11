@@ -39,15 +39,29 @@ import {
   MeshLambertMaterial,
   Object3D,
 } from 'three'
-import { Surface, hash2, type TerrainSource } from './source.js'
+import { Surface, clamp, hash2, type TerrainSource } from './source.js'
 
-/** Cells across each ring. Every ring uses the same count; only the cell size grows. */
-const RES = 64
+/**
+ * Cells across each ring. Every ring uses the same count; only the cell size grows.
+ *
+ * Raised from 64 because the *transitions* were the visible problem, not the detail.
+ * Each ring's half-extent is `RES * BASE_CELL * 2^n / 2`, so at 64 the ground changed
+ * resolution at 1.9, 3.8, 7.7 and 15.4 km — every one of them in clear air, since fog
+ * does not begin until nineteen. Over the authored map's ridges that reads as relief;
+ * over the flat ground of a real region it reads as the world assembling itself a few
+ * kilometres ahead.
+ *
+ * At 96 the same transitions move to 2.9, 5.8, 11.5 and 23 km, which puts the last of
+ * them into the haze and the rest far enough out to stop announcing themselves. The
+ * cost is about 49,000 more triangles — on a New York frame already drawing 414,000,
+ * of which the buildings alone are 289,000.
+ */
+const RES = 96
 
 /** Cell size of the innermost ring, metres. */
 const BASE_CELL = 60
 
-/** Number of rings. Six doublings from 60 m reaches ~123 km — the whole map. */
+/** Number of rings. Six doublings from 60 m at 96 cells reaches ~184 km. */
 const LEVELS = 6
 
 /**
@@ -89,10 +103,43 @@ function groundColour(out: Color, height: number, surface: Surface, jitter: numb
       out.setRGB(0.34, 0.33, 0.31)
       break
 
+    // Land cover, for regions built from real data. These are flat colours rather
+    // than height ramps on purpose: a real city has a hundred metres of relief
+    // across the whole map, so anything driven by altitude collapses to one shade.
+    // What separates them is hue, and hue survives being seen from three miles up.
+    case Surface.Forest:
+      // Darker and bluer than the open-ground green, which is what makes a park
+      // read as a park from the pattern rather than as a slightly different field.
+      out.setRGB(0.13, 0.22, 0.11)
+      break
+
+    case Surface.Grass:
+      out.setRGB(0.31, 0.42, 0.19)
+      break
+
+    case Surface.Sand:
+      out.setRGB(0.72, 0.66, 0.47)
+      break
+
+    case Surface.Suburb:
+      // Between the city's grey and open ground: enough built surface to read as
+      // developed, enough green left to read as not downtown. Most of the land area
+      // of a real region is this, so it carries a lot of the map's character.
+      out.setRGB(0.35, 0.34, 0.26)
+      break
+
     case Surface.Water: {
       // Shallows read lighter, which is what makes a coastline legible from
       // altitude rather than a flat blue edge.
-      const t = Math.min(1, -height / 120)
+      //
+      // Clamped at both ends, and the lower clamp is not defensive tidying. The
+      // authored map's water is all below zero, so `-height` is positive there and
+      // the ramp behaves. Real regions carry the *water surface* rather than a
+      // depth: New York's sea reads 0 m and Lake Michigan reads 176. Unclamped,
+      // 176 m of lake gives t = -1.47, every channel is extrapolated past white,
+      // and the largest lake in the region turns bright cyan. Chicago is mostly
+      // that lake.
+      const t = clamp(-height / 120, 0, 1)
       out.setRGB(0.06 + 0.05 * (1 - t), 0.20 + 0.22 * (1 - t), 0.34 + 0.20 * (1 - t))
       break
     }

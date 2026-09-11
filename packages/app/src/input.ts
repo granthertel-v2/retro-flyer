@@ -33,6 +33,7 @@ export interface InputCommands {
   saveSituation: boolean
   loadSituation: boolean
   resetCourse: boolean
+  cycleMap: boolean
   /** Parking brake on/off. */
   toggleParkingBrake: boolean
   /** The §9.1 HUD on/off. */
@@ -58,6 +59,7 @@ const NO_COMMANDS: InputCommands = {
   saveSituation: false,
   loadSituation: false,
   resetCourse: false,
+  cycleMap: false,
   toggleParkingBrake: false,
   toggleHud: false,
   toggleOverlay: false,
@@ -71,7 +73,7 @@ const CLAIMED = new Set([
   'KeyQ', 'KeyE',
   'ShiftLeft', 'ShiftRight', 'ControlLeft', 'ControlRight',
   'KeyC', 'KeyI', 'KeyP', 'KeyR', 'KeyB', 'KeyZ', 'KeyX',
-  'KeyG', 'KeyV', 'KeyT', 'KeyN', 'KeyK', 'KeyH', 'KeyO', 'Slash', 'Space', 'F5', 'F9',
+  'KeyG', 'KeyV', 'KeyT', 'KeyN', 'KeyM', 'KeyK', 'KeyH', 'KeyO', 'Slash', 'Space', 'F5', 'F9',
   'Digit0', 'Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit9',
 ])
 
@@ -112,6 +114,7 @@ export class InputReader {
       case 'KeyV': this.pending.toggleSlew = true; break
       case 'KeyT': this.pending.nextField = true; break
       case 'KeyN': this.pending.resetCourse = true; break
+      case 'KeyM': this.pending.cycleMap = true; break
       case 'KeyK': this.pending.toggleParkingBrake = true; break
       case 'KeyH': this.pending.toggleHud = true; break
       case 'KeyO': this.pending.toggleOverlay = true; break

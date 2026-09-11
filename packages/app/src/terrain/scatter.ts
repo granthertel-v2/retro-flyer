@@ -26,7 +26,7 @@ import {
   Quaternion,
   Vector3,
 } from 'three'
-import { Surface, hash2, type TerrainSource } from './source.js'
+import { Surface, hash2, smoothstep, type TerrainSource } from './source.js'
 
 /**
  * Grid pitch, metres.
@@ -40,8 +40,24 @@ import { Surface, hash2, type TerrainSource } from './source.js'
  */
 export const PITCH = 95
 
-/** Cells each way from the aircraft. 19 gives a radius of about 1.8 km. */
-export const REACH = 19
+/** Cells each way from the aircraft. 26 gives a radius of about 2.5 km. */
+export const REACH = 26
+
+/**
+ * Cells over which an object grows to full size at the edge of the field, and the
+ * reason the field is round rather than square.
+ *
+ * Without this, objects switch on at full size 2.5 km away, in clear air — fog does
+ * not start until twenty kilometres, so there is nothing to hide it. Over the flat
+ * ground of a real region that edge is a visible line of things appearing, and it
+ * follows you, which is worse than the pop itself.
+ *
+ * Scaling them up over the outer few cells costs nothing — the instances are already
+ * being written every time the grid moves — and it also rounds the field off, which
+ * matters because the square's corners reach 1.4 times further than its sides and
+ * were the most conspicuous part of the edge.
+ */
+const FADE_CELLS = 7
 
 const COUNT = (REACH * 2 + 1) ** 2
 
@@ -93,14 +109,22 @@ export class Scatter {
 
         const roll = hash2(gx * 31, gz * 17)
 
-        // Nothing grows on water or on a runway, and the city has its own blocks.
+        // Distance from the aircraft in cells, and the size it implies. Measured on
+        // the grid rather than in metres so it does not change as the jitter moves
+        // an object about within its cell.
+        const cells = Math.hypot(gx - cx, gz - cz)
+        const grown = smoothstep(REACH, REACH - FADE_CELLS, cells)
+
+        // Nothing grows on water, sand or a runway, the city has its own blocks, and
+        // nothing at all is drawn beyond the fade — see `FADE_CELLS`.
         const bare =
           sample.surface === Surface.Water ||
           sample.surface === Surface.Runway ||
           sample.surface === Surface.City ||
+          sample.surface === Surface.Sand ||
           roll > 0.72
 
-        if (bare) {
+        if (bare || grown <= 0) {
           // Park the unused instances underground rather than shrinking them to
           // zero — a degenerate matrix still costs a vertex shader invocation and
           // can produce NaN normals.
@@ -117,7 +141,7 @@ export class Scatter {
         const radius = height * (0.22 + roll * 0.14)
 
         this.position.set(wx, sample.height - 1, wz)
-        this.scale.set(radius, height, radius)
+        this.scale.set(radius * grown, height * grown, radius * grown)
         this.matrix.compose(this.position, this.rotation, this.scale)
         this.mesh.setMatrixAt(i, this.matrix)
 

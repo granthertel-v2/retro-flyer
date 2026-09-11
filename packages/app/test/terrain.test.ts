@@ -15,13 +15,14 @@
 
 import { describe, expect, it } from 'vitest'
 import {
+  CITY,
   MAP_EXTENT,
   authoredMap as map,
   inCity,
   separationNm,
 } from '../src/terrain/authored.js'
 import { Surface } from '../src/terrain/source.js'
-import { AuthoredGroundSource } from '../src/terrain/groundSource.js'
+import { TerrainGroundSource } from '../src/terrain/groundSource.js'
 import { RUNWAY_RAMP_M, RUNWAY_SURFACE_OFFSET_M } from '../src/terrain/source.js'
 
 /** Walk a grid over the whole map and hand each sample to a visitor. */
@@ -286,7 +287,7 @@ describe('the airfields (§7)', () => {
 })
 
 describe('the runway the wheels stand on is the runway you can see (Day 3)', () => {
-  const source = new AuthoredGroundSource(map)
+  const source = new TerrainGroundSource(map)
 
   it('has no step at the runway edge for the gear to hit', () => {
     // The regression test for a two-foot kerb. The strip was briefly drawn 0.6 m
@@ -398,5 +399,52 @@ describe('the runway the wheels stand on is the runway you can see (Day 3)', () 
 
     const sample = source.sample(-probeZ / 0.3048, probeX / 0.3048)
     expect(sample.elevation * 0.3048).toBeCloseTo(map.height(probeX, probeZ), 6)
+  })
+})
+
+/**
+ * The authored map hands over its own buildings.
+ *
+ * `city.ts` used to import `CITY` and `inCity` from `authored.ts` and lay the street
+ * grid out itself, which meant the renderer could draw exactly one city — a hole
+ * straight through the §8.2 seam that only became visible when a real region turned
+ * up with twenty-four thousand surveyed footprints and nowhere to put them.
+ *
+ * The generation moved here so both kinds of map answer the same call. These check
+ * it still produces the city it used to, because "the seam is clean now" is worth
+ * nothing if the world changed on the way.
+ */
+describe('authored buildings, through the seam', () => {
+  const buildings = map.buildings?.() ?? []
+
+  it('produces a city', () => {
+    expect(buildings.length).toBeGreaterThan(500)
+  })
+
+  it('puts every block inside the city and on its street grid', () => {
+    const headingDeg = (CITY.headingRad * 180) / Math.PI
+    for (const b of buildings) {
+      expect(inCity(b.x, b.z)).toBe(true)
+      // One grid, one orientation: the streets line up with the plateau, not with
+      // the world axes, and that is what makes the city read as a city from above.
+      expect(b.headingDeg).toBeCloseTo(headingDeg, 9)
+      expect(b.halfLengthM).toBe(b.halfWidthM)
+      expect(b.heightM).toBeGreaterThan(0)
+    }
+  })
+
+  it('is taller toward the middle', () => {
+    // The skyline has a shape, which is most of why a city works as a speed cue.
+    const near = buildings.filter((b) => Math.hypot(b.x - CITY.x, b.z - CITY.z) < 1_200)
+    const far = buildings.filter((b) => Math.hypot(b.x - CITY.x, b.z - CITY.z) > 3_000)
+    const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length)
+    expect(mean(near.map((b) => b.heightM))).toBeGreaterThan(mean(far.map((b) => b.heightM)))
+  })
+
+  it('is the same city on every load', () => {
+    // A pure function of position with a fixed hash behind it — the determinism
+    // argument that made this map code instead of a painted heightmap.
+    const again = map.buildings?.() ?? []
+    expect(again).toEqual(buildings)
   })
 })

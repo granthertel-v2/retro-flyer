@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest'
 import { PHYSICS_DT, Q, aeroAngles, eulerFromQuaternion } from '@retro-flyer/physics'
 import { NEUTRAL_INPUT, type RawInput } from '@retro-flyer/control'
 import { Simulation } from '../src/loop.js'
-import { AuthoredGroundSource } from '../src/terrain/groundSource.js'
+import { TerrainGroundSource } from '../src/terrain/groundSource.js'
 import { authoredMap } from '../src/terrain/authored.js'
 import { SPAWN, runwayStart } from '../src/spawn.js'
 import {
@@ -25,7 +25,7 @@ import {
   speedOf,
 } from '../src/situation.js'
 
-const ground = new AuthoredGroundSource(authoredMap)
+const ground = new TerrainGroundSource(authoredMap)
 const bayside = authoredMap.airfields.find((a) => a.name === 'Bayside')!
 
 /** A fixed, non-trivial stick input, so the replay has something to disagree about. */

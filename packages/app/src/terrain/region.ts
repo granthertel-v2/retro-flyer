@@ -50,9 +50,15 @@ import {
   onRunway,
   runwayLift,
   type Airfield,
+  type BuildingInstance,
+  type Bridge,
+  type Landmark,
+  type Place,
   type TerrainSample,
   type TerrainSource,
 } from './source.js'
+
+export type { Bridge, BuildingInstance, Landmark, Place }
 
 /** One elevation grid. Square, axis-aligned, centred anywhere in the region. */
 export interface TerrainTier {
@@ -116,18 +122,27 @@ export interface RegionManifest {
   surface: SurfaceRaster
   buildings: { count: number; byteOffset: number }
   airfields: RegionAirfield[]
+  /**
+   * Named places, for labelling a map. Ranked, most prominent first.
+   *
+   * In the manifest rather than the blob because they are names: a diff that shows
+   * "Newark" moving is worth reading, and two hundred and fifty of them cost less
+   * than a tenth of what one elevation tier does.
+   */
+  places?: { name: string; lat: number; lon: number; rank: number }[]
+  /** Notable named features. Points, in the terms a source names them. */
+  landmarks?: {
+    name: string
+    lat: number
+    lon: number
+    kind: string
+    heightM?: number
+    markerM?: number
+  }[]
+  /** Bridges, as `[lat, lon]` centrelines. */
+  bridges?: { name: string; points: [number, number][]; widthM: number; lengthM: number }[]
   /** Licence and provenance lines, rendered wherever the region is. */
   attribution: string[]
-}
-
-/** One building, as the renderer wants it: a box on the ground. */
-export interface BuildingInstance {
-  x: number
-  z: number
-  halfLengthM: number
-  halfWidthM: number
-  headingDeg: number
-  heightM: number
 }
 
 /** Floats per building in the blob: x, z, halfLength, halfWidth, heading, height. */
@@ -136,6 +151,9 @@ const BUILDING_STRIDE = 6
 export class RegionSource implements TerrainSource {
   readonly extent: number
   readonly airfields: readonly Airfield[]
+  readonly places: readonly Place[]
+  readonly landmarks: readonly Landmark[]
+  readonly bridges: readonly Bridge[]
   readonly frame: GeoFrame
 
   private readonly tiers: { tier: TerrainTier; data: Int16Array; half: number }[]
@@ -179,6 +197,32 @@ export class RegionSource implements TerrainSource {
       manifest.buildings.byteOffset,
       manifest.buildings.count * BUILDING_STRIDE,
     )
+
+    // Projected once, here, for the same reason the airfields are: two callers
+    // projecting the same coordinate is two chances to do it differently.
+    this.places = (manifest.places ?? []).map((p) => {
+      const w = this.frame.toWorld(p.lat, p.lon)
+      return { name: p.name, x: w.x, z: w.z, rank: p.rank }
+    })
+
+    this.landmarks = (manifest.landmarks ?? []).map((m) => {
+      const w = this.frame.toWorld(m.lat, m.lon)
+      return {
+        name: m.name,
+        x: w.x,
+        z: w.z,
+        kind: m.kind,
+        ...(m.heightM === undefined ? {} : { heightM: m.heightM }),
+        ...(m.markerM === undefined ? {} : { markerM: m.markerM }),
+      }
+    })
+
+    this.bridges = (manifest.bridges ?? []).map((b) => ({
+      name: b.name,
+      points: b.points.map(([lat, lon]) => this.frame.toWorld(lat, lon)),
+      widthM: b.widthM,
+      lengthM: b.lengthM,
+    }))
 
     // Airfields are quoted in latitude and longitude and used in metres. Converting
     // once, here, is what stops two callers projecting the same runway differently.
