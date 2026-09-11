@@ -18,8 +18,16 @@
 import { Q, aeroAngles, eulerFromQuaternion, quaternionFromEuler } from '@retro-flyer/physics'
 import type { SimSnapshot } from './loop.js'
 
-/** Format version, so a saved situation from an older build is rejected, not misread. */
-export const SITUATION_VERSION = 1
+/**
+ * Format version, so a saved situation from an older build is rejected, not misread.
+ *
+ * Bumped to 2 when the region was added. A version 1 save carries a state vector but
+ * no record of which world it was taken in, and there is no way to guess: restoring a
+ * set of New York coordinates onto the designed map does not fail, it silently
+ * teleports the aircraft to a position that means something else entirely. Rejecting
+ * those saves costs a stale slot once and is the only honest option.
+ */
+export const SITUATION_VERSION = 2
 
 export interface Situation {
   version: number
@@ -32,6 +40,17 @@ export interface Situation {
   toggles: Record<string, boolean>
   /** Which preset was selected. */
   preset: number
+  /**
+   * Which world it was saved in — a `MapId`, so `'designed'`, `'new-york'` or
+   * `'chicago'`.
+   *
+   * A state vector is only meaningful against the map it was recorded on. Position is
+   * world metres from that map's origin, and the two regions and the authored map put
+   * entirely different things at the same coordinates. Without this the restore is a
+   * teleport into the wrong world, which looks like a bug in the physics rather than
+   * what it is.
+   */
+  region: string
   /** Wall-clock label, for a human choosing between slots. */
   savedAt: string
 }
@@ -40,12 +59,14 @@ export function captureSituation(
   sim: SimSnapshot,
   toggles: Record<string, boolean>,
   preset: number,
+  region: string,
 ): Situation {
   return {
     version: SITUATION_VERSION,
     sim,
     toggles: { ...toggles },
     preset,
+    region,
     savedAt: new Date().toISOString(),
   }
 }
@@ -75,11 +96,17 @@ export function parseSituation(raw: string | null): Situation | null {
     if (typeof sim.nz !== 'number' || !Number.isFinite(sim.nz)) return null
     if (!sim.gear || typeof sim.gear !== 'object') return null
 
+    // A save with no region is a save that cannot be placed. There is no sensible
+    // default: guessing the authored map would drop a region save into the wrong
+    // world, which is the failure this field exists to prevent.
+    if (typeof parsed.region !== 'string' || parsed.region === '') return null
+
     return {
       version: SITUATION_VERSION,
       sim: sim as SimSnapshot,
       toggles: (parsed.toggles ?? {}) as Record<string, boolean>,
       preset: typeof parsed.preset === 'number' ? parsed.preset : 0,
+      region: parsed.region,
       savedAt: typeof parsed.savedAt === 'string' ? parsed.savedAt : '',
     }
   } catch {

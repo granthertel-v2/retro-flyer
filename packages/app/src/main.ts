@@ -26,8 +26,8 @@ import { GearModel } from './gear.js'
 import { Afterburner } from './afterburner.js'
 import { CAMERA_MODES, ChaseCamera, type CameraMode } from './camera/chase.js'
 import { FovController } from './camera/fov.js'
-import { InputReader } from './input.js'
-import { Simulation } from './loop.js'
+import { InputReader, NO_COMMANDS } from './input.js'
+import { Simulation, type SpawnCondition } from './loop.js'
 import { Overlay, speedCue } from './overlay.js'
 import { Hud, type SteerCue } from './hud/hud.js'
 import { bearingTo } from './hud/symbology.js'
@@ -38,12 +38,21 @@ import { authoredMap } from './terrain/authored.js'
 import { isRegionId, loadRegion } from './terrain/load.js'
 import type { TerrainSource } from './terrain/source.js'
 import { TerrainGroundSource } from './terrain/groundSource.js'
-import { SPAWN, runwayStart } from './spawn.js'
+import { SPAWN, airborneStart, runwayStart } from './spawn.js'
 import type { Airfield } from './terrain/source.js'
+import {
+  DEFAULT_OPTIONS,
+  nameOf,
+  parseLaunchOptions,
+  regionOf,
+  toSearch,
+  type LaunchOptions,
+} from './shell/options.js'
+import { LaunchScreen, PauseMenu, deviceCanFly } from './shell/screens.js'
 import { buildCourse } from './course.js'
 import { buildGates } from './terrain/gates.js'
 import { captureSituation, parseSituation, applySlew, speedOf } from './situation.js'
-import { fpsToKt, mToFt, referenceSpeed } from '@retro-flyer/physics'
+import { PHYSICS_DT, fpsToKt, mToFt, referenceSpeed } from '@retro-flyer/physics'
 import { buildBridges } from './terrain/bridges.js'
 import { buildLandmarks } from './terrain/landmarks.js'
 import { buildCity, buildRunways } from './terrain/city.js'
@@ -86,41 +95,64 @@ const HAZE = 0xb3c8d6
 /**
  * Which world to fly in.
  *
- * `?region=new-york` or `?region=chicago` loads a real one; anything else, including
- * no query at all, gets the authored map. Opt-in rather than default on purpose:
- * the authored map is deterministic, needs no network, and is what every existing
- * test and the whole of Days 1-4 were flown against. A real region is three
- * megabytes over the wire and should be something you asked for.
+ * The choice now arrives from the launch screen rather than from the query string,
+ * but it means the same thing and `?region=` still selects it — see
+ * `shell/options.ts`. The authored map remains the default: it is deterministic,
+ * needs no network, and is what every existing test and the whole of Days 1-4 were
+ * flown against. A real region is three megabytes over the wire.
  *
- * A failed load falls back rather than showing a blank page. Being dropped into the
- * authored map with a line in the console is a much better outcome than a black
- * screen, and the message says which region failed and why.
+ * A failure is now reported rather than swallowed. It used to log and hand back the
+ * authored map, which was right when a region was something you opted into by typing
+ * a parameter — silently delivering a different world to someone who has just picked
+ * a city on a screen is not.
  */
-async function chooseMap(): Promise<TerrainSource> {
-  const requested = new URLSearchParams(location.search).get('region')
-  if (!requested) return authoredMap
+async function chooseMap(options: LaunchOptions): Promise<TerrainSource> {
+  const region = regionOf(options)
+  if (!region) return authoredMap
 
-  if (!isRegionId(requested)) {
-    console.warn(`unknown region "${requested}"; falling back to the authored map`)
+  if (!isRegionId(region)) {
+    console.warn(`unknown region "${region}"; falling back to the authored map`)
     return authoredMap
   }
 
-  try {
-    return await loadRegion(requested)
-  } catch (error) {
-    console.error(`failed to load region "${requested}"`, error)
-    return authoredMap
-  }
+  return await loadRegion(region)
 }
 
-async function main(): Promise<void> {
-  const map = await chooseMap()
+/**
+ * Where this flight begins.
+ *
+ * `airfields` is ordered longest first by the builder, so "the first one" is Kennedy
+ * in New York and O'Hare in Chicago rather than whichever GA strip happened to sort
+ * first. The authored map keeps the hand-placed Day 2 spawn for its airborne start,
+ * whose coordinates were chosen to point at the ridge and only mean anything there.
+ */
+function startCondition(map: TerrainSource, options: LaunchOptions): SpawnCondition {
+  const field = map.airfields[0]!
 
-  // A region starts on its longest runway; the authored map keeps the airborne spawn
-  // Day 2 chose, whose coordinates only mean anything there. `airfields` is ordered
-  // longest first by the builder, so "the first one" is Kennedy in New York and
-  // O'Hare in Chicago rather than whichever GA strip happened to sort first.
-  const start = map === authoredMap ? SPAWN : runwayStart(map.airfields[0]!)
+  if (options.spawn === 'runway') return runwayStart(field)
+  return map === authoredMap ? SPAWN : airborneStart(field, map)
+}
+
+async function main(options: LaunchOptions, screen?: LaunchScreen): Promise<void> {
+  const map = await chooseMap(options)
+
+  // Let the loading line paint before the build phase below, which runs for a while
+  // without yielding — five LOD rings, the buildings, the scatter, the minimap
+  // raster and a trim solve. Without this the screen says LOADING and then freezes
+  // on it, which reads as a hang rather than as work.
+  //
+  // A frame *or* a timer, whichever arrives first, and the timer is the one that
+  // matters. Chrome does not run `requestAnimationFrame` at all in a background tab —
+  // the note on `step` below says so — so waiting on a frame alone means that anyone
+  // who presses FLY and then switches tab never comes back to a loaded world. It
+  // waits on a frame that will not be delivered until they return, and on some
+  // platforms not even then. The timer always fires.
+  await Promise.race([
+    new Promise((resolve) => requestAnimationFrame(resolve)),
+    new Promise((resolve) => setTimeout(resolve, 50)),
+  ])
+
+  const start = startCondition(map, options)
   const canvas = document.createElement('canvas')
   canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;display:block'
   document.body.style.cssText = 'margin:0;overflow:hidden;background:#000'
@@ -215,7 +247,10 @@ async function main(): Promise<void> {
   const fov = new FovController()
   const overlay = new Overlay()
   const hud = new Hud()
-  const help = new HelpCard()
+  // Closed: the launch screen has already shown this list, and opening it again over
+  // the first frame of flight puts it between the pilot and the aeroplane. `/` still
+  // brings it back.
+  const help = new HelpCard(document.body, false)
 
   // Rebuilt every frame rather than allocated every frame. `Matrix4.elements` is the
   // column-major array `projectDirection` wants, so no conversion happens anywhere.
@@ -242,14 +277,111 @@ async function main(): Promise<void> {
    * is a takeoff again and the cue comes back without needing a reset.
    */
   let rollingOut = false
-  let wasAirborne = SPAWN.onGround !== true
+  // From the spawn actually used. Reading `SPAWN` here was the same mistake already
+  // fixed two lines up for `gearDown`: on a runway start it claims the aircraft has
+  // just been flying, which is what `rollingOut` keys off.
+  let wasAirborne = start.onGround !== true
   let wasSlewing = false
   let saveNote = ''
   let saveNoteUntil = 0
+  // Primed from the real start condition. Priming it with a hardcoded airborne sample
+  // flipped the course to 'running' before the first frame — so a runway start sat at
+  // the threshold with the clock already going, which is precisely what
+  // `Course.update` says it avoids ("the clock starts at liftoff, not at spawn").
   let courseProgress = course.update(
-    { x: SPAWN.x, z: SPAWN.z, altFt: SPAWN.alt, onGround: false, speedFps: SPAWN.vt },
+    {
+      x: start.x,
+      z: start.z,
+      altFt: start.alt,
+      onGround: start.onGround === true,
+      speedFps: start.vt,
+    },
     0,
   )
+
+  /**
+   * Put the aircraft back at the beginning of a flight.
+   *
+   * This block used to exist only inside the `nextField` handler, which meant the one
+   * piece of code that knows everything a fresh flight has to reset was reachable only
+   * by pressing `T`. The pause menu needs the same thing, so it is a function.
+   *
+   * The list is not obvious and every item on it was learned: the parking brake
+   * survives a reset otherwise, the course keeps its old splits, the gear stays
+   * wherever it was, the throttle keeps its previous setting, and the chase camera
+   * arrives still swinging from wherever the aircraft used to be.
+   */
+  const startFlight = (spawn: SpawnCondition, index: number): void => {
+    parkingBrake = false
+    fieldIndex = index
+    simulation.reset(spawn)
+    course.reset()
+    gearDown = spawn.onGround === true
+    input.setThrottle(spawn.onGround === true ? 0 : simulation.trimThrottle)
+    chase.reset()
+    slewing = false
+    rollingOut = false
+    wasAirborne = spawn.onGround !== true
+  }
+
+  /**
+   * The menu, and the flag that stops the world while it is up.
+   *
+   * `simulation.paused` is deliberately not reused. It already exists and gates the
+   * physics correctly, but slew writes it too — leaving slew clears it unconditionally
+   * — so a menu built on it could be un-paused by a keystroke it never saw.
+   */
+  let menuOpen = false
+
+  const closeMenu = (): void => {
+    menu.hide()
+    menuOpen = false
+    // The resume frame would otherwise carry the whole time the menu was open, capped
+    // at 0.25 s, which is a quarter second of camera smoothing and throttle ramp in
+    // one step.
+    last = performance.now()
+  }
+
+  const menu = new PauseMenu({
+    onResume: closeMenu,
+    onRestart: () => {
+      startFlight(startCondition(map, options), 0)
+      closeMenu()
+    },
+    // A reload, on purpose. Nothing in this codebase disposes of a terrain mesh, and
+    // the terrain, the scatter, the minimap and the simulation all take the map as a
+    // `private readonly` constructor argument — so swapping worlds in place is a
+    // rewrite, not a menu item. `replace` rather than an assignment because the URL
+    // is often the one already in the bar, which would otherwise do nothing.
+    onChangeWorld: () => {
+      location.replace(location.pathname + toSearch(options))
+    },
+  })
+
+  /**
+   * Escape opens and closes the menu.
+   *
+   * Handled here rather than through `InputCommands` for a specific reason: `step`
+   * stops draining commands while the menu is open, so an Escape routed through that
+   * queue would open the menu and then never be seen again. This listener is outside
+   * the queue and works in both directions.
+   *
+   * `Escape` is deliberately not added to the claimed set — the browser uses it to
+   * leave full screen, and taking that away would trap anyone who had gone full screen
+   * to fly.
+   */
+  window.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (event.code !== 'Escape') return
+    if (menuOpen) {
+      closeMenu()
+    } else {
+      menuOpen = true
+      menu.show()
+      // Whatever was held will never see its keyup while the menu has focus, and the
+      // aircraft would come back with the stick still over.
+      input.releaseAll()
+    }
+  })
 
   const resize = (): void => {
     const width = window.innerWidth
@@ -273,8 +405,17 @@ async function main(): Promise<void> {
    * deterministic rather than dependent on whatever frame rate the recorder
    * happened to get.
    */
-  const step = (dt: number): void => {
-    const commands = input.commands()
+  const step = (rawDt: number): void => {
+    // While the menu is up the world is still drawn but does not move. A zero step
+    // means no physics ticks, no camera smoothing, no course time and no fuel — the
+    // scene behind the panel is the frame the pilot paused on.
+    //
+    // Commands are not drained at all rather than drained and ignored, because
+    // `commands()` empties the queue: reading it here would swallow whatever was
+    // typed while the menu was open and then do nothing with it.
+    const running = !menuOpen
+    const dt = running ? rawDt : 0
+    const commands = running ? input.commands() : NO_COMMANDS
 
     if (commands.cycleCamera) {
       mode = CAMERA_MODES[(CAMERA_MODES.indexOf(mode) + 1) % CAMERA_MODES.length] as CameraMode
@@ -299,18 +440,10 @@ async function main(): Promise<void> {
     if (commands.toggleSlew) slewing = !slewing
 
     if (commands.nextField) {
-      parkingBrake = false
       // Cycle the airfields, starting on the runway at each. This is how a takeoff
       // gets flown without first flying to the field.
-      fieldIndex = (fieldIndex + 1) % map.airfields.length
-      simulation.reset(runwayStart(map.airfields[fieldIndex]!))
-      course.reset()
-      gearDown = true
-      input.setThrottle(0)
-      chase.reset()
-      slewing = false
-      rollingOut = false
-      wasAirborne = false
+      const next = (fieldIndex + 1) % map.airfields.length
+      startFlight(runwayStart(map.airfields[next]!), next)
     }
 
     if (commands.saveSituation) {
@@ -318,7 +451,12 @@ async function main(): Promise<void> {
         localStorage.setItem(
           SAVE_KEY,
           JSON.stringify(
-            captureSituation(simulation.capture(), { ...simulation.layer.toggles }, presetIndex),
+            captureSituation(
+              simulation.capture(),
+              { ...simulation.layer.toggles },
+              presetIndex,
+              options.map,
+            ),
           ),
         )
         saveNote = 'SAVED'
@@ -338,7 +476,11 @@ async function main(): Promise<void> {
       }
       const situation = parseSituation(stored)
 
-      if (situation) {
+      if (situation && situation.region !== options.map) {
+        // The coordinates in it belong to a different world. Restoring them here would
+        // not fail, it would put the aircraft somewhere that means nothing.
+        saveNote = `SAVED IN ${nameOf(situation.region).toUpperCase()}`
+      } else if (situation) {
         simulation.restore(situation.sim)
         gearDown = situation.sim.gear.down
         Object.assign(simulation.layer.toggles, situation.toggles)
@@ -388,7 +530,12 @@ async function main(): Promise<void> {
       if (key) simulation.layer.toggles[key] = !simulation.layer.toggles[key]
     }
 
-    simulation.advance(dt, () => input.axes(dt))
+    // `PHYSICS_DT`, not `dt`. `FixedStepClock` calls this closure once per physics
+    // tick, not once per frame, and `axes` ramps the throttle by its argument — so
+    // passing the frame delta ramped it once per tick at the frame rate, about twice
+    // as fast as intended at 60 fps, and slammed it to full travel on the first frame
+    // after any stall (30 ticks x 0.25 s of ramp in one go).
+    simulation.advance(dt, () => input.axes(PHYSICS_DT))
 
     const state = simulation.render()
 
@@ -563,8 +710,77 @@ async function main(): Promise<void> {
         mode = next
         chase.reset()
       },
+      menu,
+    },
+  })
+
+  screen?.hide()
+}
+
+// ---------------------------------------------------------------------------
+// The shell
+// ---------------------------------------------------------------------------
+
+/** Where the last launch choice is remembered. */
+const LAUNCH_KEY = 'retro-flyer.launch'
+
+function readLaunch(): string | null {
+  try {
+    return localStorage.getItem(LAUNCH_KEY)
+  } catch {
+    // A private window, or storage disabled. Not remembering is not a failure.
+    return null
+  }
+}
+
+function rememberLaunch(options: LaunchOptions): void {
+  try {
+    localStorage.setItem(LAUNCH_KEY, JSON.stringify(options))
+  } catch {
+    // As above.
+  }
+}
+
+/**
+ * Start the page.
+ *
+ * Three ways in, and the order matters.
+ *
+ * A device that cannot fly is turned away first, before any world is chosen and long
+ * before three megabytes of one is fetched. `?autostart=1` then goes straight through
+ * without a screen, which the browser QA workflow depends on — `window.__rf` only
+ * exists once `main` has run, and the automation polls for it. Everyone else gets the
+ * launch screen.
+ */
+function boot(): void {
+  document.getElementById('boot')?.remove()
+
+  const parsed = parseLaunchOptions(location.search, readLaunch())
+
+  if (!parsed.forceDesktop && !deviceCanFly()) {
+    new LaunchScreen(parsed.options, { onFly: () => {} }).gate()
+    return
+  }
+
+  if (parsed.autostart) {
+    void main(parsed.options)
+    return
+  }
+
+  const screen: LaunchScreen = new LaunchScreen(parsed.options, {
+    onFly: (options) => {
+      rememberLaunch(options)
+      screen.loading(nameOf(options.map))
+
+      void main(options, screen).catch((error: unknown) => {
+        console.error('failed to start', error)
+        screen.failed(
+          `Could not load ${nameOf(options.map)}. Check the connection and try again, ` +
+            `or fly ${nameOf(DEFAULT_OPTIONS.map)} instead.`,
+        )
+      })
     },
   })
 }
 
-void main()
+boot()

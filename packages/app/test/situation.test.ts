@@ -93,7 +93,7 @@ describe('situation save and restore', () => {
     const sim = new Simulation(SPAWN, undefined, ground)
     fly(sim, 1)
 
-    const situation = captureSituation(sim.capture(), { aoaLimiter: true }, 2)
+    const situation = captureSituation(sim.capture(), { aoaLimiter: true }, 2, 'designed')
     const parsed = parseSituation(JSON.stringify(situation))
 
     expect(parsed).not.toBeNull()
@@ -101,6 +101,7 @@ describe('situation save and restore', () => {
     expect(parsed!.sim.layer.pitchIntegral).toBe(situation.sim.layer.pitchIntegral)
     expect(parsed!.toggles.aoaLimiter).toBe(true)
     expect(parsed!.preset).toBe(2)
+    expect(parsed!.region).toBe('designed')
   })
 
   it('survives the whole loop: capture, JSON, parse, restore, replay', () => {
@@ -109,7 +110,7 @@ describe('situation save and restore', () => {
     const sim = new Simulation(SPAWN, undefined, ground)
     fly(sim, 2)
 
-    const json = JSON.stringify(captureSituation(sim.capture(), {}, 0))
+    const json = JSON.stringify(captureSituation(sim.capture(), {}, 0, 'designed'))
 
     fly(sim, 4)
     const flownOn = sim.snapshot()
@@ -126,7 +127,7 @@ describe('situation save and restore', () => {
     // This reads from localStorage, which is to say from whatever was in the
     // browser. A state vector full of undefined reaching the integrator is a much
     // worse outcome than "no save found".
-    const good = captureSituation(new Simulation(SPAWN, undefined, ground).capture(), {}, 0)
+    const good = captureSituation(new Simulation(SPAWN, undefined, ground).capture(), {}, 0, 'designed')
     const withSim = (sim: unknown): string =>
       JSON.stringify({ ...good, sim })
 
@@ -158,6 +159,23 @@ describe('situation save and restore', () => {
     expect(
       parseSituation(withSim({ ...good.sim, gear: undefined })),
       'no gear state',
+    ).toBeNull()
+
+    // A save that does not say which world it was taken in. Position is world metres
+    // from that map's origin, so restoring New York coordinates onto the designed map
+    // does not fail — it silently puts the aircraft somewhere that means nothing else.
+    // There is no safe default to guess, so the save is refused.
+    expect(
+      parseSituation(JSON.stringify({ ...good, region: undefined })),
+      'no region',
+    ).toBeNull()
+    expect(parseSituation(JSON.stringify({ ...good, region: '' })), 'empty region').toBeNull()
+    expect(parseSituation(JSON.stringify({ ...good, region: 7 })), 'region not a string').toBeNull()
+
+    // Every version 1 save is exactly that save, so the version bump rejects them all.
+    expect(
+      parseSituation(JSON.stringify({ ...good, version: 1, region: undefined })),
+      'a version 1 save, which cannot say which world it was in',
     ).toBeNull()
 
     // And the good one still parses, so the guards are not simply refusing everything.
@@ -261,7 +279,9 @@ describe('gear position travels with the situation', () => {
     const sim = new Simulation(SPAWN, undefined, ground)
     sim.gearInput = { brake: 0, steer: 0, down: false }
 
-    const parsed = parseSituation(JSON.stringify(captureSituation(sim.capture(), {}, 0)))
+    const parsed = parseSituation(
+      JSON.stringify(captureSituation(sim.capture(), {}, 0, 'designed')),
+    )
     expect(parsed!.sim.gear.down).toBe(false)
   })
 })

@@ -61,13 +61,46 @@ const GROUPS: readonly Group[] = [
   {
     title: 'Assists',
     rows: [
-      ['B', 'preset: Balanced, Authentic, Forgiving'],
+      // The names are the ones in `PRESETS`. This line used to read "Balanced,
+      // Authentic, Forgiving", none of which exist, and the shell now prints it on
+      // the launch screen where it is the first thing a stranger reads.
+      ['B', 'preset: Balanced, Ace, Honest'],
       ['1-6', 'individual assists'],
       ['0 / 9', 'all off / all on'],
       ['I', 'invert pitch'],
     ],
   },
 ]
+
+/**
+ * The key bindings as a grid, without the card around them.
+ *
+ * Split out so the shell can show the same list on the launch screen and in the pause
+ * menu. The bindings are already duplicated in `input.ts`, in the overlay and in the
+ * README, and adding a fourth hand-maintained copy for the menu would have been the
+ * one too many.
+ */
+export function controlsMarkup(): string {
+  const columns = GROUPS.map(
+    (group) =>
+      `<div><div style="color:#5dff9b;letter-spacing:.14em;margin-bottom:6px">` +
+      `${group.title.toUpperCase()}</div>` +
+      group.rows
+        .map(
+          ([key, what]) =>
+            `<div style="display:flex;gap:10px">` +
+            `<span style="color:#5dff9b;min-width:76px">${key}</span>` +
+            `<span style="opacity:.8">${what}</span></div>`,
+        )
+        .join('') +
+      `</div>`,
+  ).join('')
+
+  return (
+    `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:22px">` +
+    `${columns}</div>`
+  )
+}
 
 /**
  * The first flight, in four sentences.
@@ -86,9 +119,17 @@ will not hold it. At the <b>ROTATE</b> cue, pull back: that is <b>↓</b> or <b>
 
 export class HelpCard {
   private readonly root: HTMLElement
-  private open = true
+  private open: boolean
 
-  constructor(parent: HTMLElement = document.body) {
+  /**
+   * `startOpen` is false once the shell exists.
+   *
+   * The card opened on load because it was the only thing that could tell a stranger
+   * how to fly. The launch screen now does that before the world is even built, so
+   * opening again over the first frame of flight is showing the same person the same
+   * list twice and putting it between them and the aeroplane.
+   */
+  constructor(parent: HTMLElement = document.body, startOpen = true) {
     this.root = document.createElement('div')
     this.root.style.cssText = [
       'position:fixed',
@@ -114,27 +155,14 @@ export class HelpCard {
       'box-shadow:0 0 60px rgba(0,0,0,.6)',
     ].join(';')
 
-    const columns = GROUPS.map(
-      (group) =>
-        `<div><div style="color:#5dff9b;letter-spacing:.14em;margin-bottom:6px">` +
-        `${group.title.toUpperCase()}</div>` +
-        group.rows
-          .map(
-            ([key, what]) =>
-              `<div style="display:flex;gap:10px">` +
-              `<span style="color:#5dff9b;min-width:76px">${key}</span>` +
-              `<span style="opacity:.8">${what}</span></div>`,
-          )
-          .join('') +
-        `</div>`,
-    ).join('')
-
     panel.innerHTML =
       `<div style="color:#5dff9b;font-size:19px;letter-spacing:.2em">RETRO FLYER</div>` +
       `<div style="opacity:.78;margin:10px 0 20px;max-width:60ch">${INTRO}</div>` +
-      `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:22px">` +
-      `${columns}</div>` +
+      controlsMarkup() +
       `<div style="opacity:.5;margin-top:22px">Press any key to fly. <b>/</b> brings this back.</div>`
+
+    this.open = startOpen
+    this.root.style.display = startOpen ? 'flex' : 'none'
 
     this.root.append(panel)
     parent.append(this.root)
