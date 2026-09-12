@@ -44,7 +44,7 @@ export interface InputCommands {
   toggleHelp: boolean
 }
 
-const NO_COMMANDS: InputCommands = {
+export const NO_COMMANDS: InputCommands = {
   cycleCamera: false,
   toggleAssist: null,
   allAssistsOn: false,
@@ -138,6 +138,17 @@ export class InputReader {
   }
 
   private readonly onBlur = (): void => {
+    this.down.clear()
+  }
+
+  /**
+   * Forget every held key.
+   *
+   * The same thing losing focus does, exposed because opening a menu is the same
+   * situation: whatever was held when the menu appeared is never going to see its
+   * keyup, and the aircraft would come back from the pause with the stick still over.
+   */
+  releaseAll(): void {
     this.down.clear()
   }
 

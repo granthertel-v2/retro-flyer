@@ -12,19 +12,33 @@ to fly it over, a full runway-to-runway cycle, and a HUD to fly it on.
 
 ## Flying it
 
-Nothing to install — it is a web page. It opens with a card listing the controls;
-press any key to dismiss it, `/` to bring it back.
+Nothing to install — it is a web page. It opens on a screen that asks two questions:
+where to fly, and whether to start already flying or parked on a runway. `Esc` brings
+that back as a pause menu, and `/` shows the controls at any time.
+
+**Already flying** is the default and it is the one to take first. The aircraft is
+longitudinally unstable — that is what the real F-16 is, and the model reproduces it —
+so a takeoff is the hardest thing here rather than the easiest. Starting trimmed and
+level at 2,200 ft, lined up on a runway ten kilometres ahead, puts you in the part
+worth feeling. The runway is one click away when you want it.
 
 Desktop browser and a keyboard. There is no touch control scheme and the HUD is laid
-out for a landscape window, so a phone will load it and you will not be able to fly it.
+out for a landscape window, so a phone is shown a page explaining that rather than a
+simulator it cannot fly.
 
 ### Real places
 
-Add `?region=new-york` or `?region=chicago` to the URL to fly a real one instead of
-the designed map. The terrain is USGS survey elevation, the coastline and buildings
-are OpenStreetMap, and the runways are FAA records — Kennedy's 13R/31L is 14,511 ft
-long and lies on 120.8 degrees true because that is what the FAA says, not because
-anyone placed it. You start on the longest runway in the region.
+Pick New York or Chicago on the opening screen, or add `?region=new-york` /
+`?region=chicago` to the URL — the link still means what it always did, it just lands
+on the screen with that city already chosen. The terrain is USGS survey elevation, the
+coastline and buildings are OpenStreetMap, and the runways are FAA records — Kennedy's
+13R/31L is 14,511 ft long and lies on 120.8 degrees true because that is what the FAA
+says, not because anyone placed it.
+
+A runway start puts you on the longest runway in the region. An airborne start puts you
+ten kilometres out on its extended centreline — arriving from whichever end leaves the
+city ahead of you rather than behind, which is why New York begins over the water on
+301 and not over Brooklyn pointed at Long Island.
 
 Press `M` for the moving map. It cycles in — 4, 12, 30 and 60 km across — and then
 off again, and it names what is under you: cities and towns when you are high, the
@@ -33,8 +47,8 @@ names, Chicago two hundred and ninety-five, all from OpenStreetMap.
 
 They are about three megabytes each and load on demand, which is why they are opt-in:
 the designed map needs no network and is what everything here was flown against
-first. If a region fails to load you get the designed map and a line in the console
-rather than a black screen.
+first. The opening screen holds while one arrives and says so if it does not, rather
+than dropping you somewhere you did not ask for.
 
 Landmarks are in: the bridges are real geometry, arched over the water and towered
 where the span earns it — the George Washington, the Brooklyn, the Verrazzano, the
@@ -65,6 +79,7 @@ The short version:
 | `C` | camera: chase, cockpit, orbit &nbsp;·&nbsp; `H` HUD &nbsp;·&nbsp; `O` developer readout |
 | `B` | assist preset &nbsp;·&nbsp; `1`–`6` individual assists &nbsp;·&nbsp; `0` / `9` all off / all on |
 | `V` | slew &nbsp;·&nbsp; `F5` / `F9` save and restore &nbsp;·&nbsp; `N` restart the course |
+| `Esc` | pause menu: resume, restart the flight, controls, change world |
 
 **A first flight.** Press `T` to line up on a runway. Push the throttle to full with
 `X` and watch `PWR` climb — the engine takes several seconds, and the brakes will not
@@ -119,7 +134,7 @@ renderer that consumes it through one narrow seam.
   see below.
 - **A HUD** — tapes, pitch ladder, heading strip and flight path marker, with the
   world-referenced half projected through the same camera matrix as the terrain.
-- **557 tests** across two tiers, plus the break-check protocol that verifies the
+- **706 tests** across two tiers, plus the break-check protocol that verifies the
   tests can actually fail.
 
 ```bash

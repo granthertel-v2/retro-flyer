@@ -2,15 +2,46 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
     <meta
       name="description"
       content="A browser flight simulator with a validated 6DOF F-16 flight model and a deliberately crude polygon world."
     />
     <meta name="theme-color" content="#86b0d6" />
     <title>Retro Flyer</title>
+    <!--
+      First paint.
+
+      `main.ts` writes `document.body.style.cssText` wholesale, which destroys any
+      inline style set here — a rule block survives it, which is why this is a
+      <style> and not an attribute on <body>.
+
+      It matters because the page used to have nothing at all in it: the background
+      was applied only after the chosen world had finished downloading, so a shared
+      link to a region showed several seconds of blank white before anything appeared.
+      The splash below is replaced by the launch screen as soon as the module runs.
+    -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #060e0a;
+        overflow: hidden;
+      }
+      #boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #5dff9b;
+        font: 13px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace;
+        letter-spacing: 0.2em;
+      }
+    </style>
   </head>
   <body>
+    <div id="boot">RETRO FLYER</div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
